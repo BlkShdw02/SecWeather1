@@ -1,0 +1,37 @@
+name: Hourly SEC Weather Ingestion
+
+on:
+  schedule:
+    # Runs at the top of every hour (UTC)
+    - cron: '0 * * * *'
+  # Allows you to manually trigger it anytime with one click
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  update-models:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Execute Model Ingestion Script
+        run: |
+          python run_hourly_ingest.py
+
+      - name: Commit and Push Updated Weather Data
+        run: |
+          git config --global user.name "SEC-Weather-Bot"
+          git config --global user.email "bot@users.noreply.github.com"
+          git add sec_live_weather.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update model feeds [skip ci]" && git push)

@@ -1,0 +1,166 @@
+{
+  "last_updated_utc": "2026-09-15T22:05:01.234776+00:00",
+  "total_venues_active": 18,
+  "games": {
+    "Georgia@Arkansas": {
+      "matchup": "Georgia at Arkansas",
+      "stadium": "Donald W. Reynolds Razorback Stadium",
+      "city": "Fayetteville, AR",
+      "orientation_label": "N-S",
+      "field_azimuth_deg": 0,
+      "endzone_north": "North Endzone (N)",
+      "endzone_south": "South Endzone (S)",
+      "kickoff_local": "11:00 AM CDT",
+      "tactical_wind": {
+        "relative_angle_deg": 15,
+        "longitudinal_mph": 10.6,
+        "crosswind_mph": 2.8,
+        "tactical_summary": "Direct tailwind (~11 mph) favoring kicks toward North Endzone (N)."
+      }
+    },
+    "Florida State@Alabama": {
+      "matchup": "Florida State at Alabama",
+      "stadium": "Bryant-Denny Stadium",
+      "city": "Tuscaloosa, AL",
+      "orientation_label": "NNW-SSE",
+      "field_azimuth_deg": 343,
+      "endzone_north": "North Endzone (NNW)",
+      "endzone_south": "South Endzone (SSE)",
+      "kickoff_local": "2:30 PM CDT",
+      "tactical_wind": {
+        "relative_angle_deg": 32,
+        "longitudinal_mph": 9.3,
+        "crosswind_mph": 5.8,
+        "tactical_summary": "Direct tailwind (~9 mph) favoring kicks toward North Endzone (NNW)."
+      }
+    },
+    "Florida@Auburn": {
+      "matchup": "Florida at Auburn",
+      "stadium": "Jordan-Hare Stadium",
+      "city": "Auburn, AL",
+      "orientation_label": "N-S",
+      "field_azimuth_deg": 358,
+      "endzone_north": "North Endzone (N)",
+      "endzone_south": "South Endzone (S)",
+      "kickoff_local": "6:00 PM CDT",
+      "tactical_wind": {
+        "relative_angle_deg": 17,
+        "longitudinal_mph": 10.5,
+        "crosswind_mph": 3.2,
+        "tactical_summary": "Direct tailwind (~11 mph) favoring kicks toward North Endzone (N)."
+      }
+    },
+    "LSU@Ole Miss": {
+      "matchup": "LSU at Ole Miss",
+      "stadium": "Vaught-Hemingway Stadium",
+      "city": "Oxford, MS",
+      "orientation_label": "N-S",
+      "field_azimuth_deg": 357,
+      "endzone_north": "North Endzone (N)",
+      "endzone_south": "South Endzone (S)",
+      "kickoff_local": "6:30 PM CDT",
+      "tactical_wind": {
+        "relative_angle_deg": 18,
+        "longitudinal_mph": 10.5,
+        "crosswind_mph": 3.4,
+        "tactical_summary": "Direct tailwind (~10 mph) favoring kicks toward North Endzone (N)."
+      }
+    },
+    "Kentucky@Texas A&M": {
+      "matchup": "Kentucky at Texas A&M",
+      "stadium": "Kyle Field",
+      "city": "College Station, TX",
+      "orientation_label": "NNW-SSE",
+      "field_azimuth_deg": 344,
+      "endzone_north": "North Endzone (NNW)",
+      "endzone_south": "South Endzone (SSE)",
+      "kickoff_local": "2:30 PM CDT",
+      "tactical_wind": {
+        "relative_angle_deg": 31,
+        "longitudinal_mph": 9.4,
+        "crosswind_mph": 5.7,
+        "tactical_summary": "Direct tailwind (~9 mph) favoring kicks toward North Endzone (NNW)."
+      }
+    },
+    "Mississippi State@South Carolina": {
+      "matchup": "Mississippi State at South Carolina",
+      "stadium": "Williams-Brice Stadium",
+      "city": "Columbia, SC",
+      "orientation_label": "N-S",
+      "field_azimuth_deg": 1,
+      "endzone_north": "North Endzone (N)",
+      "endzone_south": "South Endzone (S)",
+      "kickoff_local": "4:00 PM EDT",
+      "tactical_wind": {
+        "relative_angle_deg": 14,
+        "longitudinal_mph": 10.7,
+        "crosswind_mph": 2.7,
+        "tactical_summary": "Direct tailwind (~11 mph) favoring kicks toward North Endzone (N)."
+      }
+    },
+    "UTSA@Texas": {
+      "matchup": "UTSA at Texas",
+      "stadium": "Darrell K Royal-Texas Memorial Stadium",
+      "city": "Austin, TX",
+      "orientation_label": "N-S",
+      "field_azimuth_deg": 358,
+      "endzone_north": "North Endzone (N)",
+      "endzone_south": "South Endzone (S)",
+      "kickoff_local": "7:00 PM CDT",
+      "tactical_wind": {
+        "relative_angle_deg": 17,
+        "longitudinal_mph": 10.5,
+        "crosswind_mph": 3.2,
+        "tactical_summary": "Direct tailwind (~11 mph) favoring kicks toward North Endzone (N)."
+      }
+    },
+    "New Mexico@Oklahoma": {
+      "matchup": "New Mexico at Oklahoma",
+      "stadium": "Gaylord Family Oklahoma Memorial Stadium",
+      "city": "Norman, OK",
+      "orientation_label": "N-S",
+      "field_azimuth_deg": 359,
+      "endzone_north": "North Endzone (N)",
+      "endzone_south": "South Endzone (S)",
+      "kickoff_local": "11:00 AM CDT",
+      "tactical_wind": {
+        "relative_angle_deg": 16,
+        "longitudinal_mph": 10.6,
+        "crosswind_mph": 3.0,
+        "tactical_summary": "Direct tailwind (~11 mph) favoring kicks toward North Endzone (N)."
+      }
+    },
+    "Kennesaw State@Tennessee": {
+      "matchup": "Kennesaw State at Tennessee",
+      "stadium": "Neyland Stadium",
+      "city": "Knoxville, TN",
+      "orientation_label": "NE-SW",
+      "field_azimuth_deg": 35,
+      "endzone_north": "North Endzone (NNE)",
+      "endzone_south": "South Endzone (SSW / River)",
+      "kickoff_local": "4:15 PM EDT",
+      "tactical_wind": {
+        "relative_angle_deg": 340,
+        "longitudinal_mph": 10.3,
+        "crosswind_mph": -3.8,
+        "tactical_summary": "Direct tailwind (~10 mph) favoring kicks toward North Endzone (NNE)."
+      }
+    },
+    "NC State@Vanderbilt": {
+      "matchup": "NC State at Vanderbilt",
+      "stadium": "FirstBank Stadium",
+      "city": "Nashville, TN",
+      "orientation_label": "N-S",
+      "field_azimuth_deg": 359,
+      "endzone_north": "North Endzone (N)",
+      "endzone_south": "South Endzone (S)",
+      "kickoff_local": "11:45 AM CDT",
+      "tactical_wind": {
+        "relative_angle_deg": 16,
+        "longitudinal_mph": 10.6,
+        "crosswind_mph": 3.0,
+        "tactical_summary": "Direct tailwind (~11 mph) favoring kicks toward North Endzone (N)."
+      }
+    }
+  }
+}

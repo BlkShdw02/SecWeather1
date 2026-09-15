@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -181,11 +182,15 @@
             <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- ECMWF -->
                 <div class="glass-card rounded-xl p-4 shadow-lg model-ecmwf relative">
-                    <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center justify-between mb-1">
                         <span class="text-xs font-bold tracking-wider px-2 py-0.5 rounded bg-red-950 text-red-400 border border-red-800 flex items-center gap-1.5">
                             <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> ECMWF (IFS 9km)
                         </span>
-                        <span class="text-[10px] font-mono text-slate-400" id="ecmwfRunTime">00z Cycle</span>
+                        <span class="text-[10px] font-mono text-emerald-400 font-bold" id="ecmwfRunTime">12z Cycle</span>
+                    </div>
+                    <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 mb-2 border-b border-slate-800/80 pb-1">
+                        <span>Updated: <span id="ecmwfLastUpdated" class="text-slate-300">--</span></span>
+                        <span>Next: <span id="ecmwfNextUpdate" class="text-amber-300 font-semibold">--</span></span>
                     </div>
                     <div class="flex items-baseline justify-between mt-2">
                         <div>
@@ -205,11 +210,15 @@
 
                 <!-- GFS -->
                 <div class="glass-card rounded-xl p-4 shadow-lg model-gfs relative">
-                    <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center justify-between mb-1">
                         <span class="text-xs font-bold tracking-wider px-2 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800 flex items-center gap-1.5">
                             <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> NOAA GFS (0.25°)
                         </span>
-                        <span class="text-[10px] font-mono text-slate-400" id="gfsRunTime">06z Cycle</span>
+                        <span class="text-[10px] font-mono text-emerald-400 font-bold" id="gfsRunTime">12z Cycle</span>
+                    </div>
+                    <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 mb-2 border-b border-slate-800/80 pb-1">
+                        <span>Updated: <span id="gfsLastUpdated" class="text-slate-300">--</span></span>
+                        <span>Next: <span id="gfsNextUpdate" class="text-amber-300 font-semibold">--</span></span>
                     </div>
                     <div class="flex items-baseline justify-between mt-2">
                         <div>
@@ -229,11 +238,15 @@
 
                 <!-- NBM -->
                 <div class="glass-card rounded-xl p-4 shadow-lg model-nbm relative">
-                    <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center justify-between mb-1">
                         <span class="text-xs font-bold tracking-wider px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 flex items-center gap-1.5">
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> NOAA NBM (Blend v4.1)
                         </span>
-                        <span class="text-[10px] font-mono text-slate-400">Blended Mean</span>
+                        <span class="text-[10px] font-mono text-emerald-400 font-bold" id="nbmRunTime">Hourly Blend</span>
+                    </div>
+                    <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 mb-2 border-b border-slate-800/80 pb-1">
+                        <span>Updated: <span id="nbmLastUpdated" class="text-slate-300">--</span></span>
+                        <span>Next: <span id="nbmNextUpdate" class="text-amber-300 font-semibold">--</span></span>
                     </div>
                     <div class="flex items-baseline justify-between mt-2">
                         <div>
@@ -253,11 +266,15 @@
 
                 <!-- NWS Official -->
                 <div class="glass-card rounded-xl p-4 shadow-lg model-nws relative">
-                    <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center justify-between mb-1">
                         <span class="text-xs font-bold tracking-wider px-2 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800 flex items-center gap-1.5">
                             <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> NWS Official Digital Grid
                         </span>
-                        <span class="text-[10px] font-mono text-slate-400">WFO Gridpoint</span>
+                        <span class="text-[10px] font-mono text-amber-400 font-bold" id="nwsRunTime">Live Grid</span>
+                    </div>
+                    <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 mb-2 border-b border-slate-800/80 pb-1">
+                        <span>Updated: <span id="nwsLastUpdated" class="text-slate-300">--</span></span>
+                        <span>Next: <span id="nwsNextUpdate" class="text-amber-300 font-semibold">--</span></span>
                     </div>
                     <div class="flex items-baseline justify-between mt-2">
                         <div>
@@ -280,11 +297,15 @@
             <section id="hiresCardsSection" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <!-- NAM -->
                 <div class="glass-card rounded-xl p-4 shadow-lg border-l-4 border-l-cyan-400 relative">
-                    <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center justify-between mb-1">
                         <span class="text-xs font-bold tracking-wider px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800 flex items-center gap-1.5">
                             <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span> NOAA NAM (3km Nest)
                         </span>
-                        <span class="text-[10px] font-mono text-cyan-300" id="cardNamStatus">T-60h Horizon</span>
+                        <span class="text-[10px] font-mono text-cyan-300 font-bold" id="cardNamStatus">T-60h Horizon</span>
+                    </div>
+                    <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 mb-2 border-b border-slate-800/80 pb-1">
+                        <span>Updated: <span id="namLastUpdated" class="text-slate-300">--</span></span>
+                        <span>Next: <span id="namNextUpdate" class="text-cyan-300 font-semibold">--</span></span>
                     </div>
                     <div class="flex items-baseline justify-between mt-2">
                         <div>
@@ -304,11 +325,15 @@
 
                 <!-- HRRR -->
                 <div class="glass-card rounded-xl p-4 shadow-lg border-l-4 border-l-purple-500 relative">
-                    <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center justify-between mb-1">
                         <span class="text-xs font-bold tracking-wider px-2 py-0.5 rounded bg-purple-950 text-purple-400 border border-purple-800 flex items-center gap-1.5">
                             <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span> NOAA HRRR (3km Radar)
                         </span>
-                        <span class="text-[10px] font-mono text-purple-300" id="cardHrrrStatus">T-48h Rapid</span>
+                        <span class="text-[10px] font-mono text-purple-300 font-bold" id="cardHrrrStatus">T-48h Rapid</span>
+                    </div>
+                    <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 mb-2 border-b border-slate-800/80 pb-1">
+                        <span>Updated: <span id="hrrrLastUpdated" class="text-slate-300">--</span></span>
+                        <span>Next: <span id="hrrrNextUpdate" class="text-purple-300 font-semibold">--</span></span>
                     </div>
                     <div class="flex items-baseline justify-between mt-2">
                         <div>
@@ -328,11 +353,15 @@
 
                 <!-- RRFS -->
                 <div class="glass-card rounded-xl p-4 shadow-lg border-l-4 border-l-orange-400 relative">
-                    <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center justify-between mb-1">
                         <span class="text-xs font-bold tracking-wider px-2 py-0.5 rounded bg-orange-950 text-orange-400 border border-orange-800 flex items-center gap-1.5">
                             <span class="w-1.5 h-1.5 rounded-full bg-orange-400"></span> NOAA RRFS (Next-Gen)
                         </span>
-                        <span class="text-[10px] font-mono text-orange-300" id="cardRrfsStatus">T-48h Hourly</span>
+                        <span class="text-[10px] font-mono text-orange-300 font-bold" id="cardRrfsStatus">T-48h Hourly</span>
+                    </div>
+                    <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 mb-2 border-b border-slate-800/80 pb-1">
+                        <span>Updated: <span id="rrfsLastUpdated" class="text-slate-300">--</span></span>
+                        <span>Next: <span id="rrfsNextUpdate" class="text-orange-300 font-semibold">--</span></span>
                     </div>
                     <div class="flex items-baseline justify-between mt-2">
                         <div>
@@ -901,6 +930,127 @@
 
         function updateDashboardWithLiveSeries(series, game, venue) {
             const koIdx = 3; // Index of T0 kickoff
+
+            // Dynamically calculate latest operational model cycles based on standard NOAA/ECMWF release schedules
+            const nowUtc = new Date();
+            const utcHour = nowUtc.getUTCHours();
+            
+            // GFS runs at 00z, 06z, 12z, 18z (available ~3.5-4 hours after run time)
+            let gfsCycle = "06z";
+            if (utcHour >= 16 || utcHour < 4) gfsCycle = "12z";
+            else if (utcHour >= 22 || utcHour < 4) gfsCycle = "18z";
+            else if (utcHour >= 4 && utcHour < 10) gfsCycle = "00z";
+            else if (utcHour >= 10 && utcHour < 16) gfsCycle = "06z";
+            document.getElementById('gfsRunTime').textContent = `${gfsCycle} Cycle`;
+
+            // ECMWF runs at 00z and 12z (available ~6.5-7 hours after run time)
+            let ecmwfCycle = "00z";
+            if (utcHour >= 19 || utcHour < 7) ecmwfCycle = "12z";
+            else ecmwfCycle = "00z";
+            document.getElementById('ecmwfRunTime').textContent = `${ecmwfCycle} Cycle`;
+            // Calculate exact operational ingestion and dissemination schedules for all models:
+            const now = new Date();
+            
+            function formatTime(d) {
+                let h = d.getHours();
+                const m = d.getMinutes();
+                const ampm = h >= 12 ? 'PM' : 'AM';
+                h = h % 12;
+                h = h ? h : 12;
+                const minStr = m < 10 ? '0' + m : m;
+                return `${h}:${minStr} ${ampm}`;
+            }
+
+            // GFS: Runs 00z, 06z, 12z, 18z. Dissemination takes ~3.5h. Next is 6h later.
+            // ECMWF: Runs 00z, 12z. Dissemination takes ~6.5h. Next is 12h later.
+            // NBM / NWS: Updates hourly (~45 mins past each hour).
+            // HRRR: Hourly (~40 mins past each hour).
+            // NAM: Runs 00z, 06z, 12z, 18z (~2.5h solve time).
+            
+            // Dynamic display based on current clock:
+            const curH = now.getHours();
+            
+            // GFS cycle calculation (every 6 hours: 4:00, 10:00, 16:00, 22:00 EDT)
+            const gfsPrev = new Date(now);
+            const gfsNext = new Date(now);
+            const gfsTimes = [4, 10, 16, 22]; // Approximate EDT availability times
+            let nextGfsH = gfsTimes.find(t => t > curH);
+            let prevGfsH = [...gfsTimes].reverse().find(t => t <= curH);
+            if (nextGfsH === undefined) {
+                nextGfsH = 4;
+                gfsNext.setDate(gfsNext.getDate() + 1);
+            }
+            if (prevGfsH === undefined) {
+                prevGfsH = 22;
+                gfsPrev.setDate(gfsPrev.getDate() - 1);
+            }
+            gfsPrev.setHours(prevGfsH, 15, 0, 0);
+            gfsNext.setHours(nextGfsH, 15, 0, 0);
+
+            document.getElementById('gfsLastUpdated').textContent = formatTime(gfsPrev);
+            document.getElementById('gfsNextUpdate').textContent = formatTime(gfsNext);
+
+            // ECMWF cycle calculation (every 12 hours: ~3:00 AM & 3:00 PM EDT)
+            const ecmwfPrev = new Date(now);
+            const ecmwfNext = new Date(now);
+            const ecmwfTimes = [3, 15]; // 03:00 and 15:00 EDT
+            let nextEcmwfH = ecmwfTimes.find(t => t > curH);
+            let prevEcmwfH = [...ecmwfTimes].reverse().find(t => t <= curH);
+            if (nextEcmwfH === undefined) {
+                nextEcmwfH = 3;
+                ecmwfNext.setDate(ecmwfNext.getDate() + 1);
+            }
+            if (prevEcmwfH === undefined) {
+                prevEcmwfH = 15;
+                ecmwfPrev.setDate(ecmwfPrev.getDate() - 1);
+            }
+            ecmwfPrev.setHours(prevEcmwfH, 45, 0, 0);
+            ecmwfNext.setHours(nextEcmwfH, 45, 0, 0);
+
+            document.getElementById('ecmwfLastUpdated').textContent = formatTime(ecmwfPrev);
+            document.getElementById('ecmwfNextUpdate').textContent = formatTime(ecmwfNext);
+
+            // NBM & NWS Digital Grid (Hourly updates)
+            const nbmPrev = new Date(now);
+            const nbmNext = new Date(now);
+            nbmPrev.setMinutes(40, 0, 0);
+            if (now.getMinutes() < 40) {
+                nbmPrev.setHours(nbmPrev.getHours() - 1);
+            }
+            nbmNext.setTime(nbmPrev.getTime() + (60 * 60 * 1000));
+            document.getElementById('nbmLastUpdated').textContent = formatTime(nbmPrev);
+            document.getElementById('nbmNextUpdate').textContent = formatTime(nbmNext);
+            document.getElementById('nwsLastUpdated').textContent = formatTime(nbmPrev);
+            document.getElementById('nwsNextUpdate').textContent = formatTime(nbmNext);
+
+            // High-Res Models (NAM: every 6h at ~02:30, 08:30, 14:30, 20:30; HRRR/RRFS: hourly at ~:35 past)
+            if (document.getElementById('namLastUpdated')) {
+                const namPrev = new Date(gfsPrev);
+                namPrev.setMinutes(30);
+                const namNext = new Date(gfsNext);
+                namNext.setMinutes(30);
+                document.getElementById('namLastUpdated').textContent = formatTime(namPrev);
+                document.getElementById('namNextUpdate').textContent = formatTime(namNext);
+            }
+
+            if (document.getElementById('hrrrLastUpdated')) {
+                const hrrrPrev = new Date(now);
+                hrrrPrev.setMinutes(35, 0, 0);
+                if (now.getMinutes() < 35) hrrrPrev.setHours(hrrrPrev.getHours() - 1);
+                const hrrrNext = new Date(hrrrPrev.getTime() + 3600000);
+                document.getElementById('hrrrLastUpdated').textContent = formatTime(hrrrPrev);
+                document.getElementById('hrrrNextUpdate').textContent = formatTime(hrrrNext);
+            }
+
+            if (document.getElementById('rrfsLastUpdated')) {
+                const rrfsPrev = new Date(now);
+                rrfsPrev.setMinutes(50, 0, 0);
+                if (now.getMinutes() < 50) rrfsPrev.setHours(rrfsPrev.getHours() - 1);
+                const rrfsNext = new Date(rrfsPrev.getTime() + 3600000);
+                document.getElementById('rrfsLastUpdated').textContent = formatTime(rrfsPrev);
+                document.getElementById('rrfsNextUpdate').textContent = formatTime(rrfsNext);
+            }
+
 
             document.getElementById('cardEcmwfTemp').textContent = `${series.ecmwf.temp[koIdx]}°F`;
             document.getElementById('cardEcmwfPop').textContent = `${Math.max(...series.ecmwf.pop)}%`;

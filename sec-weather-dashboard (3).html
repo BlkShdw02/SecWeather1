@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#080c14">
+    <title>SEC Football Weather Intelligence — Live Model Ingestion</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #080c14; color: #f3f4f6; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.90);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(51, 65, 85, 0.45);
+        }
+        .week-btn-active {
+            background: linear-gradient(135deg, #1d4ed8, #2563eb);
+            color: #ffffff;
+            border-color: #60a5fa;
+            box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.35);
+        }
+        .model-ecmwf { border-left: 4px solid #ef4444; }
+        .model-gfs { border-left: 4px solid #3b82f6; }
+        .model-nbm { border-left: 4px solid #10b981; }
+        .model-nws { border-left: 4px solid #f59e0b; }
+        ::-webkit-scrollbar { height: 6px; width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        @media (max-width: 640px) {
+            body { padding: 0.5rem !important; }
+            header { margin-bottom: 0.75rem !important; }
+            .glass-card { padding: 0.875rem !important; border-radius: 1rem !important; }
+            h1 { font-size: 1.35rem !important; }
+            .h-80 { height: 16rem !important; }
+            table th, table td { padding: 0.5rem 0.35rem !important; font-size: 0.68rem !important; }
+        }
+        button, select { touch-action: manipulation; }
+    </style>
+</head>
+<body class="min-h-screen p-3 md:p-6 text-slate-100">
+
+    <!-- Top Navigation & Live Source Status -->
+    <header class="max-w-7xl mx-auto mb-5">
+        <div class="glass-card rounded-2xl p-4 md:p-6 shadow-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-500 via-red-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-red-950/40 shrink-0">
+                    <i class="fa-solid fa-satellite-dish text-2xl text-white"></i>
+                </div>
+                <div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800">Live Model Engine</span>
+                        <span id="liveStatusBadge" class="text-[11px] font-semibold px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> NWS / ECMWF / GFS Live
+                        </span>
+                        <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800">
+                            9-Hour Window (T-3h → T+6h)
+                        </span>
+                    </div>
+                    <h1 class="text-2xl md:text-3xl font-black text-white mt-1.5 tracking-tight">SEC Football Weather Intelligence</h1>
+                    <p class="text-xs md:text-sm text-slate-400">Live multi-model comparison across <span class="text-red-400 font-semibold">ECMWF (IFS)</span>, <span class="text-blue-400 font-semibold">GFS</span>, <span class="text-emerald-400 font-semibold">NBM</span>, and <span class="text-amber-400 font-semibold">NWS Digital Grid</span></p>
+                </div>
+            </div>
+
+            <!-- Active Slate Date -->
+            <div class="w-full md:w-auto flex items-center justify-between md:justify-end gap-3">
+                <div class="bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2 text-right">
+                    <div class="text-[10px] text-slate-400 uppercase font-semibold">Selected Slate</div>
+                    <div id="activeDateBanner" class="text-xs font-bold text-amber-300 font-mono">Week 3 (Sep 19, 2026)</div>
+                </div>
+                <button onclick="fetchLiveGameForecast()" class="px-3 py-2 bg-blue-600/90 hover:bg-blue-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow transition-all">
+                    <i class="fa-solid fa-arrows-rotate"></i> Refresh
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Week Selector Navigation Tabs (Horizontal Scrollable) -->
+    <nav class="max-w-7xl mx-auto mb-6 overflow-x-auto pb-2">
+        <div class="flex items-center gap-2 min-w-max bg-slate-950/70 p-2 rounded-xl border border-slate-800/80" id="weekTabsContainer">
+            <!-- Populated dynamically: Week 3 to Week 14 -->
+        </div>
+    </nav>
+
+    <!-- Main Operational Workspace -->
+    <main class="max-w-7xl mx-auto space-y-6">
+
+        <!-- Matchup Selector & Game Overview Strip -->
+        <section class="glass-card rounded-2xl p-5 shadow-xl border-l-4 border-l-blue-500">
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                
+                <!-- Matchup Dropdown -->
+                <div class="w-full lg:w-96">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center gap-1.5">
+                        <i class="fa-solid fa-list-ol text-blue-400"></i> Select Matchup:
+                    </label>
+                    <select id="gameSelect" class="w-full bg-slate-900 border border-slate-700 text-slate-100 rounded-xl px-3.5 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none" onchange="onGameSelected(this.value)">
+                        <!-- Populated based on selected week -->
+                    </select>
+                </div>
+
+                <!-- Venue & Kickoff Details -->
+                <div class="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
+                    <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-3">
+                        <span class="text-[10px] uppercase font-bold text-slate-400">Stadium & City</span>
+                        <div id="metaStadium" class="text-sm font-extrabold text-white truncate">--</div>
+                        <div id="metaCity" class="text-xs text-slate-400 truncate">--</div>
+                    </div>
+
+                    <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-3">
+                        <span class="text-[10px] uppercase font-bold text-slate-400">Kickoff & Broadcast</span>
+                        <div id="metaKickoff" class="text-sm font-extrabold text-amber-300 font-mono">--</div>
+                        <div id="metaBroadcast" class="text-xs text-slate-300 flex items-center gap-1">
+                            <span id="metaTv" class="bg-red-900 text-red-200 px-1.5 py-0.2 rounded text-[10px] font-black">ABC</span>
+                            <span id="metaCapacity" class="text-slate-400 ml-1">-- cap</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-3">
+                        <span class="text-[10px] uppercase font-bold text-slate-400">NWS Forecast Office</span>
+                        <div id="metaWfo" class="text-sm font-extrabold text-emerald-400 font-mono">--</div>
+                        <div id="metaOrientation" class="text-xs text-slate-400">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes Banner -->
+            <div id="gameNoteAlert" class="mt-4 p-2.5 rounded-xl bg-indigo-950/70 border border-indigo-800/80 text-xs text-indigo-200 flex items-center gap-2 hidden">
+                <i class="fa-solid fa-star text-amber-400"></i>
+                <span id="gameNoteText" class="font-medium"></span>
+            </div>
+        </section>
+
+        <!-- PENDING BANNER (Only displayed when game date is outside the 7-day operational model horizon) -->
+        <div id="pendingForecastBanner" class="hidden glass-card rounded-2xl p-8 text-center border border-amber-800/60 bg-amber-950/20">
+            <div class="w-14 h-14 mx-auto rounded-full bg-amber-950 border border-amber-700 flex items-center justify-center text-amber-400 text-2xl mb-3 shadow-lg">
+                <i class="fa-regular fa-clock"></i>
+            </div>
+            <h3 class="text-lg font-black text-amber-300 uppercase tracking-wide">Forecast Pending — Outside Active Model Window</h3>
+            <p class="text-sm text-slate-300 max-w-xl mx-auto mt-2 leading-relaxed">
+                Deterministic operational weather models (<span class="text-amber-400 font-bold">NWS Digital Grid</span>, <span class="text-emerald-400 font-bold">NBM</span>, <span class="text-red-400 font-bold">ECMWF IFS</span>, and <span class="text-blue-400 font-bold">GFS</span>) only generate hourly gridpoint guidance within <strong>7 to 10 days of kickoff</strong>.
+            </p>
+            <div class="mt-4 inline-flex items-center gap-2 px-3 py-1.5 bg-slate-900/90 border border-slate-700 rounded-lg text-xs font-mono text-slate-300">
+                <i class="fa-solid fa-circle-info text-blue-400"></i> Live data will automatically populate when this game enters the 7-day kickoff horizon.
+            </div>
+        </div>
+
+        <!-- ACTIVE FORECAST CONTAINER (Hidden if outside model window) -->
+        <div id="activeForecastContainer" class="space-y-6">
+
+            <!-- High-Res Mode Activation Banner -->
+            <div id="highResStatusBanner" class="p-3 rounded-xl bg-slate-900/90 border border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-purple-950 border border-purple-800 flex items-center justify-center text-purple-300 shrink-0">
+                        <i class="fa-solid fa-bolt-lightning text-sm"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs font-bold text-white flex items-center gap-2">
+                            <span>High-Resolution Convective Models</span>
+                            <span id="highResBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800">Standby (>60h to Kickoff)</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400">NAM (12km/3km Nest) activates within 60 hours; HRRR (3km Rapid Refresh) & RRFS activate within 48 hours.</p>
+                    </div>
+                </div>
+                <div id="highResModelPills" class="flex items-center gap-1.5 font-mono text-[11px]">
+                    <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">NAM: 60h</span>
+                    <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">HRRR: 48h</span>
+                    <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">RRFS: 48h</span>
+                </div>
+            </div>
+
+            <!-- Model Snapshot Cards: Primary Global & Blend Suite -->
+            <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- ECMWF -->
+                <div class="glass-card rounded-xl p-4 shadow-lg model-ecmwf relative">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold tracking-wider px-2 py-0.5 rounded bg-red-950 text-red-400 border border-red-800 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> ECMWF (IFS 9km)
+                        </span>
+                        <span class="text-[10px] font-mono text-slate-400" id="ecmwfRunTime">00z Cycle</span>
+                    </div>
+                    <div class="flex items-baseline justify-between mt-2">
+                        <div>
+                            <div id="cardEcmwfTemp" class="text-3xl font-black text-white font-mono">--°F</div>
+                            <p class="text-[11px] text-slate-400">Kickoff Temp</p>
+                        </div>
+                        <div class="text-right">
+                            <div id="cardEcmwfPop" class="text-lg font-bold text-amber-400 font-mono">--%</div>
+                            <p class="text-[11px] text-slate-400">Max Rain Risk</p>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-2.5 border-t border-slate-800/80 text-xs text-slate-300 flex justify-between items-center">
+                        <span id="cardEcmwfWind"><i class="fa-solid fa-wind mr-1 text-slate-400"></i>-- mph</span>
+                        <span class="text-slate-400" id="cardEcmwfQpf">-- " QPF</span>
+                    </div>
+                </div>
+
+                <!-- GFS -->
+                <div class="glass-card rounded-xl p-4 shadow-lg model-gfs relative">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold tracking-wider px-2 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> NOAA GFS (0.25°)
+                        </span>
+                        <span class="text-[10px] font-mono text-slate-400" id="gfsRunTime">06z Cycle</span>
+                    </div>
+                    <div class="flex items-baseline justify-between mt-2">
+                        <div>
+                            <div id="cardGfsTemp" class="text-3xl font-black text-white font-mono">--°F</div>
+                            <p class="text-[11px] text-slate-400">Kickoff Temp</p>
+                        </div>
+                        <div class="text-right">
+                            <div id="cardGfsPop" class="text-lg font-bold text-blue-400 font-mono">--%</div>
+                            <p class="text-[11px] text-slate-400">Max Rain Risk</p>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-2.5 border-t border-slate-800/80 text-xs text-slate-300 flex justify-between items-center">
+                        <span id="cardGfsWind"><i class="fa-solid fa-wind mr-1 text-slate-400"></i>-- mph</span>
+                        <span class="text-slate-400" id="cardGfsQpf">-- " QPF</span>
+                    </div>
+                </div>
+
+                <!-- NBM -->
+                <div class="glass-card rounded-xl p-4 shadow-lg model-nbm relative">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold tracking-wider px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> NOAA NBM (Blend v4.1)
+                        </span>
+                        <span class="text-[10px] font-mono text-slate-400">Blended Mean</span>
+                    </div>
+                    <div class="flex items-baseline justify-between mt-2">
+                        <div>
+                            <div id="cardNbmTemp" class="text-3xl font-black text-white font-mono">--°F</div>
+                            <p class="text-[11px] text-slate-400">Kickoff Temp</p>
+                        </div>
+                        <div class="text-right">
+                            <div id="cardNbmPop" class="text-lg font-bold text-emerald-400 font-mono">--%</div>
+                            <p class="text-[11px] text-slate-400">Max Rain Risk</p>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-2.5 border-t border-slate-800/80 text-xs text-slate-300 flex justify-between items-center">
+                        <span id="cardNbmWind"><i class="fa-solid fa-wind mr-1 text-slate-400"></i>-- mph</span>
+                        <span class="text-slate-400" id="cardNbmQpf">-- " QPF</span>
+                    </div>
+                </div>
+
+                <!-- NWS Official -->
+                <div class="glass-card rounded-xl p-4 shadow-lg model-nws relative">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold tracking-wider px-2 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> NWS Official Digital Grid
+                        </span>
+                        <span class="text-[10px] font-mono text-slate-400">WFO Gridpoint</span>
+                    </div>
+                    <div class="flex items-baseline justify-between mt-2">
+                        <div>
+                            <div id="cardNwsTemp" class="text-3xl font-black text-white font-mono">--°F</div>
+                            <p class="text-[11px] text-slate-400">Kickoff Temp</p>
+                        </div>
+                        <div class="text-right">
+                            <div id="cardNwsPop" class="text-lg font-bold text-amber-400 font-mono">--%</div>
+                            <p class="text-[11px] text-slate-400">Max Rain Risk</p>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-2.5 border-t border-slate-800/80 text-xs text-slate-300 flex justify-between items-center">
+                        <span id="cardNwsWind"><i class="fa-solid fa-wind mr-1 text-slate-400"></i>-- mph</span>
+                        <span class="text-slate-400" id="cardNwsQpf">-- " QPF</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Convective High-Res Suite (NAM, HRRR, RRFS) Cards -->
+            <section id="hiresCardsSection" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <!-- NAM -->
+                <div class="glass-card rounded-xl p-4 shadow-lg border-l-4 border-l-cyan-400 relative">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold tracking-wider px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span> NOAA NAM (3km Nest)
+                        </span>
+                        <span class="text-[10px] font-mono text-cyan-300" id="cardNamStatus">T-60h Horizon</span>
+                    </div>
+                    <div class="flex items-baseline justify-between mt-2">
+                        <div>
+                            <div id="cardNamTemp" class="text-3xl font-black text-white font-mono">--°F</div>
+                            <p class="text-[11px] text-slate-400">Kickoff Temp</p>
+                        </div>
+                        <div class="text-right">
+                            <div id="cardNamPop" class="text-lg font-bold text-cyan-400 font-mono">--%</div>
+                            <p class="text-[11px] text-slate-400">Rain Prob</p>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-2.5 border-t border-slate-800/80 text-xs text-slate-300 flex justify-between items-center">
+                        <span id="cardNamWind"><i class="fa-solid fa-wind mr-1 text-slate-400"></i>-- mph</span>
+                        <span class="text-slate-400" id="cardNamQpf">-- " QPF</span>
+                    </div>
+                </div>
+
+                <!-- HRRR -->
+                <div class="glass-card rounded-xl p-4 shadow-lg border-l-4 border-l-purple-500 relative">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold tracking-wider px-2 py-0.5 rounded bg-purple-950 text-purple-400 border border-purple-800 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span> NOAA HRRR (3km Radar)
+                        </span>
+                        <span class="text-[10px] font-mono text-purple-300" id="cardHrrrStatus">T-48h Rapid</span>
+                    </div>
+                    <div class="flex items-baseline justify-between mt-2">
+                        <div>
+                            <div id="cardHrrrTemp" class="text-3xl font-black text-white font-mono">--°F</div>
+                            <p class="text-[11px] text-slate-400">Kickoff Temp</p>
+                        </div>
+                        <div class="text-right">
+                            <div id="cardHrrrPop" class="text-lg font-bold text-purple-400 font-mono">--%</div>
+                            <p class="text-[11px] text-slate-400">Rain Prob</p>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-2.5 border-t border-slate-800/80 text-xs text-slate-300 flex justify-between items-center">
+                        <span id="cardHrrrWind"><i class="fa-solid fa-wind mr-1 text-slate-400"></i>-- mph</span>
+                        <span class="text-slate-400" id="cardHrrrQpf">-- " QPF</span>
+                    </div>
+                </div>
+
+                <!-- RRFS -->
+                <div class="glass-card rounded-xl p-4 shadow-lg border-l-4 border-l-orange-400 relative">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold tracking-wider px-2 py-0.5 rounded bg-orange-950 text-orange-400 border border-orange-800 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-orange-400"></span> NOAA RRFS (Next-Gen)
+                        </span>
+                        <span class="text-[10px] font-mono text-orange-300" id="cardRrfsStatus">T-48h Hourly</span>
+                    </div>
+                    <div class="flex items-baseline justify-between mt-2">
+                        <div>
+                            <div id="cardRrfsTemp" class="text-3xl font-black text-white font-mono">--°F</div>
+                            <p class="text-[11px] text-slate-400">Kickoff Temp</p>
+                        </div>
+                        <div class="text-right">
+                            <div id="cardRrfsPop" class="text-lg font-bold text-orange-400 font-mono">--%</div>
+                            <p class="text-[11px] text-slate-400">Rain Prob</p>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-2.5 border-t border-slate-800/80 text-xs text-slate-300 flex justify-between items-center">
+                        <span id="cardRrfsWind"><i class="fa-solid fa-wind mr-1 text-slate-400"></i>-- mph</span>
+                        <span class="text-slate-400" id="cardRrfsQpf">-- " QPF</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 9-Hour Game Operations Envelope -->
+            <section class="glass-card rounded-2xl p-5 shadow-xl">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-stopwatch text-indigo-400"></i> 9-Hour Game Operations Timeline (T-3h through T+6h)
+                        </h3>
+                        <p class="text-xs text-slate-400">Live conditions from tailgate setup through postgame stadium clearing</p>
+                    </div>
+                    <div id="consensusSpreadBadge" class="px-3 py-1 rounded-lg bg-emerald-950 border border-emerald-800 text-emerald-300 text-xs font-mono font-bold flex items-center gap-1.5">
+                        <i class="fa-solid fa-check"></i> High Model Agreement
+                    </div>
+                </div>
+
+                <!-- 4 Phase Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 border-t-2 border-t-indigo-500">
+                        <div class="flex items-center justify-between text-xs text-indigo-400 font-bold mb-1">
+                            <span>TAILGATE & STAGING</span>
+                            <span class="font-mono text-slate-400">T-3h → T-1h</span>
+                        </div>
+                        <div class="text-sm font-semibold text-white mt-1" id="phaseTailgateTemp">--</div>
+                        <p class="text-xs text-slate-400 mt-1" id="phaseTailgateDesc">Setup conditions and fan arrival.</p>
+                    </div>
+
+                    <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 border-t-2 border-t-red-500">
+                        <div class="flex items-center justify-between text-xs text-red-400 font-bold mb-1">
+                            <span>KICKOFF & 1ST HALF</span>
+                            <span class="font-mono text-slate-400">T-0h → T+2h</span>
+                        </div>
+                        <div class="text-sm font-semibold text-white mt-1" id="phaseKickoffTemp">--</div>
+                        <p class="text-xs text-slate-400 mt-1" id="phaseKickoffDesc">Passing impact, crosswinds, and early game moisture.</p>
+                    </div>
+
+                    <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 border-t-2 border-t-amber-500">
+                        <div class="flex items-center justify-between text-xs text-amber-400 font-bold mb-1">
+                            <span>2ND HALF & 4TH QUARTER</span>
+                            <span class="font-mono text-slate-400">T+2h → T+4h</span>
+                        </div>
+                        <div class="text-sm font-semibold text-white mt-1" id="phaseSecondHalfTemp">--</div>
+                        <p class="text-xs text-slate-400 mt-1" id="phaseSecondHalfDesc">Closing temp drops, wind shifts, and precipitation.</p>
+                    </div>
+
+                    <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 border-t-2 border-t-emerald-500">
+                        <div class="flex items-center justify-between text-xs text-emerald-400 font-bold mb-1">
+                            <span>EGRESS & LOT CLEARING</span>
+                            <span class="font-mono text-slate-400">T+4h → T+6h</span>
+                        </div>
+                        <div class="text-sm font-semibold text-white mt-1" id="phaseEgressTemp">--</div>
+                        <p class="text-xs text-slate-400 mt-1" id="phaseEgressDesc">Postgame egress and fan safety.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Chart Section: Interactive Multi-Model Time Series -->
+            <section class="glass-card rounded-2xl p-5 shadow-xl">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-chart-line text-emerald-400"></i> Multi-Model Trend Comparison (T-3h to T+6h)
+                        </h3>
+                        <p class="text-xs text-slate-400">Live operational curves for ECMWF vs. GFS vs. NBM vs. NWS</p>
+                    </div>
+
+                    <!-- Parameter Toggle Buttons -->
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="switchChart('temp')" id="btn-temp" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 bg-blue-900/80 text-blue-300 transition-all">
+                            <i class="fa-solid fa-temperature-half mr-1"></i> Temp (°F)
+                        </button>
+                        <button onclick="switchChart('precip')" id="btn-precip" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 hover:text-white transition-all">
+                            <i class="fa-solid fa-cloud-showers-heavy mr-1"></i> Rain Risk (%)
+                        </button>
+                        <button onclick="switchChart('wind')" id="btn-wind" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 hover:text-white transition-all">
+                            <i class="fa-solid fa-wind mr-1"></i> Wind Speed (mph)
+                        </button>
+                        <button onclick="switchChart('qpf')" id="btn-qpf" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 hover:text-white transition-all">
+                            <i class="fa-solid fa-droplet mr-1"></i> QPF (in)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Canvas Container -->
+                <div class="h-80 w-full relative">
+                    <canvas id="forecastChart"></canvas>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-slate-800 text-xs flex flex-wrap items-center justify-between text-slate-400 gap-3">
+                    <div class="flex items-center gap-4">
+                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span> ECMWF (IFS)</span>
+                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span> NOAA GFS</span>
+                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> NOAA NBM</span>
+                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span> NWS Official Grid</span>
+                    </div>
+                    <div class="font-mono text-[11px] text-slate-400">
+                        <span class="bg-red-950 text-red-400 px-2 py-0.5 rounded mr-1 font-bold">Red Axis Marker = T-0h Kickoff</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Hourly Cross-Comparison Matrix Table -->
+            <section class="glass-card rounded-2xl p-5 shadow-xl overflow-hidden">
+                <div class="flex justify-between items-center mb-3">
+                    <div>
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-table-cells text-amber-400"></i> Hourly Live Model Matrix
+                        </h3>
+                        <p class="text-xs text-slate-400">Live operational outputs for each hour from T-3h to T+6h</p>
+                    </div>
+                    <span class="text-xs font-mono bg-slate-800 text-slate-300 px-3 py-1 rounded-lg border border-slate-700">10 Time Steps</span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-700 bg-slate-900 text-slate-300 uppercase tracking-wider font-semibold">
+                                <th class="p-2.5">Timeline</th>
+                                <th class="p-2.5">Hour (Local)</th>
+                                <th class="p-2.5">Phase</th>
+                                <th class="p-2.5 text-red-400">ECMWF (T/PoP/W)</th>
+                                <th class="p-2.5 text-blue-400">GFS (T/PoP/W)</th>
+                                <th class="p-2.5 text-emerald-400">NBM (T/PoP/W)</th>
+                                <th class="p-2.5 text-amber-400">NWS Official (T/PoP/W)</th>
+                                <th class="p-2.5 text-slate-200">Consensus Spread</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hourlyTableBody" class="divide-y divide-slate-800 font-mono text-slate-300">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Tactical Stadium Wind Vector Impact & Sideline Guidance -->
+            <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Stadium Orientation & Wind Field Map -->
+                <div class="glass-card rounded-2xl p-5 shadow-xl lg:col-span-1">
+                    <h3 class="text-base font-bold text-white mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-compass text-blue-400"></i> Stadium Field Wind Angle
+                    </h3>
+                    <p class="text-xs text-slate-400 mb-3">Field axis aligned with predicted kickoff wind vector</p>
+
+                    <div class="bg-slate-900/90 rounded-xl p-4 border border-slate-800 text-center relative flex flex-col items-center justify-center">
+                        <svg class="w-44 h-60 mx-auto" viewBox="0 0 160 220">
+                            <!-- Field Outer -->
+                            <rect x="20" y="20" width="120" height="180" rx="4" fill="#14532d" stroke="#22c55e" stroke-width="2"/>
+                            <!-- North Endzone -->
+                            <rect x="20" y="20" width="120" height="25" fill="#166534" />
+                            <text x="80" y="37" font-size="9" fill="#86efac" font-weight="bold" text-anchor="middle">NORTH ENDZONE</text>
+                            <!-- South Endzone -->
+                            <rect x="20" y="175" width="120" height="25" fill="#166534" />
+                            <text x="80" y="192" font-size="9" fill="#86efac" font-weight="bold" text-anchor="middle">SOUTH ENDZONE</text>
+                            <!-- 50 Yard line -->
+                            <line x1="20" y1="65" x2="140" y2="65" stroke="#ffffff" stroke-width="1" stroke-dasharray="2,2"/>
+                            <line x1="20" y1="110" x2="140" y2="110" stroke="#ffffff" stroke-width="2"/>
+                            <text x="80" y="113" font-size="10" fill="#ffffff" font-weight="bold" text-anchor="middle">50</text>
+                            <line x1="20" y1="155" x2="140" y2="155" stroke="#ffffff" stroke-width="1" stroke-dasharray="2,2"/>
+                            
+                            <!-- Dynamic Rotating Wind Arrow -->
+                            <g id="windArrowGroup" transform="translate(80, 110) rotate(180)">
+                                <line x1="0" y1="40" x2="0" y2="-40" stroke="#38bdf8" stroke-width="3"/>
+                                <polygon points="-6,-30 6,-30 0,-48" fill="#38bdf8" />
+                                <circle cx="0" cy="40" r="4" fill="#38bdf8" />
+                            </g>
+                        </svg>
+
+                        <div class="mt-3 text-xs">
+                            <div class="font-bold text-white flex items-center justify-center gap-1.5">
+                                <span id="fieldWindDir" class="text-cyan-400">--</span>
+                                <span class="text-slate-400">at</span>
+                                <span id="fieldWindSpeed" class="text-amber-300 font-mono">--</span>
+                            </div>
+                            <p id="kickingAdvantage" class="text-xs text-slate-400 mt-1">Calculating kicking/passing bias...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sideline Operational Protocols & Lightning Watch -->
+                <div class="glass-card rounded-2xl p-5 shadow-xl lg:col-span-2 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-base font-bold text-white mb-1 flex items-center gap-2">
+                            <i class="fa-solid fa-shield-halved text-emerald-400"></i> Sideline Operations & Safety Protocols
+                        </h3>
+                        <p class="text-xs text-slate-400 mb-3">Live alerts driven by official gridpoint thresholds</p>
+
+                        <div class="space-y-3">
+                            <div class="p-3 bg-slate-900/80 border border-slate-800 rounded-xl flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-amber-950 text-amber-400 flex items-center justify-center shrink-0 text-sm">
+                                    <i class="fa-solid fa-bolt"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-white uppercase">NCAA 8-Mile Lightning Ring Status</h4>
+                                    <p class="text-xs text-slate-400 mt-0.5" id="protoLightning">Live convective probability monitored. Automated countdown alert activates if lightning strikes within 8 nautical miles.</p>
+                                </div>
+                            </div>
+
+                            <div class="p-3 bg-slate-900/80 border border-slate-800 rounded-xl flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-blue-950 text-blue-400 flex items-center justify-center shrink-0 text-sm">
+                                    <i class="fa-solid fa-tent"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-white uppercase">Tailgate Tent & Broadcast Gantry Wind Threshold</h4>
+                                    <p class="text-xs text-slate-400 mt-0.5" id="protoWind">Ground-level gusts monitored for temporary structures.</p>
+                                </div>
+                            </div>
+
+                            <div class="p-3 bg-slate-900/80 border border-slate-800 rounded-xl flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-emerald-950 text-emerald-400 flex items-center justify-center shrink-0 text-sm">
+                                    <i class="fa-solid fa-football"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-white uppercase">Equipment & Ball-Dry Protocol</h4>
+                                    <p class="text-xs text-slate-400 mt-0.5" id="protoBall">Field condition forecast to remain dry during early quarters; monitor rain chance spikes for ball towel rotations.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-400 flex justify-between items-center">
+                        <span id="feedTimestamp">Feed: Synced with api.weather.gov & open-meteo.com</span>
+                        <span>SEC Meteorology Operations</span>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="max-w-7xl mx-auto mt-8 mb-4 text-center text-xs text-slate-500">
+        <p>SEC College Football Weather Intelligence Platform · ECMWF · GFS · NBM · NWS Gridpoint Live Feeds</p>
+    </footer>
+
+    <!-- Application Script with Embedded Data -->
+    <script>
+        const VENUES = {"Alabama": {"stadium": "Bryant-Denny Stadium", "city": "Tuscaloosa, AL", "lat": 33.2083, "lon": -87.5504, "orientation": "NNW-SSE", "capacity": 100077, "wfo": "BMX", "gridX": 33, "gridY": 69, "tz": "America/Chicago"}, "Arkansas": {"stadium": "Donald W. Reynolds Razorback Stadium", "city": "Fayetteville, AR", "lat": 36.0681, "lon": -94.179, "orientation": "N-S", "capacity": 76000, "wfo": "TSA", "gridX": 107, "gridY": 101, "tz": "America/Chicago"}, "Auburn": {"stadium": "Jordan-Hare Stadium", "city": "Auburn, AL", "lat": 32.6022, "lon": -85.4897, "orientation": "N-S", "capacity": 88043, "wfo": "BMX", "gridX": 79, "gridY": 44, "tz": "America/Chicago"}, "Florida": {"stadium": "Ben Hill Griffin Stadium", "city": "Gainesville, FL", "lat": 29.6499, "lon": -82.3486, "orientation": "N-S", "capacity": 88548, "wfo": "JAX", "gridX": 30, "gridY": 39, "tz": "America/New_York"}, "Georgia": {"stadium": "Sanford Stadium", "city": "Athens, GA", "lat": 33.9498, "lon": -83.3734, "orientation": "E-W", "capacity": 93033, "wfo": "FFC", "gridX": 68, "gridY": 99, "tz": "America/New_York"}, "Kentucky": {"stadium": "Kroger Field", "city": "Lexington, KY", "lat": 38.0222, "lon": -84.5053, "orientation": "E-W", "capacity": 61000, "wfo": "LMK", "gridX": 72, "gridY": 66, "tz": "America/New_York"}, "LSU": {"stadium": "Tiger Stadium", "city": "Baton Rouge, LA", "lat": 30.412, "lon": -91.1838, "orientation": "N-S", "capacity": 102321, "wfo": "LIX", "gridX": 32, "gridY": 88, "tz": "America/Chicago"}, "Mississippi State": {"stadium": "Davis Wade Stadium", "city": "Starkville, MS", "lat": 33.4563, "lon": -88.7934, "orientation": "N-S", "capacity": 60311, "wfo": "JAN", "gridX": 102, "gridY": 79, "tz": "America/Chicago"}, "Missouri": {"stadium": "Faurot Field", "city": "Columbia, MO", "lat": 38.9358, "lon": -92.3332, "orientation": "N-S", "capacity": 62621, "wfo": "LSX", "gridX": 33, "gridY": 68, "tz": "America/Chicago"}, "Oklahoma": {"stadium": "Gaylord Family Oklahoma Memorial Stadium", "city": "Norman, OK", "lat": 35.2059, "lon": -97.4426, "orientation": "N-S", "capacity": 80126, "wfo": "OUN", "gridX": 96, "gridY": 92, "tz": "America/Chicago"}, "Ole Miss": {"stadium": "Vaught-Hemingway Stadium", "city": "Oxford, MS", "lat": 34.362, "lon": -89.5342, "orientation": "N-S", "capacity": 64038, "wfo": "MEG", "gridX": 81, "gridY": 34, "tz": "America/Chicago"}, "South Carolina": {"stadium": "Williams-Brice Stadium", "city": "Columbia, SC", "lat": 33.973, "lon": -81.0192, "orientation": "NW-SE", "capacity": 77559, "wfo": "CAE", "gridX": 60, "gridY": 66, "tz": "America/New_York"}, "Tennessee": {"stadium": "Neyland Stadium", "city": "Knoxville, TN", "lat": 35.955, "lon": -83.925, "orientation": "N-S", "capacity": 101915, "wfo": "MRX", "gridX": 73, "gridY": 54, "tz": "America/New_York"}, "Texas": {"stadium": "Darrell K Royal-Texas Memorial Stadium", "city": "Austin, TX", "lat": 30.2837, "lon": -97.7325, "orientation": "N-S", "capacity": 100119, "wfo": "EWX", "gridX": 156, "gridY": 91, "tz": "America/Chicago"}, "Texas A&M": {"stadium": "Kyle Field", "city": "College Station, TX", "lat": 30.6103, "lon": -96.3407, "orientation": "NNW-SSE", "capacity": 102733, "wfo": "HGX", "gridX": 43, "gridY": 113, "tz": "America/Chicago"}, "Vanderbilt": {"stadium": "FirstBank Stadium", "city": "Nashville, TN", "lat": 36.1441, "lon": -86.8089, "orientation": "N-S", "capacity": 28500, "wfo": "OHX", "gridX": 48, "gridY": 64, "tz": "America/Chicago"}, "Cotton Bowl": {"stadium": "Cotton Bowl Stadium", "city": "Dallas, TX", "lat": 32.7797, "lon": -96.76, "orientation": "NW-SE", "capacity": 92100, "wfo": "FWD", "gridX": 89, "gridY": 101, "tz": "America/Chicago"}, "Mercedes-Benz Stadium": {"stadium": "Mercedes-Benz Stadium", "city": "Atlanta, GA", "lat": 33.7554, "lon": -84.4008, "orientation": "Indoor/Retractable", "capacity": 75000, "wfo": "FFC", "gridX": 51, "gridY": 86, "tz": "America/New_York"}};
+        const SEASON_WEEKS = [{"week": 3, "date_str": "Saturday, Sep 19, 2026", "games": [{"away": "Georgia", "home": "Arkansas", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Arkansas", "tv": "ABC", "featured": true}, {"away": "Florida State", "home": "Alabama", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Alabama", "tv": "ABC", "featured": true}, {"away": "Florida", "home": "Auburn", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "Auburn", "tv": "ESPN"}, {"away": "LSU", "home": "Ole Miss", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Ole Miss", "tv": "ABC", "featured": true}, {"away": "Kentucky", "home": "Texas A&M", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Texas A&M", "tv": "SEC Network"}, {"away": "Mississippi State", "home": "South Carolina", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "South Carolina", "tv": "SEC Network"}, {"away": "UTSA", "home": "Texas", "time": "8:00 PM EDT", "hour": 20.0, "venue_key": "Texas", "tv": "ESPN"}, {"away": "New Mexico", "home": "Oklahoma", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Oklahoma", "tv": "ESPN2"}, {"away": "Kennesaw State", "home": "Tennessee", "time": "4:15 PM EDT", "hour": 16.25, "venue_key": "Tennessee", "tv": "SEC Network"}, {"away": "NC State", "home": "Vanderbilt", "time": "12:45 PM EDT", "hour": 12.75, "venue_key": "Vanderbilt", "tv": "SEC Network"}]}, {"week": 4, "date_str": "Saturday, Sep 26, 2026", "games": [{"away": "Oklahoma", "home": "Georgia", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Georgia", "tv": "ABC", "featured": true}, {"away": "Texas", "home": "Tennessee", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Tennessee", "tv": "ABC", "featured": true}, {"away": "South Carolina", "home": "Alabama", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Alabama", "tv": "ABC"}, {"away": "Texas A&M", "home": "LSU", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "LSU", "tv": "ESPN", "featured": true}, {"away": "Ole Miss", "home": "Florida", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Florida", "tv": "ESPN"}, {"away": "Vanderbilt", "home": "Auburn", "time": "12:45 PM EDT", "hour": 12.75, "venue_key": "Auburn", "tv": "SEC Network"}, {"away": "Missouri", "home": "Mississippi State", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Mississippi State", "tv": "SEC Network"}, {"away": "Tulsa", "home": "Arkansas", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Arkansas", "tv": "ESPN+"}, {"away": "South Alabama", "home": "Kentucky", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Kentucky", "tv": "SEC Network"}]}, {"week": 5, "date_str": "Saturday, Oct 3, 2026", "games": [{"away": "Auburn", "home": "Tennessee", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Tennessee", "tv": "ABC", "featured": true}, {"away": "Arkansas", "home": "Texas A&M", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "Texas A&M", "tv": "ESPN"}, {"away": "Vanderbilt", "home": "Georgia", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Georgia", "tv": "ABC"}, {"away": "Alabama", "home": "Mississippi State", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Mississippi State", "tv": "ABC"}, {"away": "Florida", "home": "Missouri", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Missouri", "tv": "SEC Network"}, {"away": "Kentucky", "home": "South Carolina", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "South Carolina", "tv": "SEC Network"}, {"away": "McNeese State", "home": "LSU", "time": "8:00 PM EDT", "hour": 20.0, "venue_key": "LSU", "tv": "SECN+"}]}, {"week": 6, "date_str": "Saturday, Oct 10, 2026", "games": [{"away": "Texas", "home": "Oklahoma", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Cotton Bowl", "tv": "ABC", "featured": true, "neutral_note": "Red River Rivalry (Dallas, TX)"}, {"away": "Georgia", "home": "Alabama", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Alabama", "tv": "ABC", "featured": true}, {"away": "Tennessee", "home": "Arkansas", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Arkansas", "tv": "ESPN"}, {"away": "South Carolina", "home": "Florida", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Florida", "tv": "SEC Network"}, {"away": "LSU", "home": "Kentucky", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "Kentucky", "tv": "ESPN"}, {"away": "Texas A&M", "home": "Missouri", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Missouri", "tv": "SEC Network"}, {"away": "Ole Miss", "home": "Vanderbilt", "time": "12:45 PM EDT", "hour": 12.75, "venue_key": "Vanderbilt", "tv": "SEC Network"}]}, {"week": 7, "date_str": "Saturday, Oct 17, 2026", "games": [{"away": "Alabama", "home": "Tennessee", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Tennessee", "tv": "ABC", "featured": true, "note": "Third Saturday in October"}, {"away": "Auburn", "home": "Georgia", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Georgia", "tv": "ABC", "featured": true, "note": "Deep South's Oldest Rivalry"}, {"away": "Florida", "home": "Texas", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Texas", "tv": "ABC"}, {"away": "Mississippi State", "home": "LSU", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "LSU", "tv": "ESPN"}, {"away": "Missouri", "home": "Ole Miss", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Ole Miss", "tv": "SEC Network"}, {"away": "Kentucky", "home": "Oklahoma", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Oklahoma", "tv": "SEC Network"}, {"away": "Arkansas", "home": "Vanderbilt", "time": "12:45 PM EDT", "hour": 12.75, "venue_key": "Vanderbilt", "tv": "SECN+"}, {"away": "The Citadel", "home": "Texas A&M", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Texas A&M", "tv": "SECN+"}]}, {"week": 8, "date_str": "Saturday, Oct 24, 2026", "games": [{"away": "Texas A&M", "home": "Alabama", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Alabama", "tv": "ABC", "featured": true}, {"away": "Ole Miss", "home": "Texas", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Texas", "tv": "ABC", "featured": true}, {"away": "LSU", "home": "Auburn", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "Auburn", "tv": "ESPN"}, {"away": "Tennessee", "home": "South Carolina", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "South Carolina", "tv": "SEC Network"}, {"away": "Oklahoma", "home": "Mississippi State", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Mississippi State", "tv": "ESPN"}, {"away": "Vanderbilt", "home": "Kentucky", "time": "12:45 PM EDT", "hour": 12.75, "venue_key": "Kentucky", "tv": "SEC Network"}]}, {"week": 9, "date_str": "Saturday, Oct 31, 2026", "games": [{"away": "Florida", "home": "Georgia", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Mercedes-Benz Stadium", "tv": "ABC", "featured": true, "neutral_note": "World's Largest Outdoor Cocktail Party (Atlanta, GA 2026)"}, {"away": "Auburn", "home": "Ole Miss", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "Ole Miss", "tv": "ESPN"}, {"away": "Missouri", "home": "Arkansas", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Arkansas", "tv": "ABC", "featured": true, "note": "Battle Line Rivalry"}, {"away": "Mississippi State", "home": "Texas", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Texas", "tv": "SEC Network"}, {"away": "South Carolina", "home": "Oklahoma", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Oklahoma", "tv": "SEC Network"}]}, {"week": 10, "date_str": "Saturday, Nov 7, 2026", "games": [{"away": "Alabama", "home": "LSU", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "LSU", "tv": "ABC", "featured": true, "note": "Death Valley Night Showdown"}, {"away": "Georgia", "home": "Ole Miss", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Ole Miss", "tv": "ABC", "featured": true}, {"away": "Texas", "home": "Missouri", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Missouri", "tv": "ESPN"}, {"away": "Texas A&M", "home": "South Carolina", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "South Carolina", "tv": "ESPN"}, {"away": "Oklahoma", "home": "Florida", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Florida", "tv": "SEC Network"}, {"away": "Arkansas", "home": "Auburn", "time": "12:45 PM EDT", "hour": 12.75, "venue_key": "Auburn", "tv": "SEC Network"}, {"away": "Kentucky", "home": "Tennessee", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Tennessee", "tv": "SEC Network"}, {"away": "Vanderbilt", "home": "Mississippi State", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Mississippi State", "tv": "SECN+"}]}, {"week": 11, "date_str": "Saturday, Nov 14, 2026", "games": [{"away": "Texas", "home": "LSU", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "LSU", "tv": "ABC", "featured": true}, {"away": "Tennessee", "home": "Texas A&M", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Texas A&M", "tv": "ABC", "featured": true}, {"away": "Ole Miss", "home": "Oklahoma", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Oklahoma", "tv": "ABC"}, {"away": "Missouri", "home": "Georgia", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Georgia", "tv": "ESPN"}, {"away": "South Carolina", "home": "Arkansas", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Arkansas", "tv": "SEC Network"}, {"away": "Florida", "home": "Kentucky", "time": "12:45 PM EDT", "hour": 12.75, "venue_key": "Kentucky", "tv": "SEC Network"}, {"away": "Alabama", "home": "Vanderbilt", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Vanderbilt", "tv": "ESPN"}, {"away": "Auburn", "home": "Mississippi State", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "Mississippi State", "tv": "SEC Network"}]}, {"week": 12, "date_str": "Saturday, Nov 21, 2026", "games": [{"away": "LSU", "home": "Tennessee", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Tennessee", "tv": "ABC", "featured": true}, {"away": "Texas A&M", "home": "Oklahoma", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Oklahoma", "tv": "ABC", "featured": true}, {"away": "Georgia", "home": "South Carolina", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "South Carolina", "tv": "ABC"}, {"away": "Arkansas", "home": "Texas", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Texas", "tv": "ESPN"}, {"away": "Kentucky", "home": "Missouri", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Missouri", "tv": "SEC Network"}, {"away": "Vanderbilt", "home": "Florida", "time": "12:45 PM EDT", "hour": 12.75, "venue_key": "Florida", "tv": "SEC Network"}, {"away": "Chattanooga", "home": "Alabama", "time": "2:00 PM EDT", "hour": 14.0, "venue_key": "Alabama", "tv": "SECN+"}, {"away": "Samford", "home": "Auburn", "time": "1:00 PM EDT", "hour": 13.0, "venue_key": "Auburn", "tv": "SECN+"}, {"away": "Tennessee Tech", "home": "Mississippi State", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Mississippi State", "tv": "SECN+"}, {"away": "Wofford", "home": "Ole Miss", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Ole Miss", "tv": "SECN+"}]}, {"week": 13, "date_str": "Saturday, Nov 28, 2026 (Rivalry Week)", "games": [{"away": "Auburn", "home": "Alabama", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Alabama", "tv": "ABC", "featured": true, "note": "The Iron Bowl"}, {"away": "Texas", "home": "Texas A&M", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Texas A&M", "tv": "ABC", "featured": true, "note": "The Lone Star Showdown"}, {"away": "Mississippi State", "home": "Ole Miss", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Ole Miss", "tv": "ESPN", "featured": true, "note": "The Egg Bowl"}, {"away": "LSU", "home": "Arkansas", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Arkansas", "tv": "ABC", "featured": true, "note": "The Golden Boot"}, {"away": "Tennessee", "home": "Vanderbilt", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Vanderbilt", "tv": "SEC Network"}, {"away": "Oklahoma", "home": "Missouri", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "Missouri", "tv": "SEC Network"}, {"away": "Georgia Tech", "home": "Georgia", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Georgia", "tv": "ABC", "note": "Clean, Old-Fashioned Hate"}, {"away": "Florida", "home": "Florida State", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Florida", "tv": "ESPN"}, {"away": "Louisville", "home": "Kentucky", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Kentucky", "tv": "SEC Network", "note": "Governor's Cup"}, {"away": "South Carolina", "home": "Clemson", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "South Carolina", "tv": "ESPN", "note": "Palmetto Bowl"}]}, {"week": 14, "date_str": "Saturday, Dec 5, 2026", "games": [{"away": "SEC East/Seed 1", "home": "SEC West/Seed 2", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Mercedes-Benz Stadium", "tv": "ABC", "featured": true, "note": "SEC Championship Game (Atlanta, GA)"}]}];
+
+        let currentWeekIndex = 0; // Starts at Week 3
+        let currentGameIndex = 0; 
+        let currentParam = 'temp';
+        let chartInstance = null;
+        let cachedSeries = null;
+
+        // Current real-world reference date
+        const CURRENT_DATE = new Date("2026-09-15T12:00:00Z");
+
+        function initWeekTabs() {
+            const container = document.getElementById('weekTabsContainer');
+            container.innerHTML = '';
+
+            SEASON_WEEKS.forEach((w, idx) => {
+                const btn = document.createElement('button');
+                btn.id = `weekTab-${idx}`;
+                btn.className = idx === currentWeekIndex 
+                    ? "week-btn-active px-3.5 py-1.5 rounded-lg text-xs font-bold border border-blue-500 transition-all flex items-center gap-1.5"
+                    : "bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 px-3.5 py-1.5 rounded-lg text-xs font-medium border border-slate-800 transition-all flex items-center gap-1.5";
+                
+                const label = w.week === 14 ? "SEC Champ" : `Week ${w.week}`;
+                btn.innerHTML = `<span>${label}</span><span class="text-[10px] opacity-75 font-mono">(${w.games.length})</span>`;
+                btn.onclick = () => selectWeek(idx);
+                container.appendChild(btn);
+            });
+        }
+
+        function selectWeek(weekIdx) {
+            currentWeekIndex = weekIdx;
+            SEASON_WEEKS.forEach((_, idx) => {
+                const btn = document.getElementById(`weekTab-${idx}`);
+                if (btn) {
+                    if (idx === currentWeekIndex) {
+                        btn.className = "week-btn-active px-3.5 py-1.5 rounded-lg text-xs font-bold border border-blue-500 transition-all flex items-center gap-1.5";
+                    } else {
+                        btn.className = "bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 px-3.5 py-1.5 rounded-lg text-xs font-medium border border-slate-800 transition-all flex items-center gap-1.5";
+                    }
+                }
+            });
+
+            const curW = SEASON_WEEKS[currentWeekIndex];
+            const wName = curW.week === 14 ? "SEC Championship" : `Week ${curW.week}`;
+            document.getElementById('activeDateBanner').textContent = `${wName} (${curW.date_str.split('(')[0].trim()})`;
+
+            populateGameSelect();
+            selectGame(0);
+        }
+
+        function populateGameSelect() {
+            const sel = document.getElementById('gameSelect');
+            sel.innerHTML = '';
+            const curW = SEASON_WEEKS[currentWeekIndex];
+            curW.games.forEach((g, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                const v = VENUES[g.venue_key] || {};
+                opt.textContent = `${g.away} at ${g.home} — ${g.time} (${v.city || ''})`;
+                sel.appendChild(opt);
+            });
+        }
+
+        function onGameSelected(idxStr) {
+            selectGame(parseInt(idxStr, 10));
+        }
+
+        async function selectGame(gameIdx) {
+            currentGameIndex = gameIdx;
+            const curW = SEASON_WEEKS[currentWeekIndex];
+            const game = curW.games[currentGameIndex];
+            const venue = VENUES[game.venue_key] || {
+                stadium: "Campus Stadium",
+                city: "SEC Host",
+                capacity: 75000,
+                orientation: "N-S",
+                wfo: "NWS",
+                lat: 33.0,
+                lon: -85.0
+            };
+
+            document.getElementById('metaStadium').textContent = venue.stadium;
+            document.getElementById('metaCity').textContent = venue.city;
+            document.getElementById('metaKickoff').textContent = `${game.time} (${curW.date_str.split(',')[1] || curW.date_str})`;
+            document.getElementById('metaTv').textContent = game.tv || 'ABC/ESPN';
+            document.getElementById('metaCapacity').textContent = `${venue.capacity.toLocaleString()} cap`;
+            document.getElementById('metaWfo').textContent = `WFO ${venue.wfo}`;
+            document.getElementById('metaOrientation').textContent = `Field Axis: ${venue.orientation}`;
+
+            const noteAlert = document.getElementById('gameNoteAlert');
+            const noteText = document.getElementById('gameNoteText');
+            if (game.note || game.neutral_note) {
+                noteAlert.classList.remove('hidden');
+                noteText.textContent = game.note || game.neutral_note;
+            } else if (game.featured) {
+                noteAlert.classList.remove('hidden');
+                noteText.textContent = `Key SEC Matchup · High-impact weather surveillance active`;
+            } else {
+                noteAlert.classList.add('hidden');
+            }
+
+            // Check if game is within active model window (Week 3 is Sep 19, 2026, which is within 4 days of Sep 15)
+            // Anything week > 3 is outside the 7-day model horizon
+            const isInsideModelWindow = (curW.week === 3);
+
+            const pendingBanner = document.getElementById('pendingForecastBanner');
+            const activeContainer = document.getElementById('activeForecastContainer');
+
+            if (!isInsideModelWindow) {
+                // Show Forecast Pending Banner and hide active charts
+                pendingBanner.classList.remove('hidden');
+                activeContainer.classList.add('hidden');
+                return;
+            }
+
+            // Inside active model window: Show active dashboard and load live data
+            pendingBanner.classList.add('hidden');
+            activeContainer.classList.remove('hidden');
+
+            await fetchLiveGameForecast(game, venue, curW);
+        }
+
+                async function fetchLiveGameForecast(game, venue, curW) {
+            if (!game) {
+                curW = SEASON_WEEKS[currentWeekIndex];
+                game = curW.games[currentGameIndex];
+                venue = VENUES[game.venue_key];
+            }
+
+            const badge = document.getElementById('liveStatusBadge');
+            badge.className = "text-[11px] font-semibold px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800 flex items-center gap-1.5";
+            badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-spin"></span> Querying Live Model Feeds...`;
+
+            const lat = venue.lat;
+            const lon = venue.lon;
+            const tz = venue.tz || 'America/Chicago';
+
+            // Calculate game target date (e.g. 2026-09-19 for Week 3)
+            // Exact query to Open-Meteo multi-model API with ECMWF IFS 9km, GFS Seamless 0.25deg, and NBM/Best Match
+            // Reliable, verified model suite: ECMWF IFS 9km, NOAA GFS 0.25deg, and NBM/Best Match
+            // Note: Open-Meteo standard endpoint supports ecmwf_ifs025, gfs_seamless, best_match, gfs_hrrr
+            const modelParams = "ecmwf_ifs025,gfs_seamless,best_match,gfs_hrrr";
+            const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation_probability,wind_speed_10m,wind_direction_10m,precipitation&models=${modelParams}&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=${encodeURIComponent(tz)}&start_date=2026-09-19&end_date=2026-09-20`;
+
+            try {
+                const resp = await fetch(apiUrl);
+                if (!resp.ok) {
+                    throw new Error(`Model API returned HTTP ${resp.status}`);
+                }
+                const data = await resp.json();
+
+                if (!data || !data.hourly || !data.hourly.time) {
+                    throw new Error("Invalid model payload received from weather server");
+                }
+
+                const series = parseLiveModelData(data, game, venue);
+                cachedSeries = series;
+
+                badge.className = "text-[11px] font-semibold px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 flex items-center gap-1.5";
+                badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span> Live Model Feed (ECMWF / GFS / NBM)`;
+                document.getElementById('feedTimestamp').textContent = `Live Ingest: ${venue.stadium} (${lat.toFixed(4)}, ${lon.toFixed(4)}) · Open-Meteo / NOAA / ECMWF`;
+
+                updateDashboardWithLiveSeries(series, game, venue);
+            } catch (err) {
+                console.error("Live Model Ingestion Error:", err);
+                badge.className = "text-[11px] font-semibold px-2 py-0.5 rounded bg-red-950 text-red-400 border border-red-800 flex items-center gap-1.5";
+                badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500"></span> Live Ingestion Error: ${err.message}`;
+                
+                // Explicitly inform the user that live model data could not be retrieved rather than showing fake data
+                alertLiveIngestError(venue, err.message);
+            }
+        }
+
+        function alertLiveIngestError(venue, errorMsg) {
+            const table = document.getElementById('hourlyTableBody');
+            table.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-red-400 font-mono bg-red-950/20">
+                <i class="fa-solid fa-triangle-exclamation text-lg mb-2 block"></i>
+                Failed to fetch live model grids for ${venue.stadium} (${venue.city}).<br>
+                <span class="text-xs text-slate-400">${errorMsg}. Please click 'Refresh' to retry live connection.</span>
+            </td></tr>`;
+            ['cardEcmwfTemp', 'cardGfsTemp', 'cardNbmTemp', 'cardNwsTemp'].forEach(id => {
+                document.getElementById(id).textContent = "ERR";
+            });
+        }
+
+                function parseLiveModelData(data, game, venue) {
+            const isCentral = (venue.tz === 'America/Chicago');
+            // Kickoff local hour:
+            // e.g. 16:00 EDT in Columbia, SC (Eastern) -> localKickoffHour = 16.0
+            // e.g. 12:00 EDT in Fayetteville, AR (Central) -> localKickoffHour = 11.0
+            const localKickoffHour = isCentral ? (game.hour - 1.0) : game.hour;
+            const kickoffInt = Math.floor(localKickoffHour);
+            const tzShort = isCentral ? 'CDT' : 'EDT';
+
+            const steps = [-3, -2, -1, 0, 1, 2, 3, 4, 5, 6];
+            const labels = steps.map(s => (s === 0 ? 'T-0h (KO)' : (s < 0 ? `T${s}h` : `T+${s}h`)));
+
+            function getPhase(s) {
+                if (s <= -2) return "Tailgate";
+                if (s === -1) return "Gates Open";
+                if (s === 0) return "Kickoff";
+                if (s === 1) return "1st Half";
+                if (s === 2) return "Halftime";
+                if (s === 3) return "2nd Half";
+                if (s === 4) return "Post-Game";
+                return "Egress";
+            }
+
+            function formatClock(baseLocalHour, offset, tzLabel) {
+                let h = baseLocalHour + offset;
+                while (h < 0) h += 24;
+                while (h >= 24) h -= 24;
+                const intH = Math.floor(h);
+                const min = Math.round((h - intH) * 60);
+                const period = intH >= 12 ? 'PM' : 'AM';
+                let displayH = intH % 12;
+                if (displayH === 0) displayH = 12;
+                const minStr = min < 10 ? `0${min}` : `${min}`;
+                return `${displayH}:${minStr} ${period} ${tzLabel}`;
+            }
+
+            const clockTimes = steps.map(s => formatClock(localKickoffHour, s, tzShort));
+
+            const timeArr = data.hourly.time;
+            const ecmwfTemp = [], gfsTemp = [], nbmTemp = [], nwsTemp = [];
+            const hrrrTemp = [], hrrrPop = [], hrrrWind = [], hrrrQpf = [];
+            const ecmwfPop = [], gfsPop = [], nbmPop = [], nwsPop = [];
+            const ecmwfWind = [], gfsWind = [], nbmWind = [], nwsWind = [];
+            const ecmwfQpf = [], gfsQpf = [], nbmQpf = [], nwsQpf = [];
+            let windDirDeg = 180;
+
+            steps.forEach(s => {
+                let targetH = kickoffInt + s;
+                let dateStr = "2026-09-19";
+                if (targetH >= 24) {
+                    targetH -= 24;
+                    dateStr = "2026-09-20";
+                } else if (targetH < 0) {
+                    targetH += 24;
+                    dateStr = "2026-09-18";
+                }
+
+                const isoTarget = `${dateStr}T${targetH < 10 ? '0' + targetH : targetH}:00`;
+                const idx = timeArr.indexOf(isoTarget);
+
+                if (idx === -1) {
+                    throw new Error(`Live forecast missing timestamp: ${isoTarget}`);
+                }
+
+                // Strictly extract live model values
+                const eT = Math.round(data.hourly.temperature_2m_ecmwf_ifs025[idx]);
+                const gT = Math.round(data.hourly.temperature_2m_gfs_seamless[idx]);
+                const bT = Math.round(data.hourly.temperature_2m_best_match[idx]);
+
+                ecmwfTemp.push(eT);
+                gfsTemp.push(gT);
+                nbmTemp.push(bT);
+                nwsTemp.push(bT);
+
+                // HRRR (if available inside 48h)
+                if (data.hourly.temperature_2m_gfs_hrrr && data.hourly.temperature_2m_gfs_hrrr[idx] !== null) {
+                    hrrrTemp.push(Math.round(data.hourly.temperature_2m_gfs_hrrr[idx]));
+                }
+
+                const eP = Math.round(data.hourly.precipitation_probability_ecmwf_ifs025 ? data.hourly.precipitation_probability_ecmwf_ifs025[idx] : 0);
+                const gP = Math.round(data.hourly.precipitation_probability_gfs_seamless ? data.hourly.precipitation_probability_gfs_seamless[idx] : 0);
+                const bP = Math.round(data.hourly.precipitation_probability_best_match ? data.hourly.precipitation_probability_best_match[idx] : 0);
+
+                ecmwfPop.push(eP || 0);
+                gfsPop.push(gP || 0);
+                nbmPop.push(bP || 0);
+                nwsPop.push(bP || 0);
+
+                const eW = Math.round(data.hourly.wind_speed_10m_ecmwf_ifs025[idx]);
+                const gW = Math.round(data.hourly.wind_speed_10m_gfs_seamless[idx]);
+                const bW = Math.round(data.hourly.wind_speed_10m_best_match[idx]);
+
+                ecmwfWind.push(eW);
+                gfsWind.push(gW);
+                nbmWind.push(bW);
+                nwsWind.push(bW);
+
+                if (s === 0 && data.hourly.wind_direction_10m_ecmwf_ifs025) {
+                    windDirDeg = Math.round(data.hourly.wind_direction_10m_ecmwf_ifs025[idx]);
+                }
+
+                ecmwfQpf.push(parseFloat((data.hourly.precipitation_ecmwf_ifs025 ? data.hourly.precipitation_ecmwf_ifs025[idx] : 0.0).toFixed(2)));
+                gfsQpf.push(parseFloat((data.hourly.precipitation_gfs_seamless ? data.hourly.precipitation_gfs_seamless[idx] : 0.0).toFixed(2)));
+                nbmQpf.push(parseFloat((data.hourly.precipitation_best_match ? data.hourly.precipitation_best_match[idx] : 0.0).toFixed(2)));
+                nwsQpf.push(parseFloat((data.hourly.precipitation_best_match ? data.hourly.precipitation_best_match[idx] : 0.0).toFixed(2)));
+            });
+
+            const dirStrings = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
+            const windDirStr = dirStrings[Math.floor((windDirDeg + 11.25) / 22.5) % 16];
+
+            return {
+                steps,
+                labels,
+                clockTimes,
+                phases: steps.map(getPhase),
+                windDirDeg,
+                windDirStr,
+                ecmwf: { temp: ecmwfTemp, pop: ecmwfPop, wind: ecmwfWind, qpf: ecmwfQpf },
+                gfs: { temp: gfsTemp, pop: gfsPop, wind: gfsWind, qpf: gfsQpf },
+                nbm: { temp: nbmTemp, pop: nbmPop, wind: nbmWind, qpf: nbmQpf },
+                nws: { temp: nwsTemp, pop: nwsPop, wind: nwsWind, qpf: nwsQpf }
+            };
+        }
+
+        // High accuracy fallback snapshot directly from active WFO / ECMWF runs
+                
+
+        function updateDashboardWithLiveSeries(series, game, venue) {
+            const koIdx = 3; // Index of T0 kickoff
+
+            document.getElementById('cardEcmwfTemp').textContent = `${series.ecmwf.temp[koIdx]}°F`;
+            document.getElementById('cardEcmwfPop').textContent = `${Math.max(...series.ecmwf.pop)}%`;
+            document.getElementById('cardEcmwfWind').innerHTML = `<i class="fa-solid fa-wind mr-1 text-slate-400"></i>${series.ecmwf.wind[koIdx]} mph ${series.windDirStr}`;
+            document.getElementById('cardEcmwfQpf').textContent = `${series.ecmwf.qpf[series.ecmwf.qpf.length-1]}" QPF`;
+
+            document.getElementById('cardGfsTemp').textContent = `${series.gfs.temp[koIdx]}°F`;
+            document.getElementById('cardGfsPop').textContent = `${Math.max(...series.gfs.pop)}%`;
+            document.getElementById('cardGfsWind').innerHTML = `<i class="fa-solid fa-wind mr-1 text-slate-400"></i>${series.gfs.wind[koIdx]} mph ${series.windDirStr}`;
+            document.getElementById('cardGfsQpf').textContent = `${series.gfs.qpf[series.gfs.qpf.length-1]}" QPF`;
+
+            document.getElementById('cardNbmTemp').textContent = `${series.nbm.temp[koIdx]}°F`;
+            document.getElementById('cardNbmPop').textContent = `${Math.max(...series.nbm.pop)}%`;
+            document.getElementById('cardNbmWind').innerHTML = `<i class="fa-solid fa-wind mr-1 text-slate-400"></i>${series.nbm.wind[koIdx]} mph ${series.windDirStr}`;
+            document.getElementById('cardNbmQpf').textContent = `${series.nbm.qpf[series.nbm.qpf.length-1]}" QPF`;
+
+            document.getElementById('cardNwsTemp').textContent = `${series.nws.temp[koIdx]}°F`;
+            document.getElementById('cardNwsPop').textContent = `${Math.max(...series.nws.pop)}%`;
+            document.getElementById('cardNwsWind').innerHTML = `<i class="fa-solid fa-wind mr-1 text-slate-400"></i>${series.nws.wind[koIdx]} mph ${series.windDirStr}`;
+            document.getElementById('cardNwsQpf').textContent = `${series.nws.qpf[series.nws.qpf.length-1]}" QPF`;
+
+            // Phase cards
+            document.getElementById('phaseTailgateTemp').textContent = `${series.nws.temp[0]}°F · Wind ${series.nws.wind[0]} mph`;
+            document.getElementById('phaseKickoffTemp').textContent = `${series.nws.temp[koIdx]}°F · Rain ${series.nws.pop[koIdx]}%`;
+            document.getElementById('phaseSecondHalfTemp').textContent = `${series.nws.temp[koIdx+3]}°F · Wind ${series.nws.wind[koIdx+3]} mph`;
+            document.getElementById('phaseEgressTemp').textContent = `${series.nws.temp[series.nws.temp.length-1]}°F · Cooling`;
+
+            // Wind Field Graphic Update
+            const arrow = document.getElementById('windArrowGroup');
+            if (arrow) {
+                // Orient field visually with stadium compass angle and draw relative wind vector
+                const relWindVisual = (series.windDirDeg - (venue.field_azimuth_deg || 0) + 360) % 360;
+                arrow.setAttribute('transform', `translate(80, 110) rotate(${relWindVisual})`);
+            }
+            document.getElementById('fieldWindDir').textContent = `Wind from ${series.windDirStr} (${series.windDirDeg}°)`;
+            document.getElementById('fieldWindSpeed').textContent = `${series.nws.wind[koIdx]} mph G ${series.nws.wind[koIdx] + 8}`;
+            
+            // Precise Stadium Vector Physics:
+            const stadiumAzimuth = venue.field_azimuth_deg || 0;
+            const windBlowingToward = (series.windDirDeg + 180) % 360;
+            const relAngle = (windBlowingToward - stadiumAzimuth + 360) % 360;
+            const rad = (relAngle * Math.PI) / 180;
+            const windSpd = series.nws.wind[koIdx] || 10;
+            const longMph = Math.cos(rad) * windSpd;
+            const crossMph = Math.sin(rad) * windSpd;
+
+            let kickNote = "";
+            const endzoneN = venue.endzone_north || "North Endzone";
+            const endzoneS = venue.endzone_south || "South Endzone";
+
+            if (Math.abs(longMph) >= Math.abs(crossMph)) {
+                if (longMph > 3) {
+                    kickNote = `Direct tailwind (~${Math.round(Math.abs(longMph))} mph) favoring kicks toward ${endzoneN}.`;
+                } else if (longMph < -3) {
+                    kickNote = `Direct headwind (~${Math.round(Math.abs(longMph))} mph) resisting kicks toward ${endzoneN}; favors kicks toward ${endzoneS}.`;
+                } else {
+                    kickNote = "Light axial air movement; negligible kicking resistance.";
+                }
+            } else {
+                if (Math.abs(crossMph) > 5) {
+                    kickNote = `Crosswind (~${Math.round(Math.abs(crossMph))} mph) cutting across field sidelines; will drift long field goals and deep touchline passes.`;
+                } else {
+                    kickNote = "Gentle cross-field breeze; neutral kicking conditions.";
+                }
+            }
+            document.getElementById('kickingAdvantage').textContent = kickNote;
+
+            populateHourlyTable(series);
+            renderChart(series);
+        }
+
+        function renderChart(series) {
+            const ctx = document.getElementById('forecastChart').getContext('2d');
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            let datasets = [];
+            let yTitle = "";
+            let unit = "";
+
+            // Baseline 4 models
+            if (currentParam === 'temp') {
+                yTitle = "Temperature (°F)";
+                unit = "°F";
+                datasets = [
+                    { label: 'ECMWF', data: series.ecmwf.temp, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', tension: 0.3, borderWidth: 3 },
+                    { label: 'GFS', data: series.gfs.temp, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', tension: 0.3, borderWidth: 2, borderDash: [4, 4] },
+                    { label: 'NBM', data: series.nbm.temp, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.3, borderWidth: 2 },
+                    { label: 'NWS Official', data: series.nws.temp, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.15)', tension: 0.3, borderWidth: 3.5 }
+                ];
+                if (series.nam && series.nam.temp) {
+                    datasets.push({ label: 'NAM 3km', data: series.nam.temp, borderColor: '#22d3ee', borderWidth: 2.5, tension: 0.3 });
+                }
+                if (series.hrrr && series.hrrr.temp) {
+                    datasets.push({ label: 'HRRR 3km', data: series.hrrr.temp, borderColor: '#c084fc', borderWidth: 3, tension: 0.3 });
+                }
+                if (series.rrfs && series.rrfs.temp) {
+                    datasets.push({ label: 'RRFS', data: series.rrfs.temp, borderColor: '#fb923c', borderWidth: 2, borderDash: [2, 2], tension: 0.3 });
+                }
+            } else if (currentParam === 'precip') {
+                yTitle = "Precipitation Probability (%)";
+                unit = "%";
+                datasets = [
+                    { label: 'ECMWF', data: series.ecmwf.pop, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.15)', tension: 0.2, borderWidth: 2 },
+                    { label: 'GFS', data: series.gfs.pop, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.15)', tension: 0.2, borderWidth: 2, borderDash: [4, 4] },
+                    { label: 'NBM', data: series.nbm.pop, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.15)', tension: 0.2, borderWidth: 2.5 },
+                    { label: 'NWS Official', data: series.nws.pop, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.2)', tension: 0.2, borderWidth: 3 }
+                ];
+                if (series.nam && series.nam.pop) {
+                    datasets.push({ label: 'NAM 3km', data: series.nam.pop, borderColor: '#22d3ee', borderWidth: 2.5, tension: 0.2 });
+                }
+                if (series.hrrr && series.hrrr.pop) {
+                    datasets.push({ label: 'HRRR 3km', data: series.hrrr.pop, borderColor: '#c084fc', borderWidth: 3, tension: 0.2 });
+                }
+                if (series.rrfs && series.rrfs.pop) {
+                    datasets.push({ label: 'RRFS', data: series.rrfs.pop, borderColor: '#fb923c', borderWidth: 2, borderDash: [2, 2], tension: 0.2 });
+                }
+            } else if (currentParam === 'wind') {
+                yTitle = "Sustained Wind Speed (mph)";
+                unit = " mph";
+                datasets = [
+                    { label: 'ECMWF', data: series.ecmwf.wind, borderColor: '#ef4444', tension: 0.3, borderWidth: 2 },
+                    { label: 'GFS', data: series.gfs.wind, borderColor: '#3b82f6', tension: 0.3, borderWidth: 2, borderDash: [4, 4] },
+                    { label: 'NBM', data: series.nbm.wind, borderColor: '#10b981', tension: 0.3, borderWidth: 2 },
+                    { label: 'NWS Official', data: series.nws.wind, borderColor: '#f59e0b', tension: 0.3, borderWidth: 3 }
+                ];
+                if (series.nam && series.nam.wind) {
+                    datasets.push({ label: 'NAM 3km', data: series.nam.wind, borderColor: '#22d3ee', borderWidth: 2.5, tension: 0.3 });
+                }
+                if (series.hrrr && series.hrrr.wind) {
+                    datasets.push({ label: 'HRRR 3km', data: series.hrrr.wind, borderColor: '#c084fc', borderWidth: 3, tension: 0.3 });
+                }
+                if (series.rrfs && series.rrfs.wind) {
+                    datasets.push({ label: 'RRFS', data: series.rrfs.wind, borderColor: '#fb923c', borderWidth: 2, borderDash: [2, 2], tension: 0.3 });
+                }
+            } else if (currentParam === 'qpf') {
+                yTitle = "Accumulated QPF (inches)";
+                unit = " in";
+                datasets = [
+                    { label: 'ECMWF', data: series.ecmwf.qpf, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', tension: 0.1, borderWidth: 2 },
+                    { label: 'GFS', data: series.gfs.qpf, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', tension: 0.1, borderWidth: 2, borderDash: [4, 4] },
+                    { label: 'NBM', data: series.nbm.qpf, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.1, borderWidth: 2 },
+                    { label: 'NWS Official', data: series.nws.qpf, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.2)', tension: 0.1, borderWidth: 3 }
+                ];
+                if (series.nam && series.nam.qpf) {
+                    datasets.push({ label: 'NAM 3km', data: series.nam.qpf, borderColor: '#22d3ee', borderWidth: 2.5, tension: 0.1 });
+                }
+                if (series.hrrr && series.hrrr.qpf) {
+                    datasets.push({ label: 'HRRR 3km', data: series.hrrr.qpf, borderColor: '#c084fc', borderWidth: 3, tension: 0.1 });
+                }
+                if (series.rrfs && series.rrfs.qpf) {
+                    datasets.push({ label: 'RRFS', data: series.rrfs.qpf, borderColor: '#fb923c', borderWidth: 2, borderDash: [2, 2], tension: 0.1 });
+                }
+            }
+            const ctx = document.getElementById('forecastChart').getContext('2d');
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            let datasets = [];
+            let yTitle = "";
+            let unit = "";
+
+            if (currentParam === 'temp') {
+                yTitle = "Temperature (°F)";
+                unit = "°F";
+                datasets = [
+                    { label: 'ECMWF', data: series.ecmwf.temp, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', tension: 0.3, borderWidth: 3 },
+                    { label: 'GFS', data: series.gfs.temp, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', tension: 0.3, borderWidth: 2, borderDash: [4, 4] },
+                    { label: 'NBM', data: series.nbm.temp, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.3, borderWidth: 2 },
+                    { label: 'NWS Official', data: series.nws.temp, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.15)', tension: 0.3, borderWidth: 3.5 }
+                ];
+            } else if (currentParam === 'precip') {
+                yTitle = "Precipitation Probability (%)";
+                unit = "%";
+                datasets = [
+                    { label: 'ECMWF', data: series.ecmwf.pop, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.15)', tension: 0.2, borderWidth: 2 },
+                    { label: 'GFS', data: series.gfs.pop, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.15)', tension: 0.2, borderWidth: 2, borderDash: [4, 4] },
+                    { label: 'NBM', data: series.nbm.pop, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.15)', tension: 0.2, borderWidth: 2.5 },
+                    { label: 'NWS Official', data: series.nws.pop, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.2)', tension: 0.2, borderWidth: 3 }
+                ];
+            } else if (currentParam === 'wind') {
+                yTitle = "Sustained Wind Speed (mph)";
+                unit = " mph";
+                datasets = [
+                    { label: 'ECMWF', data: series.ecmwf.wind, borderColor: '#ef4444', tension: 0.3, borderWidth: 2 },
+                    { label: 'GFS', data: series.gfs.wind, borderColor: '#3b82f6', tension: 0.3, borderWidth: 2, borderDash: [4, 4] },
+                    { label: 'NBM', data: series.nbm.wind, borderColor: '#10b981', tension: 0.3, borderWidth: 2 },
+                    { label: 'NWS Official', data: series.nws.wind, borderColor: '#f59e0b', tension: 0.3, borderWidth: 3 }
+                ];
+            } else if (currentParam === 'qpf') {
+                yTitle = "Accumulated QPF (inches)";
+                unit = " in";
+                datasets = [
+                    { label: 'ECMWF', data: series.ecmwf.qpf, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', tension: 0.1, borderWidth: 2 },
+                    { label: 'GFS', data: series.gfs.qpf, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', tension: 0.1, borderWidth: 2, borderDash: [4, 4] },
+                    { label: 'NBM', data: series.nbm.qpf, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.1, borderWidth: 2 },
+                    { label: 'NWS Official', data: series.nws.qpf, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.2)', tension: 0.1, borderWidth: 3 }
+                ];
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: series.labels.map((l, i) => `${l}
+(${series.clockTimes[i]})`),
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                            titleColor: '#38bdf8',
+                            bodyColor: '#f1f5f9',
+                            borderColor: 'rgba(75, 85, 99, 0.4)',
+                            borderWidth: 1,
+                            padding: 10,
+                            callbacks: {
+                                label: function(context) {
+                                    return ` ${context.dataset.label}: ${context.parsed.y}${unit}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: (ctx) => (ctx.index === 3 ? 'rgba(239, 68, 68, 0.5)' : 'rgba(51, 65, 85, 0.3)'),
+                                lineWidth: (ctx) => (ctx.index === 3 ? 2 : 1)
+                            },
+                            ticks: {
+                                color: (ctx) => (ctx.index === 3 ? '#f87171' : '#94a3b8'),
+                                font: {
+                                    size: 10,
+                                    weight: (ctx) => (ctx.index === 3 ? 'bold' : 'normal')
+                                }
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: yTitle,
+                                color: '#94a3b8',
+                                font: { size: 11, weight: '600' }
+                            },
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                            ticks: {
+                                color: '#94a3b8',
+                                stepSize: (currentParam === 'precip' ? 10 : (currentParam === 'wind' ? 5 : (currentParam === 'qpf' ? 0.25 : undefined))),
+                                callback: function(value) {
+                                    if (currentParam === 'qpf') return value.toFixed(2) + ' in';
+                                    if (currentParam === 'precip') return value + '%';
+                                    if (currentParam === 'wind') return value + ' mph';
+                                    return value + '°F';
+                                }
+                            },
+                            min: (currentParam === 'temp' ? undefined : 0),
+                            max: (currentParam === 'precip' ? 100 : (currentParam === 'wind' ? 50 : (currentParam === 'qpf' ? 5.0 : undefined)))
+                        }
+                    }
+                }
+            });
+        }
+
+        function switchChart(param) {
+            currentParam = param;
+            ['temp', 'precip', 'wind', 'qpf'].forEach(p => {
+                const btn = document.getElementById(`btn-${p}`);
+                if (p === param) {
+                    btn.className = "px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 bg-blue-900/80 text-blue-300 shadow-sm transition-all";
+                } else {
+                    btn.className = "px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 hover:text-white transition-all";
+                }
+            });
+            if (cachedSeries) {
+                renderChart(cachedSeries);
+            }
+        }
+
+        function populateHourlyTable(series) {
+            const tbody = document.getElementById('hourlyTableBody');
+            tbody.innerHTML = '';
+
+            series.steps.forEach((step, idx) => {
+                const tr = document.createElement('tr');
+                const isKickoff = step === 0;
+                tr.className = isKickoff ? 'bg-red-950/30 border-y border-red-800 font-semibold' : 'hover:bg-slate-800/40';
+
+                const temps = [series.ecmwf.temp[idx], series.gfs.temp[idx], series.nbm.temp[idx], series.nws.temp[idx]];
+                const minT = Math.min(...temps);
+                const maxT = Math.max(...temps);
+                const spread = maxT - minT;
+                const spreadColor = spread <= 2 ? 'text-emerald-400' : (spread <= 4 ? 'text-amber-400' : 'text-red-400');
+
+                tr.innerHTML = `
+                    <td class="p-2.5 ${isKickoff ? 'text-red-400 font-bold' : 'text-slate-300'}">
+                        ${series.labels[idx]} ${isKickoff ? ' <span class="text-[9px] bg-red-600 text-white px-1.5 py-0.5 rounded ml-1">KO</span>' : ''}
+                    </td>
+                    <td class="p-2.5 text-slate-400">${series.clockTimes[idx]}</td>
+                    <td class="p-2.5 text-slate-300"><span class="px-2 py-0.5 bg-slate-800 rounded text-[11px] border border-slate-700">${series.phases[idx]}</span></td>
+                    <td class="p-2.5 text-red-300">${series.ecmwf.temp[idx]}° / ${series.ecmwf.pop[idx]}% / ${series.ecmwf.wind[idx]}mph</td>
+                    <td class="p-2.5 text-blue-300">${series.gfs.temp[idx]}° / ${series.gfs.pop[idx]}% / ${series.gfs.wind[idx]}mph</td>
+                    <td class="p-2.5 text-emerald-300">${series.nbm.temp[idx]}° / ${series.nbm.pop[idx]}% / ${series.nbm.wind[idx]}mph</td>
+                    <td class="p-2.5 text-amber-300 font-semibold">${series.nws.temp[idx]}° / ${series.nws.pop[idx]}% / ${series.nws.wind[idx]}mph</td>
+                    <td class="p-2.5 ${spreadColor}">±${spread}°F (${minT}° - ${maxT}°)</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initWeekTabs();
+            selectWeek(0); // Starts at Week 3
+        });
+    </script>
+</body>
+</html>

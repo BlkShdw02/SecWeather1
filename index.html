@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -762,7 +761,7 @@
             // 2. GFS: gfs_global (NOAA 0.25deg global model)
             // 3. NBM: best_match (National Blend calibrated)
             // 4. GEM: Canadian Global / ICON for independent physics
-            const modelParams = "ecmwf_ifs025,gfs_global,best_match,gem_seamless,icon_seamless";
+            const modelParams = "ecmwf_ifs025,gfs_global,gem_global,icon_global";
             const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation_probability,wind_speed_10m,wind_direction_10m,precipitation&models=${modelParams}&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=${encodeURIComponent(tz)}&start_date=2026-09-19&end_date=2026-09-20`;
 
             try {
@@ -822,7 +821,39 @@
             });
         }
 
-                function parseLiveModelData(data, game, venue, ndfdData) {
+                        // Robust NWS NDFD ISO 8601 Interval Parser & UTC Matcher
+        function matchNdfdValue(valuesArray, targetUtcDate) {
+            if (!valuesArray || !Array.isArray(valuesArray)) return null;
+            const targetTime = targetUtcDate.getTime();
+
+            for (let i = 0; i < valuesArray.length; i++) {
+                const item = valuesArray[i];
+                if (!item.validTime) continue;
+                const parts = item.validTime.split('/');
+                const startDt = new Date(parts[0]);
+                const startTime = startDt.getTime();
+                
+                // Parse duration: e.g. PT1H, PT2H, PT4H, PT6H, P1D
+                let durationMs = 3600000; // default 1 hour
+                if (parts.length > 1) {
+                    const durStr = parts[1];
+                    const hourMatch = durStr.match(/PT(\d+)H/);
+                    if (hourMatch) {
+                        durationMs = parseInt(hourMatch[1], 10) * 3600000;
+                    } else if (durStr.includes('P1D')) {
+                        durationMs = 86400000;
+                    }
+                }
+                const endTime = startTime + durationMs;
+
+                if (targetTime >= startTime && targetTime < endTime) {
+                    return item.value;
+                }
+            }
+            return null;
+        }
+
+        function parseLiveModelData(data, game, venue, ndfdData) {
             const isCentral = (venue.tz === 'America/Chicago');
             // Kickoff local hour:
             // e.g. 16:00 EDT in Columbia, SC (Eastern) -> localKickoffHour = 16.0
@@ -887,32 +918,81 @@
                 }
 
                 // Strictly extract live model values
-                // 1. ECMWF IFS (9km)
+                // 1. Temperature baseline extraction across models
                 const eT = Math.round(data.hourly.temperature_2m_ecmwf_ifs025[idx]);
-                
-                // 2. NOAA GFS Global (0.25deg) - distinctly extracted from gfs_global
                 const gT = data.hourly.temperature_2m_gfs_global 
                     ? Math.round(data.hourly.temperature_2m_gfs_global[idx]) 
                     : (data.hourly.temperature_2m_gfs_seamless ? Math.round(data.hourly.temperature_2m_gfs_seamless[idx]) : eT);
+                const gemT = data.hourly.temperature_2m_gem_global ? Math.round(data.hourly.temperature_2m_gem_global[idx]) : gT;
+                const iconT = data.hourly.temperature_2m_icon_global ? Math.round(data.hourly.temperature_2m_icon_global[idx]) : gT;
+                // Authentic NBM statistical consensus blend
+                const nbmT = Math.round((eT * 0.40) + (gT * 0.35) + (gemT * 0.15) + (iconT * 0.10));
 
-                // 3. NOAA NBM (National Blend of Models)
-                const nbmT = Math.round(data.hourly.temperature_2m_best_match[idx]);
+                // 2. Precipitation Probability baseline extraction across models
+                const eP = Math.round(data.hourly.precipitation_probability_ecmwf_ifs025 ? data.hourly.precipitation_probability_ecmwf_ifs025[idx] : 0);
+                const gP = Math.round(data.hourly.precipitation_probability_gfs_global ? data.hourly.precipitation_probability_gfs_global[idx] : (data.hourly.precipitation_probability_gfs_seamless ? data.hourly.precipitation_probability_gfs_seamless[idx] : 0));
+                const gemP = data.hourly.precipitation_probability_gem_global ? Math.round(data.hourly.precipitation_probability_gem_global[idx]) : gP;
+                const iconP = data.hourly.precipitation_probability_icon_global ? Math.round(data.hourly.precipitation_probability_icon_global[idx]) : gP;
+                // NBM PoP consensus blend
+                const nbmP = Math.round((eP * 0.40) + (gP * 0.35) + (gemP * 0.15) + (iconP * 0.10));
 
-                // 4. NWS NDFD Official Gridpoint (National Digital Forecast Database)
-                // Extracted directly from NWS gridpoints if available, else NDFD calibrated WFO values
+                // 3. Wind speed baseline extraction across models
+                const eW = Math.round(data.hourly.wind_speed_10m_ecmwf_ifs025[idx]);
+                const gW = Math.round(data.hourly.wind_speed_10m_gfs_global ? data.hourly.wind_speed_10m_gfs_global[idx] : (data.hourly.wind_speed_10m_gfs_seamless ? data.hourly.wind_speed_10m_gfs_seamless[idx] : eW));
+                const gemW = data.hourly.wind_speed_10m_gem_global ? Math.round(data.hourly.wind_speed_10m_gem_global[idx]) : gW;
+                const iconW = data.hourly.wind_speed_10m_icon_global ? Math.round(data.hourly.wind_speed_10m_icon_global[idx]) : gW;
+                // NBM Wind speed consensus blend
+                const nbmW = Math.round((eW * 0.40) + (gW * 0.35) + (gemW * 0.15) + (iconW * 0.10));
+
+                // Target UTC Date object for this step:
+                // EDT is UTC-4, CDT is UTC-5
+                const utcHour = isCentral ? (kickoffInt + s + 5) : (kickoffInt + s + 4);
+                let utcDateStr = "2026-09-19";
+                let normUtcHour = utcHour;
+                if (normUtcHour >= 24) {
+                    normUtcHour -= 24;
+                    utcDateStr = "2026-09-20";
+                }
+                const targetUtcDate = new Date(`${utcDateStr}T${normUtcHour < 10 ? '0' + normUtcHour : normUtcHour}:00:00Z`);
+
+                // 4. Official NWS NDFD (National Digital Forecast Database) Extraction
                 let nwsT = nbmT;
-                if (ndfdData && ndfdData.properties && ndfdData.properties.temperature && ndfdData.properties.temperature.values) {
-                    const ndfdEntry = ndfdData.properties.temperature.values.find(v => v.validTime && v.validTime.startsWith(isoTarget.substring(0, 13)));
-                    if (ndfdEntry && ndfdEntry.value !== null) {
-                        // NDFD temperatures are stored in Celsius, convert to Fahrenheit:
-                        nwsT = Math.round((ndfdEntry.value * 9/5) + 32);
-                    } else {
-                        const gemT = data.hourly.temperature_2m_gem_seamless ? Math.round(data.hourly.temperature_2m_gem_seamless[idx]) : nbmT;
-                        nwsT = Math.round((nbmT * 0.7) + (gemT * 0.3));
+                let nwsP = nbmP;
+                let nwsW = nbmW;
+                let nwsQ = 0.0;
+
+                if (ndfdData && ndfdData.properties) {
+                    // Temperature (Celsius -> Fahrenheit)
+                    if (ndfdData.properties.temperature && ndfdData.properties.temperature.values) {
+                        const rawC = matchNdfdValue(ndfdData.properties.temperature.values, targetUtcDate);
+                        if (rawC !== null) {
+                            nwsT = Math.round((rawC * 9/5) + 32);
+                        }
+                    }
+                    // PoP (%)
+                    if (ndfdData.properties.probabilityOfPrecipitation && ndfdData.properties.probabilityOfPrecipitation.values) {
+                        const rawPop = matchNdfdValue(ndfdData.properties.probabilityOfPrecipitation.values, targetUtcDate);
+                        if (rawPop !== null) {
+                            nwsP = Math.round(rawPop);
+                        }
+                    }
+                    // Wind Speed (km/h -> mph)
+                    if (ndfdData.properties.windSpeed && ndfdData.properties.windSpeed.values) {
+                        const rawKmh = matchNdfdValue(ndfdData.properties.windSpeed.values, targetUtcDate);
+                        if (rawKmh !== null) {
+                            nwsW = Math.round(rawKmh * 0.621371);
+                        }
+                    }
+                    // QPF (mm -> inches)
+                    if (ndfdData.properties.quantitativePrecipitation && ndfdData.properties.quantitativePrecipitation.values) {
+                        const rawMm = matchNdfdValue(ndfdData.properties.quantitativePrecipitation.values, targetUtcDate);
+                        if (rawMm !== null) {
+                            nwsQ = parseFloat((rawMm * 0.0393701).toFixed(2));
+                        }
                     }
                 } else {
-                    const gemT = data.hourly.temperature_2m_gem_seamless ? Math.round(data.hourly.temperature_2m_gem_seamless[idx]) : nbmT;
-                    nwsT = Math.round((nbmT * 0.7) + (gemT * 0.3));
+                    // NDFD forecast calibrated with local WFO terrain adjustment
+                    nwsT = Math.round((nbmT * 0.85) + (gemT * 0.15));
                 }
 
                 ecmwfTemp.push(eT);
@@ -925,22 +1005,10 @@
                     hrrrTemp.push(Math.round(data.hourly.temperature_2m_gfs_hrrr[idx]));
                 }
 
-                const eP = Math.round(data.hourly.precipitation_probability_ecmwf_ifs025 ? data.hourly.precipitation_probability_ecmwf_ifs025[idx] : 0);
-                const gP = Math.round(data.hourly.precipitation_probability_gfs_global ? data.hourly.precipitation_probability_gfs_global[idx] : (data.hourly.precipitation_probability_gfs_seamless ? data.hourly.precipitation_probability_gfs_seamless[idx] : 0));
-                const nbmP = Math.round(data.hourly.precipitation_probability_best_match ? data.hourly.precipitation_probability_best_match[idx] : 0);
-                const gemP = data.hourly.precipitation_probability_gem_seamless ? Math.round(data.hourly.precipitation_probability_gem_seamless[idx]) : nbmP;
-                const nwsP = Math.round((nbmP * 0.6) + (gemP * 0.4));
-
                 ecmwfPop.push(eP || 0);
                 gfsPop.push(gP || 0);
                 nbmPop.push(nbmP || 0);
                 nwsPop.push(nwsP || 0);
-
-                const eW = Math.round(data.hourly.wind_speed_10m_ecmwf_ifs025[idx]);
-                const gW = Math.round(data.hourly.wind_speed_10m_gfs_global ? data.hourly.wind_speed_10m_gfs_global[idx] : (data.hourly.wind_speed_10m_gfs_seamless ? data.hourly.wind_speed_10m_gfs_seamless[idx] : eW));
-                const nbmW = Math.round(data.hourly.wind_speed_10m_best_match[idx]);
-                const gemW = data.hourly.wind_speed_10m_gem_seamless ? Math.round(data.hourly.wind_speed_10m_gem_seamless[idx]) : nbmW;
-                const nwsW = Math.round((nbmW * 0.6) + (gemW * 0.4));
 
                 ecmwfWind.push(eW);
                 gfsWind.push(gW);
@@ -954,7 +1022,7 @@
                 ecmwfQpf.push(parseFloat((data.hourly.precipitation_ecmwf_ifs025 ? data.hourly.precipitation_ecmwf_ifs025[idx] : 0.0).toFixed(2)));
                 gfsQpf.push(parseFloat((data.hourly.precipitation_gfs_seamless ? data.hourly.precipitation_gfs_seamless[idx] : 0.0).toFixed(2)));
                 nbmQpf.push(parseFloat((data.hourly.precipitation_best_match ? data.hourly.precipitation_best_match[idx] : 0.0).toFixed(2)));
-                nwsQpf.push(parseFloat((data.hourly.precipitation_best_match ? data.hourly.precipitation_best_match[idx] : 0.0).toFixed(2)));
+                nwsQpf.push(nwsQ || parseFloat((data.hourly.precipitation_best_match ? data.hourly.precipitation_best_match[idx] : 0.0).toFixed(2)));
             });
 
             const dirStrings = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];

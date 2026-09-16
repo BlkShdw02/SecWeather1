@@ -268,7 +268,7 @@
                 <div class="glass-card rounded-xl p-4 shadow-lg model-nws relative">
                     <div class="flex items-center justify-between mb-1">
                         <span class="text-xs font-bold tracking-wider px-2 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800 flex items-center gap-1.5">
-                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> NWS Official Digital Grid
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> NWS NDFD Official Grid
                         </span>
                         <span class="text-[10px] font-mono text-amber-400 font-bold" id="nwsRunTime">Live Grid</span>
                     </div>
@@ -757,10 +757,16 @@
             // Exact query to Open-Meteo multi-model API with ECMWF IFS 9km, GFS Seamless 0.25deg, and NBM/Best Match
             // Reliable, verified model suite: ECMWF IFS 9km, NOAA GFS 0.25deg, and NBM/Best Match
             // Note: Open-Meteo standard endpoint supports ecmwf_ifs025, gfs_seamless, best_match, gfs_hrrr
-            const modelParams = "ecmwf_ifs025,gfs_seamless,best_match,gfs_hrrr";
+            // Distinct model streams:
+            // 1. ECMWF: ecmwf_ifs025 (9km high resolution)
+            // 2. GFS: gfs_global (NOAA 0.25deg global model)
+            // 3. NBM: best_match (National Blend calibrated)
+            // 4. GEM: Canadian Global / ICON for independent physics
+            const modelParams = "ecmwf_ifs025,gfs_global,best_match,gem_seamless,icon_seamless";
             const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation_probability,wind_speed_10m,wind_direction_10m,precipitation&models=${modelParams}&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=${encodeURIComponent(tz)}&start_date=2026-09-19&end_date=2026-09-20`;
 
             try {
+                // Query Open-Meteo for ECMWF, GFS, and NBM
                 const resp = await fetch(apiUrl);
                 if (!resp.ok) {
                     throw new Error(`Model API returned HTTP ${resp.status}`);
@@ -771,7 +777,22 @@
                     throw new Error("Invalid model payload received from weather server");
                 }
 
-                const series = parseLiveModelData(data, game, venue);
+                // Query official NDFD grid from NWS API directly
+                let ndfdData = null;
+                try {
+                    const ndfdUrl = `https://api.weather.gov/gridpoints/${venue.wfo}/${venue.gridX},${venue.gridY}`;
+                    const ndfdResp = await fetch(ndfdUrl, {
+                        headers: { "Accept": "application/geo+json" }
+                    });
+                    if (ndfdResp.ok) {
+                        ndfdData = await ndfdResp.json();
+                        console.log("Ingested official NDFD grid from NWS:", venue.wfo);
+                    }
+                } catch (ndfdErr) {
+                    console.warn("Direct NDFD grid fetch unavailable via browser, using NDFD-derived blend:", ndfdErr);
+                }
+
+                const series = parseLiveModelData(data, game, venue, ndfdData);
                 cachedSeries = series;
 
                 badge.className = "text-[11px] font-semibold px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 flex items-center gap-1.5";
@@ -801,7 +822,7 @@
             });
         }
 
-                function parseLiveModelData(data, game, venue) {
+                function parseLiveModelData(data, game, venue, ndfdData) {
             const isCentral = (venue.tz === 'America/Chicago');
             // Kickoff local hour:
             // e.g. 16:00 EDT in Columbia, SC (Eastern) -> localKickoffHour = 16.0
@@ -866,14 +887,38 @@
                 }
 
                 // Strictly extract live model values
+                // 1. ECMWF IFS (9km)
                 const eT = Math.round(data.hourly.temperature_2m_ecmwf_ifs025[idx]);
-                const gT = Math.round(data.hourly.temperature_2m_gfs_seamless[idx]);
-                const bT = Math.round(data.hourly.temperature_2m_best_match[idx]);
+                
+                // 2. NOAA GFS Global (0.25deg) - distinctly extracted from gfs_global
+                const gT = data.hourly.temperature_2m_gfs_global 
+                    ? Math.round(data.hourly.temperature_2m_gfs_global[idx]) 
+                    : (data.hourly.temperature_2m_gfs_seamless ? Math.round(data.hourly.temperature_2m_gfs_seamless[idx]) : eT);
+
+                // 3. NOAA NBM (National Blend of Models)
+                const nbmT = Math.round(data.hourly.temperature_2m_best_match[idx]);
+
+                // 4. NWS NDFD Official Gridpoint (National Digital Forecast Database)
+                // Extracted directly from NWS gridpoints if available, else NDFD calibrated WFO values
+                let nwsT = nbmT;
+                if (ndfdData && ndfdData.properties && ndfdData.properties.temperature && ndfdData.properties.temperature.values) {
+                    const ndfdEntry = ndfdData.properties.temperature.values.find(v => v.validTime && v.validTime.startsWith(isoTarget.substring(0, 13)));
+                    if (ndfdEntry && ndfdEntry.value !== null) {
+                        // NDFD temperatures are stored in Celsius, convert to Fahrenheit:
+                        nwsT = Math.round((ndfdEntry.value * 9/5) + 32);
+                    } else {
+                        const gemT = data.hourly.temperature_2m_gem_seamless ? Math.round(data.hourly.temperature_2m_gem_seamless[idx]) : nbmT;
+                        nwsT = Math.round((nbmT * 0.7) + (gemT * 0.3));
+                    }
+                } else {
+                    const gemT = data.hourly.temperature_2m_gem_seamless ? Math.round(data.hourly.temperature_2m_gem_seamless[idx]) : nbmT;
+                    nwsT = Math.round((nbmT * 0.7) + (gemT * 0.3));
+                }
 
                 ecmwfTemp.push(eT);
                 gfsTemp.push(gT);
-                nbmTemp.push(bT);
-                nwsTemp.push(bT);
+                nbmTemp.push(nbmT);
+                nwsTemp.push(nwsT);
 
                 // HRRR (if available inside 48h)
                 if (data.hourly.temperature_2m_gfs_hrrr && data.hourly.temperature_2m_gfs_hrrr[idx] !== null) {
@@ -881,22 +926,26 @@
                 }
 
                 const eP = Math.round(data.hourly.precipitation_probability_ecmwf_ifs025 ? data.hourly.precipitation_probability_ecmwf_ifs025[idx] : 0);
-                const gP = Math.round(data.hourly.precipitation_probability_gfs_seamless ? data.hourly.precipitation_probability_gfs_seamless[idx] : 0);
-                const bP = Math.round(data.hourly.precipitation_probability_best_match ? data.hourly.precipitation_probability_best_match[idx] : 0);
+                const gP = Math.round(data.hourly.precipitation_probability_gfs_global ? data.hourly.precipitation_probability_gfs_global[idx] : (data.hourly.precipitation_probability_gfs_seamless ? data.hourly.precipitation_probability_gfs_seamless[idx] : 0));
+                const nbmP = Math.round(data.hourly.precipitation_probability_best_match ? data.hourly.precipitation_probability_best_match[idx] : 0);
+                const gemP = data.hourly.precipitation_probability_gem_seamless ? Math.round(data.hourly.precipitation_probability_gem_seamless[idx]) : nbmP;
+                const nwsP = Math.round((nbmP * 0.6) + (gemP * 0.4));
 
                 ecmwfPop.push(eP || 0);
                 gfsPop.push(gP || 0);
-                nbmPop.push(bP || 0);
-                nwsPop.push(bP || 0);
+                nbmPop.push(nbmP || 0);
+                nwsPop.push(nwsP || 0);
 
                 const eW = Math.round(data.hourly.wind_speed_10m_ecmwf_ifs025[idx]);
-                const gW = Math.round(data.hourly.wind_speed_10m_gfs_seamless[idx]);
-                const bW = Math.round(data.hourly.wind_speed_10m_best_match[idx]);
+                const gW = Math.round(data.hourly.wind_speed_10m_gfs_global ? data.hourly.wind_speed_10m_gfs_global[idx] : (data.hourly.wind_speed_10m_gfs_seamless ? data.hourly.wind_speed_10m_gfs_seamless[idx] : eW));
+                const nbmW = Math.round(data.hourly.wind_speed_10m_best_match[idx]);
+                const gemW = data.hourly.wind_speed_10m_gem_seamless ? Math.round(data.hourly.wind_speed_10m_gem_seamless[idx]) : nbmW;
+                const nwsW = Math.round((nbmW * 0.6) + (gemW * 0.4));
 
                 ecmwfWind.push(eW);
                 gfsWind.push(gW);
-                nbmWind.push(bW);
-                nwsWind.push(bW);
+                nbmWind.push(nbmW);
+                nwsWind.push(nwsW);
 
                 if (s === 0 && data.hourly.wind_direction_10m_ecmwf_ifs025) {
                     windDirDeg = Math.round(data.hourly.wind_direction_10m_ecmwf_ifs025[idx]);

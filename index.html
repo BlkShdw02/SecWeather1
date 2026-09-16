@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#080c14">
-    <title>SEC Football Weather Intelligence — Live Model Ingestion</title>
+    <title>SEC Gameday Weather</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -65,7 +65,7 @@
                             9-Hour Window (T-3h → T+6h)
                         </span>
                     </div>
-                    <h1 class="text-2xl md:text-3xl font-black text-white mt-1.5 tracking-tight">SEC Football Weather Intelligence</h1>
+                    <h1 class="text-2xl md:text-3xl font-black text-white mt-1.5 tracking-tight">SEC Gameday Weather</h1>
                     <p class="text-xs md:text-sm text-slate-400">Live multi-model comparison across <span class="text-red-400 font-semibold">ECMWF (IFS)</span>, <span class="text-blue-400 font-semibold">GFS</span>, <span class="text-emerald-400 font-semibold">NBM</span>, and <span class="text-amber-400 font-semibold">NWS Digital Grid</span></p>
                 </div>
             </div>
@@ -155,6 +155,105 @@
 
         <!-- ACTIVE FORECAST CONTAINER (Hidden if outside model window) -->
         <div id="activeForecastContainer" class="space-y-6">
+
+        <!-- FORECAST AT A GLANCE (Consensus Average Across All Models) -->
+        <section id="forecastAtAGlanceSection" class="glass-card rounded-2xl p-5 shadow-xl border-l-4 border-l-amber-500">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3.5 pb-2.5 border-b border-slate-800">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-black text-white uppercase tracking-wider">Forecast at a Glance</h3>
+                        <p class="text-[11px] text-slate-400">Consensus multi-model average (ECMWF + GFS + NBM + NDFD) for key game-day milestones</p>
+                    </div>
+                </div>
+                <span class="text-[10px] font-mono px-2.5 py-1 rounded-md bg-slate-900 text-amber-300 border border-slate-700">
+                    <i class="fa-solid fa-calculator mr-1"></i> Multi-Model Consensus
+                </span>
+            </div>
+
+            <!-- 4 Milestone Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                
+                <!-- 1. Tailgating (T-3h) -->
+                <div class="bg-slate-900/90 border border-slate-800 hover:border-slate-700 rounded-xl p-3.5 flex flex-col justify-between transition-all">
+                    <div>
+                        <div class="flex items-center justify-between text-slate-400 text-[11px] font-bold uppercase mb-1">
+                            <span class="text-amber-400 flex items-center gap-1.5"><i class="fa-solid fa-beer-mug-empty"></i> Tailgating</span>
+                            <span class="font-mono text-[10px] bg-slate-800 px-1.5 py-0.5 rounded">T-3h</span>
+                        </div>
+                        <div class="text-[11px] text-slate-400 font-mono" id="glanceTailgateTime">--</div>
+                    </div>
+                    <div class="my-2.5">
+                        <div class="text-2xl md:text-3xl font-black text-white font-mono" id="glanceTailgateTemp">--°F</div>
+                        <div class="text-[11px] font-semibold text-slate-300 mt-0.5" id="glanceTailgateSky">--</div>
+                    </div>
+                    <div class="pt-2 border-t border-slate-800/80 text-[11px] flex justify-between items-center text-slate-300">
+                        <span><i class="fa-solid fa-umbrella text-blue-400 mr-1"></i><span id="glanceTailgatePop">--%</span></span>
+                        <span><i class="fa-solid fa-wind text-slate-400 mr-1"></i><span id="glanceTailgateWind">-- mph</span></span>
+                    </div>
+                </div>
+
+                <!-- 2. Kickoff (T-0h) -->
+                <div class="bg-slate-900/90 border border-red-900/60 hover:border-red-700/80 rounded-xl p-3.5 flex flex-col justify-between transition-all bg-gradient-to-b from-red-950/20 to-transparent">
+                    <div>
+                        <div class="flex items-center justify-between text-slate-400 text-[11px] font-bold uppercase mb-1">
+                            <span class="text-red-400 flex items-center gap-1.5"><i class="fa-solid fa-football"></i> Kickoff</span>
+                            <span class="font-mono text-[10px] bg-red-900/80 text-red-200 px-1.5 py-0.5 rounded font-bold">T-0h</span>
+                        </div>
+                        <div class="text-[11px] text-slate-400 font-mono" id="glanceKickoffTime">--</div>
+                    </div>
+                    <div class="my-2.5">
+                        <div class="text-2xl md:text-3xl font-black text-white font-mono" id="glanceKickoffTemp">--°F</div>
+                        <div class="text-[11px] font-semibold text-slate-300 mt-0.5" id="glanceKickoffSky">--</div>
+                    </div>
+                    <div class="pt-2 border-t border-slate-800/80 text-[11px] flex justify-between items-center text-slate-300">
+                        <span><i class="fa-solid fa-umbrella text-blue-400 mr-1"></i><span id="glanceKickoffPop">--%</span></span>
+                        <span><i class="fa-solid fa-wind text-slate-400 mr-1"></i><span id="glanceKickoffWind">-- mph</span></span>
+                    </div>
+                </div>
+
+                <!-- 3. Halftime (T+1.5h) -->
+                <div class="bg-slate-900/90 border border-slate-800 hover:border-slate-700 rounded-xl p-3.5 flex flex-col justify-between transition-all">
+                    <div>
+                        <div class="flex items-center justify-between text-slate-400 text-[11px] font-bold uppercase mb-1">
+                            <span class="text-emerald-400 flex items-center gap-1.5"><i class="fa-solid fa-drum"></i> Halftime</span>
+                            <span class="font-mono text-[10px] bg-slate-800 px-1.5 py-0.5 rounded">T+1.5h</span>
+                        </div>
+                        <div class="text-[11px] text-slate-400 font-mono" id="glanceHalftimeTime">--</div>
+                    </div>
+                    <div class="my-2.5">
+                        <div class="text-2xl md:text-3xl font-black text-white font-mono" id="glanceHalftimeTemp">--°F</div>
+                        <div class="text-[11px] font-semibold text-slate-300 mt-0.5" id="glanceHalftimeSky">--</div>
+                    </div>
+                    <div class="pt-2 border-t border-slate-800/80 text-[11px] flex justify-between items-center text-slate-300">
+                        <span><i class="fa-solid fa-umbrella text-blue-400 mr-1"></i><span id="glanceHalftimePop">--%</span></span>
+                        <span><i class="fa-solid fa-wind text-slate-400 mr-1"></i><span id="glanceHalftimeWind">-- mph</span></span>
+                    </div>
+                </div>
+
+                <!-- 4. Headed Home (T+3h) -->
+                <div class="bg-slate-900/90 border border-slate-800 hover:border-slate-700 rounded-xl p-3.5 flex flex-col justify-between transition-all">
+                    <div>
+                        <div class="flex items-center justify-between text-slate-400 text-[11px] font-bold uppercase mb-1">
+                            <span class="text-indigo-400 flex items-center gap-1.5"><i class="fa-solid fa-car-side"></i> Headed Home</span>
+                            <span class="font-mono text-[10px] bg-slate-800 px-1.5 py-0.5 rounded">T+3h</span>
+                        </div>
+                        <div class="text-[11px] text-slate-400 font-mono" id="glanceHomeTime">--</div>
+                    </div>
+                    <div class="my-2.5">
+                        <div class="text-2xl md:text-3xl font-black text-white font-mono" id="glanceHomeTemp">--°F</div>
+                        <div class="text-[11px] font-semibold text-slate-300 mt-0.5" id="glanceHomeSky">--</div>
+                    </div>
+                    <div class="pt-2 border-t border-slate-800/80 text-[11px] flex justify-between items-center text-slate-300">
+                        <span><i class="fa-solid fa-umbrella text-blue-400 mr-1"></i><span id="glanceHomePop">--%</span></span>
+                        <span><i class="fa-solid fa-wind text-slate-400 mr-1"></i><span id="glanceHomeWind">-- mph</span></span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
 
             <!-- High-Res Mode Activation Banner -->
             <div id="highResStatusBanner" class="p-3 rounded-xl bg-slate-900/90 border border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
@@ -1109,6 +1208,20 @@
         }
 
                         // Robust NWS NDFD ISO 8601 Interval Parser & UTC Matcher
+                // Shared Clock Formatter
+        function formatClock(baseLocalHour, offset, tzLabel) {
+            let h = baseLocalHour + offset;
+            while (h < 0) h += 24;
+            while (h >= 24) h -= 24;
+            const intH = Math.floor(h);
+            const min = Math.round((h - intH) * 60);
+            const period = intH >= 12 ? 'PM' : 'AM';
+            let displayH = intH % 12;
+            if (displayH === 0) displayH = 12;
+            const minStr = min < 10 ? '0' + min : min;
+            return `${displayH}:${minStr} ${period} ${tzLabel}`;
+        }
+
         function matchNdfdValue(valuesArray, targetUtcDate) {
             if (!valuesArray || !Array.isArray(valuesArray)) return null;
             const targetTime = targetUtcDate.getTime();
@@ -1334,6 +1447,9 @@
 
         function updateDashboardWithLiveSeries(series, game, venue) {
             const koIdx = 3; // Index of T0 kickoff
+            const isCentral = (venue.tz === 'America/Chicago');
+            const localKickoffHour = isCentral ? (game.hour - 1.0) : game.hour;
+            const tzShort = isCentral ? 'CDT' : 'EDT';
 
             // Dynamically calculate latest operational model cycles based on standard NOAA/ECMWF release schedules
             const nowUtc = new Date();
@@ -1556,7 +1672,74 @@
             }
             document.getElementById('kickingAdvantage').textContent = kickNote;
 
-            populateHourlyTable(series);
+
+            // ==========================================
+            // FORECAST AT A GLANCE: Consensus Model Averages
+            // Milestones: Tailgating (T-3h), Kickoff (T-0h), Halftime (T+1.5h), Headed Home (T+3h)
+            // ==========================================
+            function getModelAvg(stepIdx) {
+                // Models included: ECMWF, GFS, NBM, NWS NDFD
+                const temps = [series.ecmwf.temp[stepIdx], series.gfs.temp[stepIdx], series.nbm.temp[stepIdx], series.nws.temp[stepIdx]].filter(v => v !== undefined && !isNaN(v));
+                const pops = [series.ecmwf.pop[stepIdx], series.gfs.pop[stepIdx], series.nbm.pop[stepIdx], series.nws.pop[stepIdx]].filter(v => v !== undefined && !isNaN(v));
+                const winds = [series.ecmwf.wind[stepIdx], series.gfs.wind[stepIdx], series.nbm.wind[stepIdx], series.nws.wind[stepIdx]].filter(v => v !== undefined && !isNaN(v));
+
+                const avgT = Math.round(temps.reduce((a, b) => a + b, 0) / temps.length);
+                const avgP = Math.round(pops.reduce((a, b) => a + b, 0) / pops.length);
+                const avgW = Math.round(winds.reduce((a, b) => a + b, 0) / winds.length);
+                return { temp: avgT, pop: avgP, wind: avgW };
+            }
+
+            function getSkyCondition(pop, temp) {
+                if (pop >= 60) return "Rain Likely";
+                if (pop >= 35) return "Chance Showers";
+                if (pop >= 20) return "Isolated Sprinkles";
+                if (temp >= 85) return "Mostly Sunny & Warm";
+                if (temp >= 70) return "Fair & Pleasant";
+                if (temp >= 55) return "Crisp & Clear";
+                return "Chilly & Clear";
+            }
+
+            // 1. Tailgating (T-3h, index 0)
+            const tailAvg = getModelAvg(0);
+            document.getElementById('glanceTailgateTime').textContent = series.clockTimes[0];
+            document.getElementById('glanceTailgateTemp').textContent = `${tailAvg.temp}°F`;
+            document.getElementById('glanceTailgatePop').textContent = `${tailAvg.pop}% rain`;
+            document.getElementById('glanceTailgateWind').textContent = `${tailAvg.wind} mph`;
+            document.getElementById('glanceTailgateSky').textContent = getSkyCondition(tailAvg.pop, tailAvg.temp);
+
+            // 2. Kickoff (T-0h, index 3)
+            const koAvg = getModelAvg(3);
+            document.getElementById('glanceKickoffTime').textContent = series.clockTimes[3];
+            document.getElementById('glanceKickoffTemp').textContent = `${koAvg.temp}°F`;
+            document.getElementById('glanceKickoffPop').textContent = `${koAvg.pop}% rain`;
+            document.getElementById('glanceKickoffWind').textContent = `${koAvg.wind} mph`;
+            document.getElementById('glanceKickoffSky').textContent = getSkyCondition(koAvg.pop, koAvg.temp);
+
+            // 3. Halftime (T+1.5h, average of index 4 and index 5)
+            const htT1 = getModelAvg(4);
+            const htT2 = getModelAvg(5);
+            const htAvg = {
+                temp: Math.round((htT1.temp + htT2.temp) / 2),
+                pop: Math.round((htT1.pop + htT2.pop) / 2),
+                wind: Math.round((htT1.wind + htT2.wind) / 2)
+            };
+            // Format Halftime clock time (Kickoff local hour + 1.5)
+            const htHour = localKickoffHour + 1.5;
+            document.getElementById('glanceHalftimeTime').textContent = formatClock(localKickoffHour, 1.5, tzShort);
+            document.getElementById('glanceHalftimeTemp').textContent = `${htAvg.temp}°F`;
+            document.getElementById('glanceHalftimePop').textContent = `${htAvg.pop}% rain`;
+            document.getElementById('glanceHalftimeWind').textContent = `${htAvg.wind} mph`;
+            document.getElementById('glanceHalftimeSky').textContent = getSkyCondition(htAvg.pop, htAvg.temp);
+
+            // 4. Headed Home (T+3h, index 6)
+            const homeAvg = getModelAvg(6);
+            document.getElementById('glanceHomeTime').textContent = series.clockTimes[6];
+            document.getElementById('glanceHomeTemp').textContent = `${homeAvg.temp}°F`;
+            document.getElementById('glanceHomePop').textContent = `${homeAvg.pop}% rain`;
+            document.getElementById('glanceHomeWind').textContent = `${homeAvg.wind} mph`;
+            document.getElementById('glanceHomeSky').textContent = getSkyCondition(homeAvg.pop, homeAvg.temp);
+
+                        populateHourlyTable(series);
             renderChart(series);
         }
 

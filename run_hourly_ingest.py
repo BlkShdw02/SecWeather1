@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 """
 SEC Football Real-Time Hourly Model Ingestion Worker
@@ -37,6 +38,32 @@ if os.path.exists(VENUES_FILE):
         VENUES = json.load(f)
 else:
     sys.exit("Error: venues_precise.json not found.")
+
+
+def fetch_ndfd_grid(venue):
+    """
+    Queries the National Weather Service API directly for official NDFD (National Digital Forecast Database) grid data.
+    Endpoint: https://api.weather.gov/gridpoints/{wfo}/{gridX},{gridY}
+    """
+    wfo = venue.get("wfo")
+    gx = venue.get("gridX")
+    gy = venue.get("gridY")
+    if not (wfo and gx and gy):
+        return None
+        
+    url = f"https://api.weather.gov/gridpoints/{wfo}/{gx},{gy}"
+    headers = {
+        "User-Agent": "GrayMedia-SECWeather/2.0 (weatherops@graymedia.com)",
+        "Accept": "application/geo+json"
+    }
+    req = urllib.request.Request(url, headers=headers)
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            if resp.status == 200:
+                return json.loads(resp.read().decode())
+    except Exception as e:
+        print(f"Warning: Could not reach NWS NDFD endpoint for {wfo} ({gx},{gy}): {e}")
+    return None
 
 def calculate_wind_vector_impact(wind_dir_deg, wind_speed_mph, field_azimuth_deg, endzone_n_name, endzone_s_name):
     """

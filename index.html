@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -630,7 +629,279 @@
 
     <!-- Application Script with Embedded Data -->
     <script>
-        const VENUES = {"Alabama": {"stadium": "Bryant-Denny Stadium", "city": "Tuscaloosa, AL", "lat": 33.2083, "lon": -87.5504, "orientation": "NNW-SSE", "capacity": 100077, "wfo": "BMX", "gridX": 33, "gridY": 69, "tz": "America/Chicago"}, "Arkansas": {"stadium": "Donald W. Reynolds Razorback Stadium", "city": "Fayetteville, AR", "lat": 36.0681, "lon": -94.179, "orientation": "N-S", "capacity": 76000, "wfo": "TSA", "gridX": 107, "gridY": 101, "tz": "America/Chicago"}, "Auburn": {"stadium": "Jordan-Hare Stadium", "city": "Auburn, AL", "lat": 32.6022, "lon": -85.4897, "orientation": "N-S", "capacity": 88043, "wfo": "BMX", "gridX": 79, "gridY": 44, "tz": "America/Chicago"}, "Florida": {"stadium": "Ben Hill Griffin Stadium", "city": "Gainesville, FL", "lat": 29.6499, "lon": -82.3486, "orientation": "N-S", "capacity": 88548, "wfo": "JAX", "gridX": 30, "gridY": 39, "tz": "America/New_York"}, "Georgia": {"stadium": "Sanford Stadium", "city": "Athens, GA", "lat": 33.9498, "lon": -83.3734, "orientation": "E-W", "capacity": 93033, "wfo": "FFC", "gridX": 68, "gridY": 99, "tz": "America/New_York"}, "Kentucky": {"stadium": "Kroger Field", "city": "Lexington, KY", "lat": 38.0222, "lon": -84.5053, "orientation": "E-W", "capacity": 61000, "wfo": "LMK", "gridX": 72, "gridY": 66, "tz": "America/New_York"}, "LSU": {"stadium": "Tiger Stadium", "city": "Baton Rouge, LA", "lat": 30.412, "lon": -91.1838, "orientation": "N-S", "capacity": 102321, "wfo": "LIX", "gridX": 32, "gridY": 88, "tz": "America/Chicago"}, "Mississippi State": {"stadium": "Davis Wade Stadium", "city": "Starkville, MS", "lat": 33.4563, "lon": -88.7934, "orientation": "N-S", "capacity": 60311, "wfo": "JAN", "gridX": 102, "gridY": 79, "tz": "America/Chicago"}, "Missouri": {"stadium": "Faurot Field", "city": "Columbia, MO", "lat": 38.9358, "lon": -92.3332, "orientation": "N-S", "capacity": 62621, "wfo": "LSX", "gridX": 33, "gridY": 68, "tz": "America/Chicago"}, "Oklahoma": {"stadium": "Gaylord Family Oklahoma Memorial Stadium", "city": "Norman, OK", "lat": 35.2059, "lon": -97.4426, "orientation": "N-S", "capacity": 80126, "wfo": "OUN", "gridX": 96, "gridY": 92, "tz": "America/Chicago"}, "Ole Miss": {"stadium": "Vaught-Hemingway Stadium", "city": "Oxford, MS", "lat": 34.362, "lon": -89.5342, "orientation": "N-S", "capacity": 64038, "wfo": "MEG", "gridX": 81, "gridY": 34, "tz": "America/Chicago"}, "South Carolina": {"stadium": "Williams-Brice Stadium", "city": "Columbia, SC", "lat": 33.973, "lon": -81.0192, "orientation": "NW-SE", "capacity": 77559, "wfo": "CAE", "gridX": 60, "gridY": 66, "tz": "America/New_York"}, "Tennessee": {"stadium": "Neyland Stadium", "city": "Knoxville, TN", "lat": 35.955, "lon": -83.925, "orientation": "N-S", "capacity": 101915, "wfo": "MRX", "gridX": 73, "gridY": 54, "tz": "America/New_York"}, "Texas": {"stadium": "Darrell K Royal-Texas Memorial Stadium", "city": "Austin, TX", "lat": 30.2837, "lon": -97.7325, "orientation": "N-S", "capacity": 100119, "wfo": "EWX", "gridX": 156, "gridY": 91, "tz": "America/Chicago"}, "Texas A&M": {"stadium": "Kyle Field", "city": "College Station, TX", "lat": 30.6103, "lon": -96.3407, "orientation": "NNW-SSE", "capacity": 102733, "wfo": "HGX", "gridX": 43, "gridY": 113, "tz": "America/Chicago"}, "Vanderbilt": {"stadium": "FirstBank Stadium", "city": "Nashville, TN", "lat": 36.1441, "lon": -86.8089, "orientation": "N-S", "capacity": 28500, "wfo": "OHX", "gridX": 48, "gridY": 64, "tz": "America/Chicago"}, "Cotton Bowl": {"stadium": "Cotton Bowl Stadium", "city": "Dallas, TX", "lat": 32.7797, "lon": -96.76, "orientation": "NW-SE", "capacity": 92100, "wfo": "FWD", "gridX": 89, "gridY": 101, "tz": "America/Chicago"}, "Mercedes-Benz Stadium": {"stadium": "Mercedes-Benz Stadium", "city": "Atlanta, GA", "lat": 33.7554, "lon": -84.4008, "orientation": "Indoor/Retractable", "capacity": 75000, "wfo": "FFC", "gridX": 51, "gridY": 86, "tz": "America/New_York"}};
+        const VENUES = {
+    "Alabama": {
+        "stadium": "Bryant-Denny Stadium",
+        "city": "Tuscaloosa, AL",
+        "lat": 33.2083,
+        "lon": -87.5504,
+        "orientation": "NNW-SSE",
+        "field_azimuth_deg": 343,
+        "endzone_north": "North Endzone (NNW)",
+        "endzone_south": "South Endzone (SSE)",
+        "capacity": 100077,
+        "wfo": "BMX",
+        "gridX": 33,
+        "gridY": 69,
+        "tz": "America/Chicago"
+    },
+    "Arkansas": {
+        "stadium": "Donald W. Reynolds Razorback Stadium",
+        "city": "Fayetteville, AR",
+        "lat": 36.0681,
+        "lon": -94.179,
+        "orientation": "N-S",
+        "field_azimuth_deg": 0,
+        "endzone_north": "North Endzone (N)",
+        "endzone_south": "South Endzone (S)",
+        "capacity": 76000,
+        "wfo": "TSA",
+        "gridX": 107,
+        "gridY": 101,
+        "tz": "America/Chicago"
+    },
+    "Auburn": {
+        "stadium": "Jordan-Hare Stadium",
+        "city": "Auburn, AL",
+        "lat": 32.6022,
+        "lon": -85.4897,
+        "orientation": "N-S",
+        "field_azimuth_deg": 358,
+        "endzone_north": "North Endzone (N)",
+        "endzone_south": "South Endzone (S)",
+        "capacity": 88043,
+        "wfo": "BMX",
+        "gridX": 79,
+        "gridY": 44,
+        "tz": "America/Chicago"
+    },
+    "Florida": {
+        "stadium": "Ben Hill Griffin Stadium (The Swamp)",
+        "city": "Gainesville, FL",
+        "lat": 29.6499,
+        "lon": -82.3486,
+        "orientation": "N-S",
+        "field_azimuth_deg": 356,
+        "endzone_north": "North Endzone (N)",
+        "endzone_south": "South Endzone (S)",
+        "capacity": 88548,
+        "wfo": "JAX",
+        "gridX": 30,
+        "gridY": 39,
+        "tz": "America/New_York"
+    },
+    "Georgia": {
+        "stadium": "Sanford Stadium",
+        "city": "Athens, GA",
+        "lat": 33.9498,
+        "lon": -83.3734,
+        "orientation": "E-W",
+        "field_azimuth_deg": 88,
+        "endzone_north": "East Endzone",
+        "endzone_south": "West Endzone",
+        "capacity": 93033,
+        "wfo": "FFC",
+        "gridX": 68,
+        "gridY": 99,
+        "tz": "America/New_York"
+    },
+    "Kentucky": {
+        "stadium": "Kroger Field",
+        "city": "Lexington, KY",
+        "lat": 38.0222,
+        "lon": -84.5053,
+        "orientation": "E-W",
+        "field_azimuth_deg": 82,
+        "endzone_north": "East Endzone",
+        "endzone_south": "West Endzone",
+        "capacity": 61000,
+        "wfo": "LMK",
+        "gridX": 72,
+        "gridY": 66,
+        "tz": "America/New_York"
+    },
+    "LSU": {
+        "stadium": "Tiger Stadium (Death Valley)",
+        "city": "Baton Rouge, LA",
+        "lat": 30.412,
+        "lon": -91.1838,
+        "orientation": "N-S",
+        "field_azimuth_deg": 359,
+        "endzone_north": "North Endzone (N)",
+        "endzone_south": "South Endzone (S)",
+        "capacity": 102321,
+        "wfo": "LIX",
+        "gridX": 32,
+        "gridY": 88,
+        "tz": "America/Chicago"
+    },
+    "Mississippi State": {
+        "stadium": "Davis Wade Stadium",
+        "city": "Starkville, MS",
+        "lat": 33.4563,
+        "lon": -88.7934,
+        "orientation": "NNW-SSE",
+        "field_azimuth_deg": 349,
+        "endzone_north": "North Endzone (NNW)",
+        "endzone_south": "South Endzone (SSE)",
+        "capacity": 60311,
+        "wfo": "JAN",
+        "gridX": 102,
+        "gridY": 79,
+        "tz": "America/Chicago"
+    },
+    "Missouri": {
+        "stadium": "Faurot Field at Memorial Stadium",
+        "city": "Columbia, MO",
+        "lat": 38.9358,
+        "lon": -92.3332,
+        "orientation": "N-S",
+        "field_azimuth_deg": 0,
+        "endzone_north": "North Endzone (Rock 'M' Endzone)",
+        "endzone_south": "South Endzone",
+        "capacity": 62621,
+        "wfo": "LSX",
+        "gridX": 33,
+        "gridY": 68,
+        "tz": "America/Chicago"
+    },
+    "Oklahoma": {
+        "stadium": "Gaylord Family Oklahoma Memorial Stadium",
+        "city": "Norman, OK",
+        "lat": 35.2059,
+        "lon": -97.4426,
+        "orientation": "N-S",
+        "field_azimuth_deg": 359,
+        "endzone_north": "North Endzone (N)",
+        "endzone_south": "South Endzone (S)",
+        "capacity": 80126,
+        "wfo": "OUN",
+        "gridX": 96,
+        "gridY": 92,
+        "tz": "America/Chicago"
+    },
+    "Ole Miss": {
+        "stadium": "Vaught-Hemingway Stadium",
+        "city": "Oxford, MS",
+        "lat": 34.362,
+        "lon": -89.5342,
+        "orientation": "N-S",
+        "field_azimuth_deg": 357,
+        "endzone_north": "North Endzone (N)",
+        "endzone_south": "South Endzone (S)",
+        "capacity": 64038,
+        "wfo": "MEG",
+        "gridX": 81,
+        "gridY": 34,
+        "tz": "America/Chicago"
+    },
+    "South Carolina": {
+        "stadium": "Williams-Brice Stadium",
+        "city": "Columbia, SC",
+        "lat": 33.973,
+        "lon": -81.0192,
+        "orientation": "NW-SE",
+        "field_azimuth_deg": 328,
+        "endzone_north": "Northwest Endzone",
+        "endzone_south": "Southeast Endzone",
+        "capacity": 77559,
+        "wfo": "CAE",
+        "gridX": 60,
+        "gridY": 66,
+        "tz": "America/New_York"
+    },
+    "Tennessee": {
+        "stadium": "Neyland Stadium",
+        "city": "Knoxville, TN",
+        "lat": 35.955,
+        "lon": -83.925,
+        "orientation": "NE-SW",
+        "field_azimuth_deg": 35,
+        "endzone_north": "NNE Endzone",
+        "endzone_south": "River Endzone (SSW)",
+        "capacity": 101915,
+        "wfo": "MRX",
+        "gridX": 73,
+        "gridY": 54,
+        "tz": "America/New_York"
+    },
+    "Texas": {
+        "stadium": "Darrell K Royal-Texas Memorial Stadium",
+        "city": "Austin, TX",
+        "lat": 30.2837,
+        "lon": -97.7325,
+        "orientation": "N-S",
+        "field_azimuth_deg": 358,
+        "endzone_north": "North Endzone (N)",
+        "endzone_south": "South Endzone (S)",
+        "capacity": 100119,
+        "wfo": "EWX",
+        "gridX": 156,
+        "gridY": 91,
+        "tz": "America/Chicago"
+    },
+    "Texas A&M": {
+        "stadium": "Kyle Field",
+        "city": "College Station, TX",
+        "lat": 30.6103,
+        "lon": -96.3407,
+        "orientation": "NNW-SSE",
+        "field_azimuth_deg": 344,
+        "endzone_north": "North Endzone (NNW)",
+        "endzone_south": "South Endzone (SSE)",
+        "capacity": 102733,
+        "wfo": "HGX",
+        "gridX": 43,
+        "gridY": 113,
+        "tz": "America/Chicago"
+    },
+    "Vanderbilt": {
+        "stadium": "FirstBank Stadium",
+        "city": "Nashville, TN",
+        "lat": 36.1441,
+        "lon": -86.8089,
+        "orientation": "N-S",
+        "field_azimuth_deg": 359,
+        "endzone_north": "North Endzone (N)",
+        "endzone_south": "South Endzone (S)",
+        "capacity": 28500,
+        "wfo": "OHX",
+        "gridX": 48,
+        "gridY": 64,
+        "tz": "America/Chicago"
+    },
+    "Cotton Bowl": {
+        "stadium": "Cotton Bowl Stadium",
+        "city": "Dallas, TX",
+        "lat": 32.7797,
+        "lon": -96.76,
+        "orientation": "NW-SE",
+        "field_azimuth_deg": 320,
+        "endzone_north": "Northwest Endzone (NW)",
+        "endzone_south": "Southeast Endzone (SE)",
+        "capacity": 92100,
+        "wfo": "FWD",
+        "gridX": 89,
+        "gridY": 101,
+        "tz": "America/Chicago"
+    },
+    "Mercedes-Benz Stadium": {
+        "stadium": "Mercedes-Benz Stadium",
+        "city": "Atlanta, GA",
+        "lat": 33.7554,
+        "lon": -84.4008,
+        "orientation": "Indoor/Retractable",
+        "field_azimuth_deg": 88,
+        "endzone_north": "East Endzone (E)",
+        "endzone_south": "West Endzone (W)",
+        "capacity": 75000,
+        "wfo": "FFC",
+        "gridX": 51,
+        "gridY": 86,
+        "tz": "America/New_York"
+    }
+};
+
         const SEASON_WEEKS = [{"week": 3, "date_str": "Saturday, Sep 19, 2026", "games": [{"away": "Georgia", "home": "Arkansas", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Arkansas", "tv": "ABC", "featured": true}, {"away": "Florida State", "home": "Alabama", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Alabama", "tv": "ABC", "featured": true}, {"away": "Florida", "home": "Auburn", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "Auburn", "tv": "ESPN"}, {"away": "LSU", "home": "Ole Miss", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Ole Miss", "tv": "ABC", "featured": true}, {"away": "Kentucky", "home": "Texas A&M", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Texas A&M", "tv": "SEC Network"}, {"away": "Mississippi State", "home": "South Carolina", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "South Carolina", "tv": "SEC Network"}, {"away": "UTSA", "home": "Texas", "time": "8:00 PM EDT", "hour": 20.0, "venue_key": "Texas", "tv": "ESPN"}, {"away": "New Mexico", "home": "Oklahoma", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Oklahoma", "tv": "ESPN2"}, {"away": "Kennesaw State", "home": "Tennessee", "time": "4:15 PM EDT", "hour": 16.25, "venue_key": "Tennessee", "tv": "SEC Network"}, {"away": "NC State", "home": "Vanderbilt", "time": "12:45 PM EDT", "hour": 12.75, "venue_key": "Vanderbilt", "tv": "SEC Network"}]}, {"week": 4, "date_str": "Saturday, Sep 26, 2026", "games": [{"away": "Oklahoma", "home": "Georgia", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Georgia", "tv": "ABC", "featured": true}, {"away": "Texas", "home": "Tennessee", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Tennessee", "tv": "ABC", "featured": true}, {"away": "South Carolina", "home": "Alabama", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Alabama", "tv": "ABC"}, {"away": "Texas A&M", "home": "LSU", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "LSU", "tv": "ESPN", "featured": true}, {"away": "Ole Miss", "home": "Florida", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Florida", "tv": "ESPN"}, {"away": "Vanderbilt", "home": "Auburn", "time": "12:45 PM EDT", "hour": 12.75, "venue_key": "Auburn", "tv": "SEC Network"}, {"away": "Missouri", "home": "Mississippi State", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Mississippi State", "tv": "SEC Network"}, {"away": "Tulsa", "home": "Arkansas", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Arkansas", "tv": "ESPN+"}, {"away": "South Alabama", "home": "Kentucky", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Kentucky", "tv": "SEC Network"}]}, {"week": 5, "date_str": "Saturday, Oct 3, 2026", "games": [{"away": "Auburn", "home": "Tennessee", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Tennessee", "tv": "ABC", "featured": true}, {"away": "Arkansas", "home": "Texas A&M", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "Texas A&M", "tv": "ESPN"}, {"away": "Vanderbilt", "home": "Georgia", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Georgia", "tv": "ABC"}, {"away": "Alabama", "home": "Mississippi State", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Mississippi State", "tv": "ABC"}, {"away": "Florida", "home": "Missouri", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Missouri", "tv": "SEC Network"}, {"away": "Kentucky", "home": "South Carolina", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "South Carolina", "tv": "SEC Network"}, {"away": "McNeese State", "home": "LSU", "time": "8:00 PM EDT", "hour": 20.0, "venue_key": "LSU", "tv": "SECN+"}]}, {"week": 6, "date_str": "Saturday, Oct 10, 2026", "games": [{"away": "Texas", "home": "Oklahoma", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Cotton Bowl", "tv": "ABC", "featured": true, "neutral_note": "Red River Rivalry (Dallas, TX)"}, {"away": "Georgia", "home": "Alabama", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Alabama", "tv": "ABC", "featured": true}, {"away": "Tennessee", "home": "Arkansas", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Arkansas", "tv": "ESPN"}, {"away": "South Carolina", "home": "Florida", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Florida", "tv": "SEC Network"}, {"away": "LSU", "home": "Kentucky", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "Kentucky", "tv": "ESPN"}, {"away": "Texas A&M", "home": "Missouri", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Missouri", "tv": "SEC Network"}, {"away": "Ole Miss", "home": "Vanderbilt", "time": "12:45 PM EDT", "hour": 12.75, "venue_key": "Vanderbilt", "tv": "SEC Network"}]}, {"week": 7, "date_str": "Saturday, Oct 17, 2026", "games": [{"away": "Alabama", "home": "Tennessee", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Tennessee", "tv": "ABC", "featured": true, "note": "Third Saturday in October"}, {"away": "Auburn", "home": "Georgia", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Georgia", "tv": "ABC", "featured": true, "note": "Deep South's Oldest Rivalry"}, {"away": "Florida", "home": "Texas", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Texas", "tv": "ABC"}, {"away": "Mississippi State", "home": "LSU", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "LSU", "tv": "ESPN"}, {"away": "Missouri", "home": "Ole Miss", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Ole Miss", "tv": "SEC Network"}, {"away": "Kentucky", "home": "Oklahoma", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Oklahoma", "tv": "SEC Network"}, {"away": "Arkansas", "home": "Vanderbilt", "time": "12:45 PM EDT", "hour": 12.75, "venue_key": "Vanderbilt", "tv": "SECN+"}, {"away": "The Citadel", "home": "Texas A&M", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Texas A&M", "tv": "SECN+"}]}, {"week": 8, "date_str": "Saturday, Oct 24, 2026", "games": [{"away": "Texas A&M", "home": "Alabama", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Alabama", "tv": "ABC", "featured": true}, {"away": "Ole Miss", "home": "Texas", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Texas", "tv": "ABC", "featured": true}, {"away": "LSU", "home": "Auburn", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "Auburn", "tv": "ESPN"}, {"away": "Tennessee", "home": "South Carolina", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "South Carolina", "tv": "SEC Network"}, {"away": "Oklahoma", "home": "Mississippi State", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Mississippi State", "tv": "ESPN"}, {"away": "Vanderbilt", "home": "Kentucky", "time": "12:45 PM EDT", "hour": 12.75, "venue_key": "Kentucky", "tv": "SEC Network"}]}, {"week": 9, "date_str": "Saturday, Oct 31, 2026", "games": [{"away": "Florida", "home": "Georgia", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Mercedes-Benz Stadium", "tv": "ABC", "featured": true, "neutral_note": "World's Largest Outdoor Cocktail Party (Atlanta, GA 2026)"}, {"away": "Auburn", "home": "Ole Miss", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "Ole Miss", "tv": "ESPN"}, {"away": "Missouri", "home": "Arkansas", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Arkansas", "tv": "ABC", "featured": true, "note": "Battle Line Rivalry"}, {"away": "Mississippi State", "home": "Texas", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Texas", "tv": "SEC Network"}, {"away": "South Carolina", "home": "Oklahoma", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Oklahoma", "tv": "SEC Network"}]}, {"week": 10, "date_str": "Saturday, Nov 7, 2026", "games": [{"away": "Alabama", "home": "LSU", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "LSU", "tv": "ABC", "featured": true, "note": "Death Valley Night Showdown"}, {"away": "Georgia", "home": "Ole Miss", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Ole Miss", "tv": "ABC", "featured": true}, {"away": "Texas", "home": "Missouri", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Missouri", "tv": "ESPN"}, {"away": "Texas A&M", "home": "South Carolina", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "South Carolina", "tv": "ESPN"}, {"away": "Oklahoma", "home": "Florida", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Florida", "tv": "SEC Network"}, {"away": "Arkansas", "home": "Auburn", "time": "12:45 PM EDT", "hour": 12.75, "venue_key": "Auburn", "tv": "SEC Network"}, {"away": "Kentucky", "home": "Tennessee", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Tennessee", "tv": "SEC Network"}, {"away": "Vanderbilt", "home": "Mississippi State", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Mississippi State", "tv": "SECN+"}]}, {"week": 11, "date_str": "Saturday, Nov 14, 2026", "games": [{"away": "Texas", "home": "LSU", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "LSU", "tv": "ABC", "featured": true}, {"away": "Tennessee", "home": "Texas A&M", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Texas A&M", "tv": "ABC", "featured": true}, {"away": "Ole Miss", "home": "Oklahoma", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Oklahoma", "tv": "ABC"}, {"away": "Missouri", "home": "Georgia", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Georgia", "tv": "ESPN"}, {"away": "South Carolina", "home": "Arkansas", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Arkansas", "tv": "SEC Network"}, {"away": "Florida", "home": "Kentucky", "time": "12:45 PM EDT", "hour": 12.75, "venue_key": "Kentucky", "tv": "SEC Network"}, {"away": "Alabama", "home": "Vanderbilt", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Vanderbilt", "tv": "ESPN"}, {"away": "Auburn", "home": "Mississippi State", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "Mississippi State", "tv": "SEC Network"}]}, {"week": 12, "date_str": "Saturday, Nov 21, 2026", "games": [{"away": "LSU", "home": "Tennessee", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Tennessee", "tv": "ABC", "featured": true}, {"away": "Texas A&M", "home": "Oklahoma", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Oklahoma", "tv": "ABC", "featured": true}, {"away": "Georgia", "home": "South Carolina", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "South Carolina", "tv": "ABC"}, {"away": "Arkansas", "home": "Texas", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Texas", "tv": "ESPN"}, {"away": "Kentucky", "home": "Missouri", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Missouri", "tv": "SEC Network"}, {"away": "Vanderbilt", "home": "Florida", "time": "12:45 PM EDT", "hour": 12.75, "venue_key": "Florida", "tv": "SEC Network"}, {"away": "Chattanooga", "home": "Alabama", "time": "2:00 PM EDT", "hour": 14.0, "venue_key": "Alabama", "tv": "SECN+"}, {"away": "Samford", "home": "Auburn", "time": "1:00 PM EDT", "hour": 13.0, "venue_key": "Auburn", "tv": "SECN+"}, {"away": "Tennessee Tech", "home": "Mississippi State", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Mississippi State", "tv": "SECN+"}, {"away": "Wofford", "home": "Ole Miss", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Ole Miss", "tv": "SECN+"}]}, {"week": 13, "date_str": "Saturday, Nov 28, 2026 (Rivalry Week)", "games": [{"away": "Auburn", "home": "Alabama", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Alabama", "tv": "ABC", "featured": true, "note": "The Iron Bowl"}, {"away": "Texas", "home": "Texas A&M", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Texas A&M", "tv": "ABC", "featured": true, "note": "The Lone Star Showdown"}, {"away": "Mississippi State", "home": "Ole Miss", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Ole Miss", "tv": "ESPN", "featured": true, "note": "The Egg Bowl"}, {"away": "LSU", "home": "Arkansas", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Arkansas", "tv": "ABC", "featured": true, "note": "The Golden Boot"}, {"away": "Tennessee", "home": "Vanderbilt", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Vanderbilt", "tv": "SEC Network"}, {"away": "Oklahoma", "home": "Missouri", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "Missouri", "tv": "SEC Network"}, {"away": "Georgia Tech", "home": "Georgia", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Georgia", "tv": "ABC", "note": "Clean, Old-Fashioned Hate"}, {"away": "Florida", "home": "Florida State", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Florida", "tv": "ESPN"}, {"away": "Louisville", "home": "Kentucky", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Kentucky", "tv": "SEC Network", "note": "Governor's Cup"}, {"away": "South Carolina", "home": "Clemson", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "South Carolina", "tv": "ESPN", "note": "Palmetto Bowl"}]}, {"week": 14, "date_str": "Saturday, Dec 5, 2026", "games": [{"away": "SEC East/Seed 1", "home": "SEC West/Seed 2", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Mercedes-Benz Stadium", "tv": "ABC", "featured": true, "note": "SEC Championship Game (Atlanta, GA)"}]}];
 
         let currentWeekIndex = 0; // Starts at Week 3
@@ -1215,10 +1486,10 @@
             const fieldGroup = document.getElementById('stadiumFieldGroup');
             const arrow = document.getElementById('windArrowGroup');
 
+// Dynamically rotate the stadium field on the compass rose
             const azimuth = venue.field_azimuth_deg || 0;
             if (fieldGroup) {
-                // Physically rotate the stadium field to its true compass azimuth!
-                // For Sanford Stadium (88°) and Kroger Field (82°), this rotates the field horizontally East-West!
+                // Apply physical compass rotation
                 fieldGroup.setAttribute('transform', `translate(100, 100) rotate(${azimuth})`);
             }
 
@@ -1226,18 +1497,21 @@
             const topText = document.getElementById('endzoneTopText');
             const bottomText = document.getElementById('endzoneBottomText');
             if (topText && bottomText) {
-                if (venue.orientation === 'E-W') {
+                if (venue.orientation === 'E-W' || (azimuth >= 70 && azimuth <= 110)) {
                     topText.textContent = "EAST";
                     bottomText.textContent = "WEST";
-                } else if (venue.orientation === 'NE-SW') {
-                    topText.textContent = "NORTH";
+                } else if (venue.orientation === 'NE-SW' || (azimuth > 15 && azimuth < 70)) {
+                    topText.textContent = "NNE";
                     bottomText.textContent = "RIVER";
-                } else if (venue.orientation === 'NW-SE') {
+                } else if (venue.orientation === 'NW-SE' || (azimuth > 300 && azimuth < 340)) {
                     topText.textContent = "NW END";
                     bottomText.textContent = "SE END";
-                } else {
+                } else if (azimuth >= 340 || azimuth <= 20) {
                     topText.textContent = "NORTH";
                     bottomText.textContent = "SOUTH";
+                } else {
+                    topText.textContent = "ENDZONE";
+                    bottomText.textContent = "ENDZONE";
                 }
             }
 

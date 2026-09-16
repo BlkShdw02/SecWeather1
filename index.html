@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -520,27 +521,42 @@
                     </h3>
                     <p class="text-xs text-slate-400 mb-3">Field axis aligned with predicted kickoff wind vector</p>
 
-                    <div class="bg-slate-900/90 rounded-xl p-4 border border-slate-800 text-center relative flex flex-col items-center justify-center">
-                        <svg class="w-44 h-60 mx-auto" viewBox="0 0 160 220">
-                            <!-- Field Outer -->
-                            <rect x="20" y="20" width="120" height="180" rx="4" fill="#14532d" stroke="#22c55e" stroke-width="2"/>
-                            <!-- North Endzone -->
-                            <rect x="20" y="20" width="120" height="25" fill="#166534" />
-                            <text x="80" y="37" font-size="9" fill="#86efac" font-weight="bold" text-anchor="middle">NORTH ENDZONE</text>
-                            <!-- South Endzone -->
-                            <rect x="20" y="175" width="120" height="25" fill="#166534" />
-                            <text x="80" y="192" font-size="9" fill="#86efac" font-weight="bold" text-anchor="middle">SOUTH ENDZONE</text>
-                            <!-- 50 Yard line -->
-                            <line x1="20" y1="65" x2="140" y2="65" stroke="#ffffff" stroke-width="1" stroke-dasharray="2,2"/>
-                            <line x1="20" y1="110" x2="140" y2="110" stroke="#ffffff" stroke-width="2"/>
-                            <text x="80" y="113" font-size="10" fill="#ffffff" font-weight="bold" text-anchor="middle">50</text>
-                            <line x1="20" y1="155" x2="140" y2="155" stroke="#ffffff" stroke-width="1" stroke-dasharray="2,2"/>
-                            
-                            <!-- Dynamic Rotating Wind Arrow -->
-                            <g id="windArrowGroup" transform="translate(80, 110) rotate(180)">
-                                <line x1="0" y1="40" x2="0" y2="-40" stroke="#38bdf8" stroke-width="3"/>
-                                <polygon points="-6,-30 6,-30 0,-48" fill="#38bdf8" />
-                                <circle cx="0" cy="40" r="4" fill="#38bdf8" />
+                    <div class="bg-slate-900/90 rounded-xl p-4 border border-slate-800 text-center relative flex flex-col items-center justify-center overflow-hidden">
+                        <!-- True Compass Reference -->
+                        <div class="absolute top-2 right-2 w-8 h-8 rounded-full border border-slate-700 bg-slate-950 flex items-center justify-center text-[10px] font-mono text-slate-400 font-bold z-10 shadow">
+                            <span class="text-red-400">N</span>
+                        </div>
+
+                        <svg class="w-48 h-56 mx-auto" viewBox="0 0 200 200">
+                            <!-- Background Circular Compass Dial -->
+                            <circle cx="100" cy="100" r="92" fill="none" stroke="#1e293b" stroke-width="1.5" stroke-dasharray="3,3"/>
+                            <text x="100" y="15" font-size="10" fill="#ef4444" font-weight="bold" text-anchor="middle">N</text>
+                            <text x="100" y="196" font-size="9" fill="#64748b" font-weight="bold" text-anchor="middle">S</text>
+                            <text x="192" y="103" font-size="9" fill="#64748b" font-weight="bold" text-anchor="middle">E</text>
+                            <text x="8" y="103" font-size="9" fill="#64748b" font-weight="bold" text-anchor="middle">W</text>
+
+                            <!-- STADIUM FIELD: Physically Rotated to True Compass Azimuth -->
+                            <g id="stadiumFieldGroup" transform="translate(100, 100) rotate(0)">
+                                <!-- Field Outer Turf -->
+                                <rect x="-42" y="-70" width="84" height="140" rx="4" fill="#14532d" stroke="#22c55e" stroke-width="2"/>
+                                <!-- Top Endzone -->
+                                <rect x="-42" y="-70" width="84" height="20" fill="#166534" />
+                                <text id="endzoneTopText" x="0" y="-56" font-size="7" fill="#86efac" font-weight="bold" text-anchor="middle">NORTH</text>
+                                <!-- Bottom Endzone -->
+                                <rect x="-42" y="50" width="84" height="20" fill="#166534" />
+                                <text id="endzoneBottomText" x="0" y="64" font-size="7" fill="#86efac" font-weight="bold" text-anchor="middle">SOUTH</text>
+                                <!-- Yard Lines -->
+                                <line x1="-42" y1="-30" x2="42" y2="-30" stroke="#ffffff" stroke-width="0.75" stroke-dasharray="2,2"/>
+                                <line x1="-42" y1="0" x2="42" y2="0" stroke="#ffffff" stroke-width="1.5"/>
+                                <text x="0" y="3" font-size="8" fill="#ffffff" font-weight="bold" text-anchor="middle">50</text>
+                                <line x1="-42" y1="30" x2="42" y2="30" stroke="#ffffff" stroke-width="0.75" stroke-dasharray="2,2"/>
+                            </g>
+
+                            <!-- TRUE WIND VECTOR (Points in true meteorological direction) -->
+                            <g id="windArrowGroup" transform="translate(100, 100) rotate(180)">
+                                <line x1="0" y1="50" x2="0" y2="-50" stroke="#38bdf8" stroke-width="3.5"/>
+                                <polygon points="-7,-40 7,-40 0,-60" fill="#38bdf8" />
+                                <circle cx="0" cy="50" r="4.5" fill="#38bdf8" />
                             </g>
                         </svg>
 
@@ -1195,13 +1211,44 @@
             document.getElementById('phaseSecondHalfTemp').textContent = `${series.nws.temp[koIdx+3]}°F · Wind ${series.nws.wind[koIdx+3]} mph`;
             document.getElementById('phaseEgressTemp').textContent = `${series.nws.temp[series.nws.temp.length-1]}°F · Cooling`;
 
-            // Wind Field Graphic Update
+            // Stadium Field Compass Rotation & Wind Vector
+            const fieldGroup = document.getElementById('stadiumFieldGroup');
             const arrow = document.getElementById('windArrowGroup');
-            if (arrow) {
-                // Orient field visually with stadium compass angle and draw relative wind vector
-                const relWindVisual = (series.windDirDeg - (venue.field_azimuth_deg || 0) + 360) % 360;
-                arrow.setAttribute('transform', `translate(80, 110) rotate(${relWindVisual})`);
+
+            const azimuth = venue.field_azimuth_deg || 0;
+            if (fieldGroup) {
+                // Physically rotate the stadium field to its true compass azimuth!
+                // For Sanford Stadium (88°) and Kroger Field (82°), this rotates the field horizontally East-West!
+                fieldGroup.setAttribute('transform', `translate(100, 100) rotate(${azimuth})`);
             }
+
+            // Update endzone label text
+            const topText = document.getElementById('endzoneTopText');
+            const bottomText = document.getElementById('endzoneBottomText');
+            if (topText && bottomText) {
+                if (venue.orientation === 'E-W') {
+                    topText.textContent = "EAST";
+                    bottomText.textContent = "WEST";
+                } else if (venue.orientation === 'NE-SW') {
+                    topText.textContent = "NORTH";
+                    bottomText.textContent = "RIVER";
+                } else if (venue.orientation === 'NW-SE') {
+                    topText.textContent = "NW END";
+                    bottomText.textContent = "SE END";
+                } else {
+                    topText.textContent = "NORTH";
+                    bottomText.textContent = "SOUTH";
+                }
+            }
+
+            if (arrow) {
+                // Meteorological wind direction is where the wind blows FROM.
+                // The arrow indicates where the wind is blowing TOWARD (windDirDeg + 180°).
+                // E.g., wind FROM the SW (225°) points TOWARD the NE (45°).
+                const blowingTowardDeg = (series.windDirDeg + 180) % 360;
+                arrow.setAttribute('transform', `translate(100, 100) rotate(${blowingTowardDeg})`);
+            }
+
             document.getElementById('fieldWindDir').textContent = `Wind from ${series.windDirStr} (${series.windDirDeg}°)`;
             document.getElementById('fieldWindSpeed').textContent = `${series.nws.wind[koIdx]} mph G ${series.nws.wind[koIdx] + 8}`;
             

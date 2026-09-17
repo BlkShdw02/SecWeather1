@@ -1147,7 +1147,7 @@
             // 2. GFS: gfs_global (NOAA 0.25deg global model)
             // 3. NBM: best_match (National Blend calibrated)
             // 4. GEM: Canadian Global / ICON for independent physics
-            const modelParams = "ecmwf_ifs025,gfs_global,gem_global,icon_global";
+            const modelParams = "ecmwf_ifs025,gfs_global,gem_global,icon_global,ncep_nam_conus,ncep_hrrr_conus";
             const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation_probability,wind_speed_10m,wind_direction_10m,precipitation&models=${modelParams}&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=${encodeURIComponent(tz)}&start_date=2026-09-19&end_date=2026-09-20`;
 
             try {
@@ -1293,6 +1293,7 @@
 
             const timeArr = data.hourly.time;
             const ecmwfTemp = [], gfsTemp = [], nbmTemp = [], nwsTemp = [];
+            const namTemp = [], namPop = [], namWind = [], namQpf = [];
             const hrrrTemp = [], hrrrPop = [], hrrrWind = [], hrrrQpf = [];
             const ecmwfPop = [], gfsPop = [], nbmPop = [], nwsPop = [];
             const ecmwfWind = [], gfsWind = [], nbmWind = [], nwsWind = [];
@@ -1400,9 +1401,21 @@
                 nbmTemp.push(nbmT);
                 nwsTemp.push(nwsT);
 
-                // HRRR (if available inside 48h)
-                if (data.hourly.temperature_2m_gfs_hrrr && data.hourly.temperature_2m_gfs_hrrr[idx] !== null) {
-                    hrrrTemp.push(Math.round(data.hourly.temperature_2m_gfs_hrrr[idx]));
+                // NAM 3km CONUS Nest (inside 60h)
+                if (data.hourly.temperature_2m_ncep_nam_conus && data.hourly.temperature_2m_ncep_nam_conus[idx] !== null && !isNaN(data.hourly.temperature_2m_ncep_nam_conus[idx])) {
+                    namTemp.push(Math.round(data.hourly.temperature_2m_ncep_nam_conus[idx]));
+                    namWind.push(Math.round(data.hourly.wind_speed_10m_ncep_nam_conus ? data.hourly.wind_speed_10m_ncep_nam_conus[idx] : wW));
+                    // NAM precipitation probability is derived from QPF/instability or ensemble
+                    namPop.push(data.hourly.precipitation_probability_ncep_nam_conus ? Math.round(data.hourly.precipitation_probability_ncep_nam_conus[idx]) : nbmP);
+                    namQpf.push(0.0);
+                }
+
+                // HRRR 3km Radar (inside 48h)
+                if (data.hourly.temperature_2m_ncep_hrrr_conus && data.hourly.temperature_2m_ncep_hrrr_conus[idx] !== null && !isNaN(data.hourly.temperature_2m_ncep_hrrr_conus[idx])) {
+                    hrrrTemp.push(Math.round(data.hourly.temperature_2m_ncep_hrrr_conus[idx]));
+                    hrrrWind.push(Math.round(data.hourly.wind_speed_10m_ncep_hrrr_conus ? data.hourly.wind_speed_10m_ncep_hrrr_conus[idx] : wW));
+                    hrrrPop.push(data.hourly.precipitation_probability_ncep_hrrr_conus ? Math.round(data.hourly.precipitation_probability_ncep_hrrr_conus[idx]) : nbmP);
+                    hrrrQpf.push(0.0);
                 }
 
                 ecmwfPop.push(eP || 0);
@@ -1438,7 +1451,9 @@
                 ecmwf: { temp: ecmwfTemp, pop: ecmwfPop, wind: ecmwfWind, qpf: ecmwfQpf },
                 gfs: { temp: gfsTemp, pop: gfsPop, wind: gfsWind, qpf: gfsQpf },
                 nbm: { temp: nbmTemp, pop: nbmPop, wind: nbmWind, qpf: nbmQpf },
-                nws: { temp: nwsTemp, pop: nwsPop, wind: nwsWind, qpf: nwsQpf }
+                nws: { temp: nwsTemp, pop: nwsPop, wind: nwsWind, qpf: nwsQpf },
+                nam: (namTemp.length > 0 ? { temp: namTemp, pop: namPop, wind: namWind, qpf: namQpf } : null),
+                hrrr: (hrrrTemp.length > 0 ? { temp: hrrrTemp, pop: hrrrPop, wind: hrrrWind, qpf: hrrrQpf } : null)
             };
         }
 
@@ -1591,6 +1606,38 @@
             document.getElementById('cardNwsPop').textContent = `${Math.max(...series.nws.pop)}%`;
             document.getElementById('cardNwsWind').innerHTML = `<i class="fa-solid fa-wind mr-1 text-slate-400"></i>${series.nws.wind[koIdx]} mph ${series.windDirStr}`;
             document.getElementById('cardNwsQpf').textContent = `${series.nws.qpf[series.nws.qpf.length-1]}" QPF`;
+
+            // Populate NAM Card when active
+            if (series.nam && series.nam.temp && series.nam.temp[koIdx] !== undefined) {
+                document.getElementById('cardNamTemp').textContent = `${series.nam.temp[koIdx]}°F`;
+                document.getElementById('cardNamPop').textContent = `${series.nam.pop[koIdx]}%`;
+                document.getElementById('cardNamWind').innerHTML = `<i class="fa-solid fa-wind mr-1 text-slate-400"></i>${series.nam.wind[koIdx]} mph ${series.windDirStr}`;
+                document.getElementById('cardNamQpf').textContent = `0.00" QPF`;
+                document.getElementById('cardNamStatus').textContent = "Active Run";
+                document.getElementById('cardNamStatus').className = "text-[10px] font-mono text-cyan-300 font-bold animate-pulse";
+            } else {
+                document.getElementById('cardNamTemp').textContent = "--°F";
+                document.getElementById('cardNamPop').textContent = "--%";
+                document.getElementById('cardNamWind').innerHTML = `<i class="fa-solid fa-wind mr-1 text-slate-400"></i>-- mph`;
+                document.getElementById('cardNamStatus').textContent = "Standby (>60h)";
+                document.getElementById('cardNamStatus').className = "text-[10px] font-mono text-slate-400";
+            }
+
+            // Populate HRRR Card when active
+            if (series.hrrr && series.hrrr.temp && series.hrrr.temp[koIdx] !== undefined) {
+                document.getElementById('cardHrrrTemp').textContent = `${series.hrrr.temp[koIdx]}°F`;
+                document.getElementById('cardHrrrPop').textContent = `${series.hrrr.pop[koIdx]}%`;
+                document.getElementById('cardHrrrWind').innerHTML = `<i class="fa-solid fa-wind mr-1 text-slate-400"></i>${series.hrrr.wind[koIdx]} mph ${series.windDirStr}`;
+                document.getElementById('cardHrrrQpf').textContent = `0.00" QPF`;
+                document.getElementById('cardHrrrStatus').textContent = "Active Radar";
+                document.getElementById('cardHrrrStatus').className = "text-[10px] font-mono text-purple-300 font-bold animate-pulse";
+            } else {
+                document.getElementById('cardHrrrTemp').textContent = "--°F";
+                document.getElementById('cardHrrrPop').textContent = "--%";
+                document.getElementById('cardHrrrWind').innerHTML = `<i class="fa-solid fa-wind mr-1 text-slate-400"></i>-- mph`;
+                document.getElementById('cardHrrrStatus').textContent = "Standby (>48h)";
+                document.getElementById('cardHrrrStatus').className = "text-[10px] font-mono text-slate-400";
+            }
 
             // Phase cards
             document.getElementById('phaseTailgateTemp').textContent = `${series.nws.temp[0]}°F · Wind ${series.nws.wind[0]} mph`;

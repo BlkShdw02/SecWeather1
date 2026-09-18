@@ -32,6 +32,40 @@
         .model-gfs { border-left: 4px solid #3b82f6; }
         .model-nbm { border-left: 4px solid #10b981; }
         .model-nws { border-left: 4px solid #f59e0b; }
+
+        /* Premium SEC Football Gridiron Theme */
+        body {
+            background-color: #06090f;
+            background-image: 
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(30, 58, 138, 0.25), transparent),
+                linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
+        }
+        .gridiron-border {
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            position: relative;
+        }
+        .gridiron-border::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, #f59e0b, #ef4444, #3b82f6, #10b981);
+            border-radius: 12px 12px 0 0;
+        }
+        .yard-hash {
+            background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 2px, transparent 2px, transparent 20px);
+        }
+        .sec-gold {
+            color: #fbbf24;
+            text-shadow: 0 0 16px rgba(251, 191, 36, 0.35);
+        }
+        .turf-pill {
+            background: linear-gradient(180deg, #166534 0%, #14532d 100%);
+            border: 1px solid #22c55e;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+
         ::-webkit-scrollbar { height: 6px; width: 6px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
@@ -52,12 +86,13 @@
     <header class="max-w-7xl mx-auto mb-5">
         <div class="glass-card rounded-2xl p-4 md:p-6 shadow-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-500 via-red-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-red-950/40 shrink-0">
-                    <i class="fa-solid fa-satellite-dish text-2xl text-white"></i>
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 via-amber-600 to-amber-700 flex items-center justify-center shadow-xl shadow-amber-950/50 shrink-0 border-2 border-amber-300/40 relative">
+                    <i class="fa-solid fa-football text-2xl text-slate-950 transform -rotate-12"></i>
+                    <span class="absolute -bottom-1 -right-1 bg-blue-900 text-amber-300 text-[9px] font-black px-1.5 py-0.2 rounded border border-amber-400/50">SEC</span>
                 </div>
                 <div>
                     <div class="flex flex-wrap items-center gap-2">
-                        <span class="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800">Live Model Engine</span>
+                        <span class="text-[11px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded turf-pill text-emerald-100 flex items-center gap-1.5"><i class="fa-solid fa-shield-halved text-amber-300"></i> OFFICIAL SEC GAMEDAY</span>
                         <span id="liveStatusBadge" class="text-[11px] font-semibold px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 flex items-center gap-1.5">
                             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> NWS / ECMWF / GFS Live
                         </span>
@@ -72,7 +107,17 @@
 
             <!-- Active Slate Date -->
             <div class="w-full md:w-auto flex items-center justify-between md:justify-end gap-3">
-                <div class="bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2 text-right">
+                <!-- View Mode Toggle: Fan View vs Coach View -->
+                <div class="flex items-center gap-1 bg-slate-950/90 p-1.5 rounded-xl border border-slate-800 shadow-inner">
+                    <button onclick="setViewMode('fan')" id="toggleFanBtn" class="px-3.5 py-2 rounded-lg text-xs font-black transition-all flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md">
+                        <i class="fa-solid fa-beer-mug-empty text-sm"></i> Fan View
+                    </button>
+                    <button onclick="setViewMode('coach')" id="toggleCoachBtn" class="px-3.5 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all flex items-center gap-1.5">
+                        <i class="fa-solid fa-clipboard-check text-sm"></i> Coach View
+                    </button>
+                </div>
+
+                <div class="hidden sm:block bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2 text-right">
                     <div class="text-[10px] text-slate-400 uppercase font-semibold">Selected Slate</div>
                     <div id="activeDateBanner" class="text-xs font-bold text-amber-300 font-mono">Week 3 (Sep 19, 2026)</div>
                 </div>
@@ -155,105 +200,230 @@
 
         <!-- ACTIVE FORECAST CONTAINER (Hidden if outside model window) -->
         <div id="activeForecastContainer" class="space-y-6">
+        <!-- ========================================================= -->
+        <!-- 🏈 FAN VIEW: BROADCAST HERO VERDICT & GAMEDAY MILESTONES   -->
+        <!-- ========================================================= -->
+        <div id="fanViewContainer" class="space-y-6">
 
-        <!-- FORECAST AT A GLANCE (Consensus Average Across All Models) -->
-        <section id="forecastAtAGlanceSection" class="glass-card rounded-2xl p-5 shadow-xl border-l-4 border-l-amber-500">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3.5 pb-2.5 border-b border-slate-800">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center text-xs">
-                        <i class="fa-solid fa-bolt"></i>
-                    </div>
+            <!-- Executive Hero Verdict Banner -->
+            <section class="glass-card rounded-2xl p-6 bg-gradient-to-r from-blue-950/50 via-slate-900/95 to-amber-950/40 border border-slate-700 shadow-2xl relative overflow-hidden gridiron-border">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h3 class="text-sm font-black text-white uppercase tracking-wider">Forecast at a Glance</h3>
-                        <p class="text-[11px] text-slate-400">Consensus multi-model average (ECMWF + GFS + NBM + NDFD) for key game-day milestones</p>
-                    </div>
-                </div>
-                <span class="text-[10px] font-mono px-2.5 py-1 rounded-md bg-slate-900 text-amber-300 border border-slate-700">
-                    <i class="fa-solid fa-calculator mr-1"></i> Multi-Model Consensus
-                </span>
-            </div>
-
-            <!-- 4 Milestone Cards -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                
-                <!-- 1. Tailgating (T-3h) -->
-                <div class="bg-slate-900/90 border border-slate-800 hover:border-slate-700 rounded-xl p-3.5 flex flex-col justify-between transition-all">
-                    <div>
-                        <div class="flex items-center justify-between text-slate-400 text-[11px] font-bold uppercase mb-1">
-                            <span class="text-amber-400 flex items-center gap-1.5"><i class="fa-solid fa-beer-mug-empty"></i> Tailgating</span>
-                            <span class="font-mono text-[10px] bg-slate-800 px-1.5 py-0.5 rounded">T-3h</span>
+                        <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400 font-mono">
+                            <span><i class="fa-solid fa-trophy mr-1"></i> SEC Gameday Weather Verdict</span>
+                            <span class="text-slate-600">·</span>
+                            <span id="heroVenueCity" class="text-slate-300">--</span>
                         </div>
-                        <div class="text-[11px] text-slate-400 font-mono" id="glanceTailgateTime">--</div>
+                        <h2 id="heroVerdictTitle" class="text-2xl md:text-3xl font-black text-white mt-1.5 leading-tight">
+                            --°F at Kickoff · -- · Wind --
+                        </h2>
+                        <p id="heroVerdictSubtitle" class="text-xs text-slate-300 mt-1.5 flex flex-wrap items-center gap-3">
+                            <span><i class="fa-solid fa-compass text-blue-400 mr-1"></i> Field Axis: <strong id="heroFieldAxis">--</strong></span>
+                            <span><i class="fa-solid fa-wind text-cyan-400 mr-1"></i> <span id="heroWindSummary">--</span></span>
+                            <span class="text-emerald-400"><i class="fa-solid fa-circle-check mr-1"></i> <span id="heroPrecipSummary">Consensus Model Agreement</span></span>
+                        </p>
                     </div>
-                    <div class="my-2.5">
-                        <div class="text-2xl md:text-3xl font-black text-white font-mono" id="glanceTailgateTemp">--°F</div>
-                        <div class="text-[11px] font-semibold text-slate-300 mt-0.5" id="glanceTailgateSky">--</div>
-                    </div>
-                    <div class="pt-2 border-t border-slate-800/80 text-[11px] flex justify-between items-center text-slate-300">
-                        <span><i class="fa-solid fa-umbrella text-blue-400 mr-1"></i><span id="glanceTailgatePop">--%</span></span>
-                        <span><i class="fa-solid fa-wind text-slate-400 mr-1"></i><span id="glanceTailgateWind">-- mph</span></span>
+
+                    <!-- Large Kickoff Metric Display -->
+                    <div class="bg-slate-900/95 border border-red-900/60 rounded-2xl p-4 text-center shrink-0 min-w-36 shadow-lg bg-gradient-to-b from-red-950/30 to-transparent">
+                        <div class="text-[10px] uppercase font-bold text-slate-400">Kickoff Consensus</div>
+                        <div id="heroKickoffTemp" class="text-4xl font-black text-white font-mono mt-0.5">--°F</div>
+                        <div id="heroKickoffRain" class="text-xs font-bold text-amber-400 mt-0.5">--% Rain Risk</div>
                     </div>
                 </div>
 
-                <!-- 2. Kickoff (T-0h) -->
-                <div class="bg-slate-900/90 border border-red-900/60 hover:border-red-700/80 rounded-xl p-3.5 flex flex-col justify-between transition-all bg-gradient-to-b from-red-950/20 to-transparent">
-                    <div>
-                        <div class="flex items-center justify-between text-slate-400 text-[11px] font-bold uppercase mb-1">
-                            <span class="text-red-400 flex items-center gap-1.5"><i class="fa-solid fa-football"></i> Kickoff</span>
-                            <span class="font-mono text-[10px] bg-red-900/80 text-red-200 px-1.5 py-0.5 rounded font-bold">T-0h</span>
+                <!-- 4 Milestone Cards Integrated Inside Hero -->
+                <div class="mt-6 pt-5 border-t border-slate-800/90 grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                    <!-- Tailgating -->
+                    <div class="bg-slate-950/70 p-3.5 rounded-xl border border-slate-800 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between text-[11px] font-bold uppercase text-slate-400 mb-1">
+                                <span class="text-amber-400"><i class="fa-solid fa-beer-mug-empty mr-1"></i> Tailgating</span>
+                                <span class="font-mono text-[10px] bg-slate-800 px-1.5 py-0.5 rounded">T-3h</span>
+                            </div>
+                            <div class="text-[11px] text-slate-400 font-mono" id="heroTailgateTime">--</div>
                         </div>
-                        <div class="text-[11px] text-slate-400 font-mono" id="glanceKickoffTime">--</div>
-                    </div>
-                    <div class="my-2.5">
-                        <div class="text-2xl md:text-3xl font-black text-white font-mono" id="glanceKickoffTemp">--°F</div>
-                        <div class="text-[11px] font-semibold text-slate-300 mt-0.5" id="glanceKickoffSky">--</div>
-                    </div>
-                    <div class="pt-2 border-t border-slate-800/80 text-[11px] flex justify-between items-center text-slate-300">
-                        <span><i class="fa-solid fa-umbrella text-blue-400 mr-1"></i><span id="glanceKickoffPop">--%</span></span>
-                        <span><i class="fa-solid fa-wind text-slate-400 mr-1"></i><span id="glanceKickoffWind">-- mph</span></span>
-                    </div>
-                </div>
-
-                <!-- 3. Halftime (T+1.5h) -->
-                <div class="bg-slate-900/90 border border-slate-800 hover:border-slate-700 rounded-xl p-3.5 flex flex-col justify-between transition-all">
-                    <div>
-                        <div class="flex items-center justify-between text-slate-400 text-[11px] font-bold uppercase mb-1">
-                            <span class="text-emerald-400 flex items-center gap-1.5"><i class="fa-solid fa-drum"></i> Halftime</span>
-                            <span class="font-mono text-[10px] bg-slate-800 px-1.5 py-0.5 rounded">T+1.5h</span>
+                        <div class="my-2">
+                            <div class="text-2xl md:text-3xl font-black text-white font-mono" id="heroTailgateTemp">--°F</div>
+                            <div class="text-xs font-semibold text-slate-300 mt-0.5" id="heroTailgateSky">--</div>
                         </div>
-                        <div class="text-[11px] text-slate-400 font-mono" id="glanceHalftimeTime">--</div>
-                    </div>
-                    <div class="my-2.5">
-                        <div class="text-2xl md:text-3xl font-black text-white font-mono" id="glanceHalftimeTemp">--°F</div>
-                        <div class="text-[11px] font-semibold text-slate-300 mt-0.5" id="glanceHalftimeSky">--</div>
-                    </div>
-                    <div class="pt-2 border-t border-slate-800/80 text-[11px] flex justify-between items-center text-slate-300">
-                        <span><i class="fa-solid fa-umbrella text-blue-400 mr-1"></i><span id="glanceHalftimePop">--%</span></span>
-                        <span><i class="fa-solid fa-wind text-slate-400 mr-1"></i><span id="glanceHalftimeWind">-- mph</span></span>
-                    </div>
-                </div>
-
-                <!-- 4. Headed Home (T+3h) -->
-                <div class="bg-slate-900/90 border border-slate-800 hover:border-slate-700 rounded-xl p-3.5 flex flex-col justify-between transition-all">
-                    <div>
-                        <div class="flex items-center justify-between text-slate-400 text-[11px] font-bold uppercase mb-1">
-                            <span class="text-indigo-400 flex items-center gap-1.5"><i class="fa-solid fa-car-side"></i> Headed Home</span>
-                            <span class="font-mono text-[10px] bg-slate-800 px-1.5 py-0.5 rounded">T+3h</span>
+                        <div class="pt-2 border-t border-slate-800/80 text-[11px] flex justify-between items-center text-slate-300">
+                            <span><i class="fa-solid fa-umbrella text-blue-400 mr-1"></i><span id="heroTailgatePop">--%</span></span>
+                            <span><i class="fa-solid fa-wind text-slate-400 mr-1"></i><span id="heroTailgateWind">-- mph</span></span>
                         </div>
-                        <div class="text-[11px] text-slate-400 font-mono" id="glanceHomeTime">--</div>
                     </div>
-                    <div class="my-2.5">
-                        <div class="text-2xl md:text-3xl font-black text-white font-mono" id="glanceHomeTemp">--°F</div>
-                        <div class="text-[11px] font-semibold text-slate-300 mt-0.5" id="glanceHomeSky">--</div>
+
+                    <!-- Kickoff -->
+                    <div class="bg-slate-950/70 p-3.5 rounded-xl border border-red-800/70 flex flex-col justify-between bg-gradient-to-b from-red-950/20 to-transparent">
+                        <div>
+                            <div class="flex items-center justify-between text-[11px] font-bold uppercase text-slate-400 mb-1">
+                                <span class="text-red-400"><i class="fa-solid fa-football mr-1"></i> Kickoff</span>
+                                <span class="font-mono text-[10px] bg-red-900/80 text-red-200 px-1.5 py-0.5 rounded font-bold">T-0h</span>
+                            </div>
+                            <div class="text-[11px] text-slate-400 font-mono" id="heroKickoffTimeText">--</div>
+                        </div>
+                        <div class="my-2">
+                            <div class="text-2xl md:text-3xl font-black text-white font-mono" id="heroKickoffTempCard">--°F</div>
+                            <div class="text-xs font-semibold text-slate-300 mt-0.5" id="heroKickoffSky">--</div>
+                        </div>
+                        <div class="pt-2 border-t border-slate-800/80 text-[11px] flex justify-between items-center text-slate-300">
+                            <span><i class="fa-solid fa-umbrella text-blue-400 mr-1"></i><span id="heroKickoffPop">--%</span></span>
+                            <span><i class="fa-solid fa-wind text-slate-400 mr-1"></i><span id="heroKickoffWind">-- mph</span></span>
+                        </div>
                     </div>
-                    <div class="pt-2 border-t border-slate-800/80 text-[11px] flex justify-between items-center text-slate-300">
-                        <span><i class="fa-solid fa-umbrella text-blue-400 mr-1"></i><span id="glanceHomePop">--%</span></span>
-                        <span><i class="fa-solid fa-wind text-slate-400 mr-1"></i><span id="glanceHomeWind">-- mph</span></span>
+
+                    <!-- Halftime -->
+                    <div class="bg-slate-950/70 p-3.5 rounded-xl border border-slate-800 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between text-[11px] font-bold uppercase text-slate-400 mb-1">
+                                <span class="text-emerald-400"><i class="fa-solid fa-drum mr-1"></i> Halftime</span>
+                                <span class="font-mono text-[10px] bg-slate-800 px-1.5 py-0.5 rounded">T+1.5h</span>
+                            </div>
+                            <div class="text-[11px] text-slate-400 font-mono" id="heroHalftimeTime">--</div>
+                        </div>
+                        <div class="my-2">
+                            <div class="text-2xl md:text-3xl font-black text-white font-mono" id="heroHalftimeTemp">--°F</div>
+                            <div class="text-xs font-semibold text-slate-300 mt-0.5" id="heroHalftimeSky">--</div>
+                        </div>
+                        <div class="pt-2 border-t border-slate-800/80 text-[11px] flex justify-between items-center text-slate-300">
+                            <span><i class="fa-solid fa-umbrella text-blue-400 mr-1"></i><span id="heroHalftimePop">--%</span></span>
+                            <span><i class="fa-solid fa-wind text-slate-400 mr-1"></i><span id="heroHalftimeWind">-- mph</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Headed Home -->
+                    <div class="bg-slate-950/70 p-3.5 rounded-xl border border-slate-800 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between text-[11px] font-bold uppercase text-slate-400 mb-1">
+                                <span class="text-indigo-400"><i class="fa-solid fa-car-side mr-1"></i> Headed Home</span>
+                                <span class="font-mono text-[10px] bg-slate-800 px-1.5 py-0.5 rounded">T+3h</span>
+                            </div>
+                            <div class="text-[11px] text-slate-400 font-mono" id="heroHomeTime">--</div>
+                        </div>
+                        <div class="my-2">
+                            <div class="text-2xl md:text-3xl font-black text-white font-mono" id="heroHomeTemp">--°F</div>
+                            <div class="text-xs font-semibold text-slate-300 mt-0.5" id="heroHomeSky">--</div>
+                        </div>
+                        <div class="pt-2 border-t border-slate-800/80 text-[11px] flex justify-between items-center text-slate-300">
+                            <span><i class="fa-solid fa-umbrella text-blue-400 mr-1"></i><span id="heroHomePop">--%</span></span>
+                            <span><i class="fa-solid fa-wind text-slate-400 mr-1"></i><span id="heroHomeWind">-- mph</span></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stadium Field Compass & Quick Fan Advice -->
+            <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Field Compass Graphic (Clean, Shared) -->
+                <div class="glass-card rounded-2xl p-5 shadow-xl lg:col-span-1">
+                    <h3 class="text-base font-bold text-white mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-compass text-blue-400"></i> Stadium Field Alignment
+                    </h3>
+                    <p class="text-xs text-slate-400 mb-3">Compass-calibrated field orientation and kickoff wind vector</p>
+
+                    <div class="bg-slate-900/90 rounded-xl p-4 border border-slate-800 text-center relative flex flex-col items-center justify-center overflow-hidden">
+                        <div class="absolute top-2 right-2 w-7 h-7 rounded-full border border-slate-700 bg-slate-950 flex items-center justify-center text-[10px] font-mono text-slate-400 font-bold z-10 shadow">
+                            <span class="text-red-400">N</span>
+                        </div>
+
+                        <svg class="w-48 h-56 mx-auto" viewBox="0 0 200 200">
+                            <circle cx="100" cy="100" r="92" fill="none" stroke="#1e293b" stroke-width="1.5" stroke-dasharray="3,3"/>
+                            <text x="100" y="15" font-size="10" fill="#ef4444" font-weight="bold" text-anchor="middle">N</text>
+                            <text x="100" y="196" font-size="9" fill="#64748b" font-weight="bold" text-anchor="middle">S</text>
+                            <text x="192" y="103" font-size="9" fill="#64748b" font-weight="bold" text-anchor="middle">E</text>
+                            <text x="8" y="103" font-size="9" fill="#64748b" font-weight="bold" text-anchor="middle">W</text>
+
+                            <!-- STADIUM FIELD (Rotates to true compass azimuth) -->
+                            <g id="stadiumFieldGroup" transform="translate(100, 100) rotate(0)">
+                                <rect x="-42" y="-70" width="84" height="140" rx="4" fill="#14532d" stroke="#22c55e" stroke-width="2"/>
+                                <rect x="-42" y="-70" width="84" height="20" fill="#166534" />
+                                <text id="endzoneTopText" x="0" y="-56" font-size="7" fill="#86efac" font-weight="bold" text-anchor="middle">NORTH</text>
+                                <rect x="-42" y="50" width="84" height="20" fill="#166534" />
+                                <text id="endzoneBottomText" x="0" y="64" font-size="7" fill="#86efac" font-weight="bold" text-anchor="middle">SOUTH</text>
+                                <line x1="-42" y1="-30" x2="42" y2="-30" stroke="#ffffff" stroke-width="0.75" stroke-dasharray="2,2"/>
+                                <line x1="-42" y1="0" x2="42" y2="0" stroke="#ffffff" stroke-width="1.5"/>
+                                <text x="0" y="3" font-size="8" fill="#ffffff" font-weight="bold" text-anchor="middle">50</text>
+                                <line x1="-42" y1="30" x2="42" y2="30" stroke="#ffffff" stroke-width="0.75" stroke-dasharray="2,2"/>
+                            </g>
+
+                            <!-- WIND ARROW (Points downwind) -->
+                            <g id="windArrowGroup" transform="translate(100, 100) rotate(180)">
+                                <line x1="0" y1="50" x2="0" y2="-50" stroke="#38bdf8" stroke-width="3.5"/>
+                                <polygon points="-7,-40 7,-40 0,-60" fill="#38bdf8" />
+                                <circle cx="0" cy="50" r="4.5" fill="#38bdf8" />
+                            </g>
+                        </svg>
+
+                        <div class="mt-2 text-xs">
+                            <div class="font-bold text-white flex items-center justify-center gap-1.5">
+                                <span id="fieldWindDir" class="text-cyan-400">--</span>
+                                <span class="text-slate-400">at</span>
+                                <span id="fieldWindSpeed" class="text-amber-300 font-mono">--</span>
+                            </div>
+                            <p id="kickingAdvantage" class="text-xs text-slate-400 mt-1">Calculating kicking/passing bias...</p>
+                        </div>
                     </div>
                 </div>
 
-            </div>
-        </section>
+                <!-- Fan Essentials Advice -->
+                <div class="glass-card rounded-2xl p-5 shadow-xl lg:col-span-2 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-shirt text-amber-400"></i> What to Wear & Gameday Essentials
+                        </h3>
+                        <p class="text-xs text-slate-400 mb-4">Recommendations based on consensus temperature and weather conditions</p>
+
+                        <div class="space-y-3">
+                            <div class="p-3 bg-slate-900/80 border border-slate-800 rounded-xl flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-amber-950 text-amber-400 flex items-center justify-center shrink-0 text-sm">
+                                    <i class="fa-solid fa-sun"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-white uppercase">Attire & Sun Protection</h4>
+                                    <p class="text-xs text-slate-400 mt-0.5" id="fanAdviceAttire">Short sleeves and sunglasses recommended for daytime tailgates. Consider bringing a light layer if kickoff falls in the evening.</p>
+                                </div>
+                            </div>
+
+                            <div class="p-3 bg-slate-900/80 border border-slate-800 rounded-xl flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-blue-950 text-blue-400 flex items-center justify-center shrink-0 text-sm">
+                                    <i class="fa-solid fa-umbrella"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-white uppercase">Rain & Poncho Outlook</h4>
+                                    <p class="text-xs text-slate-400 mt-0.5" id="fanAdviceRain">Checking rain risk across all operational models...</p>
+                                </div>
+                            </div>
+
+                            <div class="p-3 bg-slate-900/80 border border-slate-800 rounded-xl flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-indigo-950 text-indigo-400 flex items-center justify-center shrink-0 text-sm">
+                                    <i class="fa-solid fa-car"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-white uppercase">Post-Game Egress & Travel</h4>
+                                    <p class="text-xs text-slate-400 mt-0.5" id="fanAdviceEgress">Comfortable stadium exit conditions. Temperature drops smoothly into postgame hours.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Switch to Coach View Link -->
+                    <div class="mt-4 pt-3 border-t border-slate-800/80 flex justify-between items-center text-xs">
+                        <span class="text-slate-400 text-[11px]">Need meteorology deep dive, individual model runs, or lightning protocols?</span>
+                        <button onclick="setViewMode('coach')" class="text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1">
+                            Switch to Coach View <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+        <!-- END FAN VIEW -->
+
+
+                <!-- ========================================================= -->
+        <!-- 📋 COACH VIEW: METEOROLOGY & TACTICAL OPERATIONS SUITE     -->
+        <!-- ========================================================= -->
+        <div id="coachViewContainer" class="hidden space-y-6">
 
             <!-- High-Res Mode Activation Banner -->
             <div id="highResStatusBanner" class="p-3 rounded-xl bg-slate-900/90 border border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
@@ -266,13 +436,13 @@
                             <span>High-Resolution Convective Models</span>
                             <span id="highResBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800">Standby (>60h to Kickoff)</span>
                         </div>
-                        <p class="text-[11px] text-slate-400">NAM (12km/3km Nest) activates within 60 hours; HRRR (3km Rapid Refresh) & RRFS activate within 48 hours.</p>
+                        <p class="text-[11px] text-slate-400">NAM (12km/3km Nest) activates within 60 hours; HRRR (3km Rapid Refresh) activates within 48 hours.</p>
                     </div>
                 </div>
                 <div id="highResModelPills" class="flex items-center gap-1.5 font-mono text-[11px]">
                     <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">NAM: 60h</span>
                     <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">HRRR: 48h</span>
-                    <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">RRFS: 48h</span>
+                    
                 </div>
             </div>
 
@@ -392,7 +562,7 @@
             </section>
 
             <!-- Convective High-Res Suite (NAM, HRRR, RRFS) Cards -->
-            <section id="hiresCardsSection" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <section id="hiresCardsSection" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <!-- NAM -->
                 <div class="glass-card rounded-xl p-4 shadow-lg border-l-4 border-l-cyan-400 relative">
                     <div class="flex items-center justify-between mb-1">
@@ -449,225 +619,7 @@
                     </div>
                 </div>
 
-                <!-- RRFS -->
-                <div class="glass-card rounded-xl p-4 shadow-lg border-l-4 border-l-orange-400 relative">
-                    <div class="flex items-center justify-between mb-1">
-                        <span class="text-xs font-bold tracking-wider px-2 py-0.5 rounded bg-orange-950 text-orange-400 border border-orange-800 flex items-center gap-1.5">
-                            <span class="w-1.5 h-1.5 rounded-full bg-orange-400"></span> NOAA RRFS (Next-Gen)
-                        </span>
-                        <span class="text-[10px] font-mono text-orange-300 font-bold" id="cardRrfsStatus">T-48h Hourly</span>
-                    </div>
-                    <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 mb-2 border-b border-slate-800/80 pb-1">
-                        <span>Updated: <span id="rrfsLastUpdated" class="text-slate-300">--</span></span>
-                        <span>Next: <span id="rrfsNextUpdate" class="text-orange-300 font-semibold">--</span></span>
-                    </div>
-                    <div class="flex items-baseline justify-between mt-2">
-                        <div>
-                            <div id="cardRrfsTemp" class="text-3xl font-black text-white font-mono">--°F</div>
-                            <p class="text-[11px] text-slate-400">Kickoff Temp</p>
-                        </div>
-                        <div class="text-right">
-                            <div id="cardRrfsPop" class="text-lg font-bold text-orange-400 font-mono">--%</div>
-                            <p class="text-[11px] text-slate-400">Rain Prob</p>
-                        </div>
-                    </div>
-                    <div class="mt-3 pt-2.5 border-t border-slate-800/80 text-xs text-slate-300 flex justify-between items-center">
-                        <span id="cardRrfsWind"><i class="fa-solid fa-wind mr-1 text-slate-400"></i>-- mph</span>
-                        <span class="text-slate-400" id="cardRrfsQpf">-- " QPF</span>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 9-Hour Game Operations Envelope -->
-            <section class="glass-card rounded-2xl p-5 shadow-xl">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
-                    <div>
-                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                            <i class="fa-solid fa-stopwatch text-indigo-400"></i> 9-Hour Game Operations Timeline (T-3h through T+6h)
-                        </h3>
-                        <p class="text-xs text-slate-400">Live conditions from tailgate setup through postgame stadium clearing</p>
-                    </div>
-                    <div id="consensusSpreadBadge" class="px-3 py-1 rounded-lg bg-emerald-950 border border-emerald-800 text-emerald-300 text-xs font-mono font-bold flex items-center gap-1.5">
-                        <i class="fa-solid fa-check"></i> High Model Agreement
-                    </div>
-                </div>
-
-                <!-- 4 Phase Cards -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 border-t-2 border-t-indigo-500">
-                        <div class="flex items-center justify-between text-xs text-indigo-400 font-bold mb-1">
-                            <span>TAILGATE & STAGING</span>
-                            <span class="font-mono text-slate-400">T-3h → T-1h</span>
-                        </div>
-                        <div class="text-sm font-semibold text-white mt-1" id="phaseTailgateTemp">--</div>
-                        <p class="text-xs text-slate-400 mt-1" id="phaseTailgateDesc">Setup conditions and fan arrival.</p>
-                    </div>
-
-                    <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 border-t-2 border-t-red-500">
-                        <div class="flex items-center justify-between text-xs text-red-400 font-bold mb-1">
-                            <span>KICKOFF & 1ST HALF</span>
-                            <span class="font-mono text-slate-400">T-0h → T+2h</span>
-                        </div>
-                        <div class="text-sm font-semibold text-white mt-1" id="phaseKickoffTemp">--</div>
-                        <p class="text-xs text-slate-400 mt-1" id="phaseKickoffDesc">Passing impact, crosswinds, and early game moisture.</p>
-                    </div>
-
-                    <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 border-t-2 border-t-amber-500">
-                        <div class="flex items-center justify-between text-xs text-amber-400 font-bold mb-1">
-                            <span>2ND HALF & 4TH QUARTER</span>
-                            <span class="font-mono text-slate-400">T+2h → T+4h</span>
-                        </div>
-                        <div class="text-sm font-semibold text-white mt-1" id="phaseSecondHalfTemp">--</div>
-                        <p class="text-xs text-slate-400 mt-1" id="phaseSecondHalfDesc">Closing temp drops, wind shifts, and precipitation.</p>
-                    </div>
-
-                    <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 border-t-2 border-t-emerald-500">
-                        <div class="flex items-center justify-between text-xs text-emerald-400 font-bold mb-1">
-                            <span>EGRESS & LOT CLEARING</span>
-                            <span class="font-mono text-slate-400">T+4h → T+6h</span>
-                        </div>
-                        <div class="text-sm font-semibold text-white mt-1" id="phaseEgressTemp">--</div>
-                        <p class="text-xs text-slate-400 mt-1" id="phaseEgressDesc">Postgame egress and fan safety.</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Chart Section: Interactive Multi-Model Time Series -->
-            <section class="glass-card rounded-2xl p-5 shadow-xl">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-                    <div>
-                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                            <i class="fa-solid fa-chart-line text-emerald-400"></i> Multi-Model Trend Comparison (T-3h to T+6h)
-                        </h3>
-                        <p class="text-xs text-slate-400">Live operational curves for ECMWF vs. GFS vs. NBM vs. NWS</p>
-                    </div>
-
-                    <!-- Parameter Toggle Buttons -->
-                    <div class="flex flex-wrap gap-2">
-                        <button onclick="switchChart('temp')" id="btn-temp" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 bg-blue-900/80 text-blue-300 transition-all">
-                            <i class="fa-solid fa-temperature-half mr-1"></i> Temp (°F)
-                        </button>
-                        <button onclick="switchChart('precip')" id="btn-precip" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 hover:text-white transition-all">
-                            <i class="fa-solid fa-cloud-showers-heavy mr-1"></i> Rain Risk (%)
-                        </button>
-                        <button onclick="switchChart('wind')" id="btn-wind" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 hover:text-white transition-all">
-                            <i class="fa-solid fa-wind mr-1"></i> Wind Speed (mph)
-                        </button>
-                        <button onclick="switchChart('qpf')" id="btn-qpf" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 hover:text-white transition-all">
-                            <i class="fa-solid fa-droplet mr-1"></i> QPF (in)
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Canvas Container -->
-                <div class="h-80 w-full relative">
-                    <canvas id="forecastChart"></canvas>
-                </div>
-
-                <div class="mt-4 pt-3 border-t border-slate-800 text-xs flex flex-wrap items-center justify-between text-slate-400 gap-3">
-                    <div class="flex items-center gap-4">
-                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span> ECMWF (IFS)</span>
-                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span> NOAA GFS</span>
-                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> NOAA NBM</span>
-                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span> NWS Official Grid</span>
-                    </div>
-                    <div class="font-mono text-[11px] text-slate-400">
-                        <span class="bg-red-950 text-red-400 px-2 py-0.5 rounded mr-1 font-bold">Red Axis Marker = T-0h Kickoff</span>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Hourly Cross-Comparison Matrix Table -->
-            <section class="glass-card rounded-2xl p-5 shadow-xl overflow-hidden">
-                <div class="flex justify-between items-center mb-3">
-                    <div>
-                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                            <i class="fa-solid fa-table-cells text-amber-400"></i> Hourly Live Model Matrix
-                        </h3>
-                        <p class="text-xs text-slate-400">Live operational outputs for each hour from T-3h to T+6h</p>
-                    </div>
-                    <span class="text-xs font-mono bg-slate-800 text-slate-300 px-3 py-1 rounded-lg border border-slate-700">10 Time Steps</span>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs border-collapse">
-                        <thead>
-                            <tr class="border-b border-slate-700 bg-slate-900 text-slate-300 uppercase tracking-wider font-semibold">
-                                <th class="p-2.5">Timeline</th>
-                                <th class="p-2.5">Hour (Local)</th>
-                                <th class="p-2.5">Phase</th>
-                                <th class="p-2.5 text-red-400">ECMWF (T/PoP/W)</th>
-                                <th class="p-2.5 text-blue-400">GFS (T/PoP/W)</th>
-                                <th class="p-2.5 text-emerald-400">NBM (T/PoP/W)</th>
-                                <th class="p-2.5 text-amber-400">NWS Official (T/PoP/W)</th>
-                                <th class="p-2.5 text-slate-200">Consensus Spread</th>
-                            </tr>
-                        </thead>
-                        <tbody id="hourlyTableBody" class="divide-y divide-slate-800 font-mono text-slate-300">
-                            <!-- Populated dynamically -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- Tactical Stadium Wind Vector Impact & Sideline Guidance -->
-            <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Stadium Orientation & Wind Field Map -->
-                <div class="glass-card rounded-2xl p-5 shadow-xl lg:col-span-1">
-                    <h3 class="text-base font-bold text-white mb-1 flex items-center gap-2">
-                        <i class="fa-solid fa-compass text-blue-400"></i> Stadium Field Wind Angle
-                    </h3>
-                    <p class="text-xs text-slate-400 mb-3">Field axis aligned with predicted kickoff wind vector</p>
-
-                    <div class="bg-slate-900/90 rounded-xl p-4 border border-slate-800 text-center relative flex flex-col items-center justify-center overflow-hidden">
-                        <!-- True Compass Reference -->
-                        <div class="absolute top-2 right-2 w-8 h-8 rounded-full border border-slate-700 bg-slate-950 flex items-center justify-center text-[10px] font-mono text-slate-400 font-bold z-10 shadow">
-                            <span class="text-red-400">N</span>
-                        </div>
-
-                        <svg class="w-48 h-56 mx-auto" viewBox="0 0 200 200">
-                            <!-- Background Circular Compass Dial -->
-                            <circle cx="100" cy="100" r="92" fill="none" stroke="#1e293b" stroke-width="1.5" stroke-dasharray="3,3"/>
-                            <text x="100" y="15" font-size="10" fill="#ef4444" font-weight="bold" text-anchor="middle">N</text>
-                            <text x="100" y="196" font-size="9" fill="#64748b" font-weight="bold" text-anchor="middle">S</text>
-                            <text x="192" y="103" font-size="9" fill="#64748b" font-weight="bold" text-anchor="middle">E</text>
-                            <text x="8" y="103" font-size="9" fill="#64748b" font-weight="bold" text-anchor="middle">W</text>
-
-                            <!-- STADIUM FIELD: Physically Rotated to True Compass Azimuth -->
-                            <g id="stadiumFieldGroup" transform="translate(100, 100) rotate(0)">
-                                <!-- Field Outer Turf -->
-                                <rect x="-42" y="-70" width="84" height="140" rx="4" fill="#14532d" stroke="#22c55e" stroke-width="2"/>
-                                <!-- Top Endzone -->
-                                <rect x="-42" y="-70" width="84" height="20" fill="#166534" />
-                                <text id="endzoneTopText" x="0" y="-56" font-size="7" fill="#86efac" font-weight="bold" text-anchor="middle">NORTH</text>
-                                <!-- Bottom Endzone -->
-                                <rect x="-42" y="50" width="84" height="20" fill="#166534" />
-                                <text id="endzoneBottomText" x="0" y="64" font-size="7" fill="#86efac" font-weight="bold" text-anchor="middle">SOUTH</text>
-                                <!-- Yard Lines -->
-                                <line x1="-42" y1="-30" x2="42" y2="-30" stroke="#ffffff" stroke-width="0.75" stroke-dasharray="2,2"/>
-                                <line x1="-42" y1="0" x2="42" y2="0" stroke="#ffffff" stroke-width="1.5"/>
-                                <text x="0" y="3" font-size="8" fill="#ffffff" font-weight="bold" text-anchor="middle">50</text>
-                                <line x1="-42" y1="30" x2="42" y2="30" stroke="#ffffff" stroke-width="0.75" stroke-dasharray="2,2"/>
-                            </g>
-
-                            <!-- TRUE WIND VECTOR (Points in true meteorological direction) -->
-                            <g id="windArrowGroup" transform="translate(100, 100) rotate(180)">
-                                <line x1="0" y1="50" x2="0" y2="-50" stroke="#38bdf8" stroke-width="3.5"/>
-                                <polygon points="-7,-40 7,-40 0,-60" fill="#38bdf8" />
-                                <circle cx="0" cy="50" r="4.5" fill="#38bdf8" />
-                            </g>
-                        </svg>
-
-                        <div class="mt-3 text-xs">
-                            <div class="font-bold text-white flex items-center justify-center gap-1.5">
-                                <span id="fieldWindDir" class="text-cyan-400">--</span>
-                                <span class="text-slate-400">at</span>
-                                <span id="fieldWindSpeed" class="text-amber-300 font-mono">--</span>
-                            </div>
-                            <p id="kickingAdvantage" class="text-xs text-slate-400 mt-1">Calculating kicking/passing bias...</p>
-                        </div>
-                    </div>
-                </div>
+                
 
                 <!-- Sideline Operational Protocols & Lightning Watch -->
                 <div class="glass-card rounded-2xl p-5 shadow-xl lg:col-span-2 flex flex-col justify-between">
@@ -716,6 +668,9 @@
                     </div>
                 </div>
             </section>
+
+        </div>
+        <!-- END COACH VIEW -->
 
         </div>
 
@@ -1006,6 +961,35 @@
         let currentWeekIndex = 0; // Starts at Week 3
         let currentGameIndex = 0; 
         let currentParam = 'temp';
+
+        // View Mode Controller (Fan View vs Coach View)
+        let currentViewMode = 'fan'; // Default to Fan View
+
+        function setViewMode(mode) {
+            currentViewMode = mode;
+            const fanContainer = document.getElementById('fanViewContainer');
+            const coachContainer = document.getElementById('coachViewContainer');
+            const fanBtn = document.getElementById('toggleFanBtn');
+            const coachBtn = document.getElementById('toggleCoachBtn');
+
+            if (mode === 'fan') {
+                fanContainer.classList.remove('hidden');
+                coachContainer.classList.add('hidden');
+                fanBtn.className = "px-3.5 py-2 rounded-lg text-xs font-black transition-all flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md";
+                coachBtn.className = "px-3.5 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all flex items-center gap-1.5";
+            } else {
+                fanContainer.classList.add('hidden');
+                coachContainer.classList.remove('hidden');
+                coachBtn.className = "px-3.5 py-2 rounded-lg text-xs font-black transition-all flex items-center gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md";
+                fanBtn.className = "px-3.5 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all flex items-center gap-1.5";
+                
+                // Trigger chart re-render so it sizes properly when unhidden
+                if (cachedSeries) {
+                    renderChart(cachedSeries);
+                }
+            }
+        }
+
         let chartInstance = null;
         let cachedSeries = null;
 
@@ -1577,14 +1561,7 @@
                 document.getElementById('hrrrNextUpdate').textContent = formatTime(hrrrNext);
             }
 
-            if (document.getElementById('rrfsLastUpdated')) {
-                const rrfsPrev = new Date(now);
-                rrfsPrev.setMinutes(50, 0, 0);
-                if (now.getMinutes() < 50) rrfsPrev.setHours(rrfsPrev.getHours() - 1);
-                const rrfsNext = new Date(rrfsPrev.getTime() + 3600000);
-                document.getElementById('rrfsLastUpdated').textContent = formatTime(rrfsPrev);
-                document.getElementById('rrfsNextUpdate').textContent = formatTime(rrfsNext);
-            }
+            
 
 
             document.getElementById('cardEcmwfTemp').textContent = `${series.ecmwf.temp[koIdx]}°F`;
@@ -1638,6 +1615,97 @@
                 document.getElementById('cardHrrrStatus').textContent = "Standby (>48h)";
                 document.getElementById('cardHrrrStatus').className = "text-[10px] font-mono text-slate-400";
             }
+
+
+            // =========================================================
+            // 🏈 FAN VIEW: BROADCAST HERO VERDICT POPULATION
+            // =========================================================
+            // Calculate consensus multi-model averages
+            function getMilestoneAvg(stepIdx) {
+                const temps = [series.ecmwf.temp[stepIdx], series.gfs.temp[stepIdx], series.nbm.temp[stepIdx], series.nws.temp[stepIdx]].filter(v => v !== undefined && !isNaN(v));
+                const pops = [series.ecmwf.pop[stepIdx], series.gfs.pop[stepIdx], series.nbm.pop[stepIdx], series.nws.pop[stepIdx]].filter(v => v !== undefined && !isNaN(v));
+                const winds = [series.ecmwf.wind[stepIdx], series.gfs.wind[stepIdx], series.nbm.wind[stepIdx], series.nws.wind[stepIdx]].filter(v => v !== undefined && !isNaN(v));
+
+                const avgT = Math.round(temps.reduce((a, b) => a + b, 0) / (temps.length || 1));
+                const avgP = Math.round(pops.reduce((a, b) => a + b, 0) / (pops.length || 1));
+                const avgW = Math.round(winds.reduce((a, b) => a + b, 0) / (winds.length || 1));
+                return { temp: avgT, pop: avgP, wind: avgW };
+            }
+
+            function getSkyText(pop, temp) {
+                if (pop >= 60) return "Rain Likely";
+                if (pop >= 35) return "Chance of Showers";
+                if (pop >= 20) return "Isolated Sprinkles";
+                if (temp >= 85) return "Mostly Sunny & Warm";
+                if (temp >= 70) return "Fair & Pleasant";
+                if (temp >= 55) return "Crisp & Clear";
+                return "Chilly & Clear";
+            }
+
+            const mTail = getMilestoneAvg(0); // T-3h
+            const mKick = getMilestoneAvg(3); // T-0h Kickoff
+            const mHt1 = getMilestoneAvg(4);
+            const mHt2 = getMilestoneAvg(5);
+            const mHalf = {
+                temp: Math.round((mHt1.temp + mHt2.temp) / 2),
+                pop: Math.round((mHt1.pop + mHt2.pop) / 2),
+                wind: Math.round((mHt1.wind + mHt2.wind) / 2)
+            };
+            const mHome = getMilestoneAvg(6); // T+3h Headed Home
+
+            // Hero Verdict Top Headline
+            document.getElementById('heroVenueCity').textContent = venue.city;
+            document.getElementById('heroVerdictTitle').textContent = `${mKick.temp}°F at Kickoff · ${getSkyText(mKick.pop, mKick.temp)} · Wind ${mKick.wind} mph ${series.windDirStr}`;
+            document.getElementById('heroKickoffTemp').textContent = `${mKick.temp}°F`;
+            document.getElementById('heroKickoffRain').textContent = `${mKick.pop}% Rain Risk`;
+            document.getElementById('heroFieldAxis').textContent = venue.orientation;
+            document.getElementById('heroWindSummary').textContent = `${mKick.wind} mph from ${series.windDirStr}`;
+            document.getElementById('heroPrecipSummary').textContent = mKick.pop > 35 ? "Rain Ponchos Advised" : "Dry Football Conditions";
+
+            // Hero Milestone Cards
+            document.getElementById('heroTailgateTime').textContent = series.clockTimes[0];
+            document.getElementById('heroTailgateTemp').textContent = `${mTail.temp}°F`;
+            document.getElementById('heroTailgateSky').textContent = getSkyText(mTail.pop, mTail.temp);
+            document.getElementById('heroTailgatePop').textContent = `${mTail.pop}%`;
+            document.getElementById('heroTailgateWind').textContent = `${mTail.wind} mph`;
+
+            document.getElementById('heroKickoffTimeText').textContent = series.clockTimes[3];
+            document.getElementById('heroKickoffTempCard').textContent = `${mKick.temp}°F`;
+            document.getElementById('heroKickoffSky').textContent = getSkyText(mKick.pop, mKick.temp);
+            document.getElementById('heroKickoffPop').textContent = `${mKick.pop}%`;
+            document.getElementById('heroKickoffWind').textContent = `${mKick.wind} mph`;
+
+            document.getElementById('heroHalftimeTime').textContent = formatClock(localKickoffHour, 1.5, tzShort);
+            document.getElementById('heroHalftimeTemp').textContent = `${mHalf.temp}°F`;
+            document.getElementById('heroHalftimeSky').textContent = getSkyText(mHalf.pop, mHalf.temp);
+            document.getElementById('heroHalftimePop').textContent = `${mHalf.pop}%`;
+            document.getElementById('heroHalftimeWind').textContent = `${mHalf.wind} mph`;
+
+            document.getElementById('heroHomeTime').textContent = series.clockTimes[6];
+            document.getElementById('heroHomeTemp').textContent = `${mHome.temp}°F`;
+            document.getElementById('heroHomeSky').textContent = getSkyText(mHome.pop, mHome.temp);
+            document.getElementById('heroHomePop').textContent = `${mHome.pop}%`;
+            document.getElementById('heroHomeWind').textContent = `${mHome.wind} mph`;
+
+            // Fan Advice Section
+            if (mTail.temp >= 85 || mKick.temp >= 85) {
+                document.getElementById('fanAdviceAttire').textContent = "Short sleeves, hat, and sunscreen highly recommended. Stay well-hydrated during tailgate and early quarters.";
+            } else if (mKick.temp <= 60) {
+                document.getElementById('fanAdviceAttire').textContent = "Cool gameday conditions. Layer up with a jacket or fleece, especially as temperatures drop in the second half.";
+            } else {
+                document.getElementById('fanAdviceAttire').textContent = "Pleasant gameday temperatures. Comfortable in short sleeves, but consider a light layer for the evening.";
+            }
+
+            if (Math.max(mTail.pop, mKick.pop, mHalf.pop, mHome.pop) >= 40) {
+                document.getElementById('fanAdviceRain').textContent = "Showers likely during game hours. Pack waterproof jackets or rain ponchos (umbrellas often restricted inside stadium).";
+            } else if (Math.max(mTail.pop, mKick.pop, mHalf.pop, mHome.pop) >= 20) {
+                document.getElementById('fanAdviceRain').textContent = "Isolated passing sprinkle possible. Generally dry for tailgating, but monitor passing radar sweeps.";
+            } else {
+                document.getElementById('fanAdviceRain').textContent = "Zero to minimal rain risk across all operational models. Rain gear will not be needed.";
+            }
+
+            document.getElementById('fanAdviceEgress').textContent = `Temperatures will be around ${mHome.temp}°F as fans exit into parking areas under ${mHome.wind} mph breezes.`;
+
 
             // Phase cards
             document.getElementById('phaseTailgateTemp').textContent = `${series.nws.temp[0]}°F · Wind ${series.nws.wind[0]} mph`;
@@ -1817,9 +1885,6 @@
                 if (series.hrrr && series.hrrr.temp) {
                     datasets.push({ label: 'HRRR 3km', data: series.hrrr.temp, borderColor: '#c084fc', borderWidth: 3, tension: 0.3 });
                 }
-                if (series.rrfs && series.rrfs.temp) {
-                    datasets.push({ label: 'RRFS', data: series.rrfs.temp, borderColor: '#fb923c', borderWidth: 2, borderDash: [2, 2], tension: 0.3 });
-                }
             } else if (currentParam === 'precip') {
                 yTitle = "Precipitation Probability (%)";
                 unit = "%";
@@ -1834,9 +1899,6 @@
                 }
                 if (series.hrrr && series.hrrr.pop) {
                     datasets.push({ label: 'HRRR 3km', data: series.hrrr.pop, borderColor: '#c084fc', borderWidth: 3, tension: 0.2 });
-                }
-                if (series.rrfs && series.rrfs.pop) {
-                    datasets.push({ label: 'RRFS', data: series.rrfs.pop, borderColor: '#fb923c', borderWidth: 2, borderDash: [2, 2], tension: 0.2 });
                 }
             } else if (currentParam === 'wind') {
                 yTitle = "Sustained Wind Speed (mph)";
@@ -1853,9 +1915,6 @@
                 if (series.hrrr && series.hrrr.wind) {
                     datasets.push({ label: 'HRRR 3km', data: series.hrrr.wind, borderColor: '#c084fc', borderWidth: 3, tension: 0.3 });
                 }
-                if (series.rrfs && series.rrfs.wind) {
-                    datasets.push({ label: 'RRFS', data: series.rrfs.wind, borderColor: '#fb923c', borderWidth: 2, borderDash: [2, 2], tension: 0.3 });
-                }
             } else if (currentParam === 'qpf') {
                 yTitle = "Accumulated QPF (inches)";
                 unit = " in";
@@ -1870,9 +1929,6 @@
                 }
                 if (series.hrrr && series.hrrr.qpf) {
                     datasets.push({ label: 'HRRR 3km', data: series.hrrr.qpf, borderColor: '#c084fc', borderWidth: 3, tension: 0.1 });
-                }
-                if (series.rrfs && series.rrfs.qpf) {
-                    datasets.push({ label: 'RRFS', data: series.rrfs.qpf, borderColor: '#fb923c', borderWidth: 2, borderDash: [2, 2], tension: 0.1 });
                 }
             }
 

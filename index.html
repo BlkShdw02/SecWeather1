@@ -622,6 +622,82 @@
                 </div>
             </section>
 
+            <!-- 📋 COACH VIEW: METEOROLOGICAL ANALYSIS & GAME-TIME SCENARIO -->
+            <section class="glass-card rounded-2xl p-6 shadow-xl border-l-4 border-l-blue-500 bg-gradient-to-r from-blue-950/30 via-slate-900/95 to-slate-950/80">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 pb-3 border-b border-slate-800">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center text-sm">
+                            <i class="fa-solid fa-clipboard-user"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-black text-white uppercase tracking-wider">Coach & Coordinator Weather Briefing</h3>
+                            <p class="text-[11px] text-slate-400">Tactical multi-model divergence analysis & high-confidence scenario for game operations</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="analysisConfidenceBadge" class="text-[10px] font-mono font-bold px-2.5 py-1 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
+                            High Confidence
+                        </span>
+                        <span id="analysisSpreadBadge" class="text-[10px] font-mono text-slate-400 bg-slate-900 px-2 py-1 rounded border border-slate-800">
+                            Spread: ±--°F
+                        </span>
+                    </div>
+                </div>
+
+                <!-- 2-Column Tactical Analysis Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    
+                    <!-- Left: Most Likely Game-Time Scenario -->
+                    <div class="bg-slate-950/70 border border-blue-900/40 rounded-xl p-4 flex flex-col justify-between">
+                        <div>
+                            <div class="text-[11px] font-bold text-blue-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                                <i class="fa-solid fa-bullseye"></i> Most Likely Game-Time Scenario
+                            </div>
+                            <h4 id="coachScenarioHeadline" class="text-base font-extrabold text-white mt-1 leading-snug">
+                                Generating game-time scenario...
+                            </h4>
+                            <p id="coachScenarioBody" class="text-xs text-slate-300 mt-2 leading-relaxed">
+                                Synthesizing active model runs...
+                            </p>
+                        </div>
+
+                        <!-- Tactical Football Bullet Points -->
+                        <div class="mt-4 pt-3 border-t border-slate-800/80 space-y-2 text-xs">
+                            <div class="flex items-start gap-2">
+                                <span class="text-blue-400 mt-0.5"><i class="fa-solid fa-football"></i></span>
+                                <span id="coachPassKickImpact" class="text-slate-300">Evaluating passing & kicking conditions...</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <span class="text-amber-400 mt-0.5"><i class="fa-solid fa-bolt"></i></span>
+                                <span id="coachConvectiveRisk" class="text-slate-300">Checking convective lightning risk...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Model Divergence & Discrepancies -->
+                    <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+                        <div>
+                            <div class="text-[11px] font-bold text-amber-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                                <i class="fa-solid fa-code-compare"></i> Model Divergence & Forecaster Notes
+                            </div>
+                            <h4 id="coachDivergenceHeadline" class="text-xs font-bold text-slate-200 mt-1">
+                                Evaluating multi-model spread...
+                            </h4>
+                            <div id="coachDivergenceList" class="mt-2 space-y-2 text-xs text-slate-300 leading-relaxed">
+                                <p>Comparing global vs convective outputs...</p>
+                            </div>
+                        </div>
+
+                        <!-- Forecaster Action Items -->
+                        <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
+                            <span><i class="fa-solid fa-circle-info mr-1 text-slate-500"></i>Primary Delta: <strong id="coachPrimaryDelta" class="text-slate-300">--</strong></span>
+                            <span id="coachActiveModelCount" class="font-mono text-emerald-400">4 Models Active</span>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
             <!-- Chart Section: Interactive Multi-Model Time Series -->
             <section class="glass-card rounded-2xl p-5 shadow-xl">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
@@ -1705,11 +1781,8 @@
             }
 
 
-            // =========================================================
-            // 🏈 FAN VIEW: BROADCAST HERO VERDICT POPULATION
-            // =========================================================
-            // Calculate consensus multi-model averages
-            function getMilestoneAvg(stepIdx) {
+
+function getMilestoneAvg(stepIdx) {
                 const temps = [series.ecmwf.temp[stepIdx], series.gfs.temp[stepIdx], series.nbm.temp[stepIdx], series.nws.temp[stepIdx]].filter(v => v !== undefined && !isNaN(v));
                 const pops = [series.ecmwf.pop[stepIdx], series.gfs.pop[stepIdx], series.nbm.pop[stepIdx], series.nws.pop[stepIdx]].filter(v => v !== undefined && !isNaN(v));
                 const winds = [series.ecmwf.wind[stepIdx], series.gfs.wind[stepIdx], series.nbm.wind[stepIdx], series.nws.wind[stepIdx]].filter(v => v !== undefined && !isNaN(v));
@@ -1739,7 +1812,167 @@
                 pop: Math.round((mHt1.pop + mHt2.pop) / 2),
                 wind: Math.round((mHt1.wind + mHt2.wind) / 2)
             };
-            const mHome = getMilestoneAvg(6); // T+3h Headed Home
+            const mHome = getMilestoneAvg(6);
+
+// Precise Stadium Vector Physics:
+            const stadiumAzimuth = venue.field_azimuth_deg || 0;
+            const windBlowingToward = (series.windDirDeg + 180) % 360;
+            const relAngle = (windBlowingToward - stadiumAzimuth + 360) % 360;
+            const rad = (relAngle * Math.PI) / 180;
+            const windSpd = series.nws.wind[koIdx] || 10;
+            const longMph = Math.cos(rad) * windSpd;
+            const crossMph = Math.sin(rad) * windSpd;
+
+            let kickNote = "";
+            const endzoneN = venue.endzone_north || "North Endzone";
+            const endzoneS = venue.endzone_south || "South Endzone";
+
+            if (Math.abs(longMph) >= Math.abs(crossMph)) {
+                if (longMph > 3) {
+                    kickNote = `Direct tailwind (~${Math.round(Math.abs(longMph))} mph) favoring kicks toward ${endzoneN}.`;
+                } else if (longMph < -3) {
+                    kickNote = `Direct headwind (~${Math.round(Math.abs(longMph))} mph) resisting kicks toward ${endzoneN}; favors kicks toward ${endzoneS}.`;
+                } else {
+                    kickNote = "Light axial air movement; negligible kicking resistance.";
+                }
+            } else {
+                if (Math.abs(crossMph) > 5) {
+                    kickNote = `Crosswind (~${Math.round(Math.abs(crossMph))} mph) cutting across field sidelines; will drift long field goals and deep touchline passes.`;
+                } else {
+                    kickNote = "Gentle cross-field breeze; neutral kicking conditions.";
+                }
+            }
+            document.getElementById('kickingAdvantage').textContent = kickNote;
+
+            // =========================================================
+            // 📋 COACH VIEW: METEOROLOGICAL SYNTHESIS & TACTICAL BRIEFING
+            // =========================================================
+            const modelsAtKickoff = [
+                { name: "ECMWF", temp: series.ecmwf.temp[koIdx], pop: series.ecmwf.pop[koIdx], wind: series.ecmwf.wind[koIdx] },
+                { name: "GFS", temp: series.gfs.temp[koIdx], pop: series.gfs.pop[koIdx], wind: series.gfs.wind[koIdx] },
+                { name: "NBM", temp: series.nbm.temp[koIdx], pop: series.nbm.pop[koIdx], wind: series.nbm.wind[koIdx] },
+                { name: "NDFD", temp: series.nws.temp[koIdx], pop: series.nws.pop[koIdx], wind: series.nws.wind[koIdx] }
+            ];
+
+            if (series.nam && series.nam.temp && series.nam.temp[koIdx] !== undefined) {
+                modelsAtKickoff.push({ name: "NAM 3km", temp: series.nam.temp[koIdx], pop: series.nam.pop[koIdx], wind: series.nam.wind[koIdx] });
+            }
+            if (series.hrrr && series.hrrr.temp && series.hrrr.temp[koIdx] !== undefined) {
+                modelsAtKickoff.push({ name: "HRRR 3km", temp: series.hrrr.temp[koIdx], pop: series.hrrr.pop[koIdx], wind: series.hrrr.wind[koIdx] });
+            }
+
+            const validTemps = modelsAtKickoff.map(m => m.temp).filter(t => !isNaN(t));
+            const minModelTemp = Math.min(...validTemps);
+            const maxModelTemp = Math.max(...validTemps);
+            const tempSpread = maxModelTemp - minModelTemp;
+
+            const validPops = modelsAtKickoff.map(m => m.pop).filter(p => !isNaN(p));
+            const maxPoP = Math.max(...validPops);
+            const minPoP = Math.min(...validPops);
+            const avgPoP = Math.round(validPops.reduce((a, b) => a + b, 0) / validPops.length);
+
+            const validWinds = modelsAtKickoff.map(m => m.wind).filter(w => !isNaN(w));
+            const avgWind = Math.round(validWinds.reduce((a, b) => a + b, 0) / validWinds.length);
+
+            // 1. Confidence & Spread Badges
+            safeText('analysisSpreadBadge', `Spread: ±${tempSpread}°F (${minModelTemp}° - ${maxModelTemp}°)`);
+            const confBadge = document.getElementById('analysisConfidenceBadge');
+            if (confBadge) {
+                if (tempSpread <= 3) {
+                    confBadge.textContent = "High Confidence (Tight Consensus)";
+                    confBadge.className = "text-[10px] font-mono font-bold px-2.5 py-1 rounded bg-emerald-950 text-emerald-300 border border-emerald-800";
+                } else if (tempSpread <= 6) {
+                    confBadge.textContent = "Moderate Confidence";
+                    confBadge.className = "text-[10px] font-mono font-bold px-2.5 py-1 rounded bg-amber-950 text-amber-300 border border-amber-800";
+                } else {
+                    confBadge.textContent = "Lower Confidence (Model Divergence)";
+                    confBadge.className = "text-[10px] font-mono font-bold px-2.5 py-1 rounded bg-red-950 text-red-300 border border-red-800";
+                }
+            }
+
+            safeText('coachActiveModelCount', `${modelsAtKickoff.length} Model Engines Ingested`);
+
+            // 2. Most Likely Game-Time Scenario Headline & Synthesis
+            const scenarioTemp = Math.round((mKick.temp + (series.nws.temp[koIdx] || mKick.temp)) / 2);
+            let skyBrief = "Dry, mild conditions expected for kickoff.";
+            if (avgPoP >= 50) {
+                skyBrief = "High confidence in rain showers and wet field turf during the game.";
+            } else if (avgPoP >= 25) {
+                skyBrief = "Scattered showers possible during the second half; high humidity.";
+            } else if (scenarioTemp >= 85) {
+                skyBrief = "Warm, dry playing conditions with heavy hydration demands.";
+            }
+
+            safeText('coachScenarioHeadline', `${scenarioTemp}°F Kickoff · ${skyBrief}`);
+
+            let bodyDesc = `Consensus from ${modelsAtKickoff.length} operational models indicates temperatures will start around ${scenarioTemp}°F at kickoff, `;
+            if (mHome.temp < scenarioTemp) {
+                bodyDesc += `dropping by ${scenarioTemp - mHome.temp}°F over the course of the game down to ~${mHome.temp}°F by the 4th quarter and egress. `;
+            } else {
+                bodyDesc += `holding steady through the second half. `;
+            }
+
+            if (avgWind >= 12) {
+                bodyDesc += `Sustained winds around ${avgWind} mph with gusts up to ${avgWind + 8} mph from the ${series.windDirStr} will be a factor on special teams.`;
+            } else {
+                bodyDesc += `Winds will remain manageable under 10 mph, having minimal impact on normal game plans.`;
+            }
+            safeText('coachScenarioBody', bodyDesc);
+
+            // 3. Passing & Kicking Tactical Bullet
+            const fieldAz = venue.field_azimuth_deg || 0;
+            const endN = venue.endzone_north || "North Endzone";
+            const endS = venue.endzone_south || "South Endzone";
+            safeText('coachPassKickImpact', `${kickNote} (Stadium Axis: ${venue.orientation} / ${fieldAz}°).`);
+
+            // 4. Convective / Rain Tactical Bullet
+            if (maxPoP >= 40) {
+                safeText('coachConvectiveRisk', `Convective potential elevated (${maxPoP}% peak PoP). Sideline ball towel rotation recommended; monitor NCAA 8-mile lightning ring.`);
+            } else if (maxPoP >= 20) {
+                safeText('coachConvectiveRisk', `Low convective threat (${maxPoP}% peak PoP). Isolated passing sprinkle possible, but turf expected to remain predominantly dry.`);
+            } else {
+                safeText('coachConvectiveRisk', `Zero convective or lightning concerns. Clear radar expected throughout game window.`);
+            }
+
+            // 5. Model Divergence Analysis (Comparing specific models)
+            const hottest = modelsAtKickoff.reduce((prev, curr) => (curr.temp > prev.temp) ? curr : prev);
+            const coolest = modelsAtKickoff.reduce((prev, curr) => (curr.temp < prev.temp) ? curr : prev);
+
+            let divergenceTitle = `Models are in strong agreement within ±${tempSpread}°F.`;
+            if (tempSpread >= 4) {
+                divergenceTitle = `${hottest.name} runs warmest (${hottest.temp}°F) while ${coolest.name} runs coolest (${coolest.temp}°F).`;
+            }
+            safeText('coachDivergenceHeadline', divergenceTitle);
+
+            let divBullets = "";
+            // Temperature divergence bullet
+            divBullets += `<p><strong class="text-white">Thermal Spread:</strong> ${hottest.name} forecasts ${hottest.temp}°F vs ${coolest.name} at ${coolest.temp}°F. NDFD local official grid favors ${series.nws.temp[koIdx]}°F.</p>`;
+            
+            // Precipitation divergence bullet
+            const popHottest = modelsAtKickoff.reduce((prev, curr) => (curr.pop > prev.pop) ? curr : prev);
+            const popCoolest = modelsAtKickoff.reduce((prev, curr) => (curr.pop < prev.pop) ? curr : prev);
+            if (popHottest.pop - popCoolest.pop >= 15) {
+                divBullets += `<p><strong class="text-white">Precipitation Timing:</strong> ${popHottest.name} shows higher moisture risk (${popHottest.pop}%) compared to ${popCoolest.name} (${popCoolest.pop}%).</p>`;
+            } else {
+                divBullets += `<p><strong class="text-white">Precipitation Agreement:</strong> All models agree on low precipitation risk (${minPoP}% - ${maxPoP}% range).</p>`;
+            }
+
+            // Wind divergence bullet
+            if (series.nam && series.nam.wind) {
+                divBullets += `<p><strong class="text-white">High-Res Terrain Wind:</strong> NAM 3km nest models local friction at ${series.nam.wind[koIdx]} mph vs GFS synoptic wind of ${series.gfs.wind[koIdx]} mph.</p>`;
+            }
+
+            const divList = document.getElementById('coachDivergenceList');
+            if (divList) divList.innerHTML = divBullets;
+
+            safeText('coachPrimaryDelta', `${tempSpread}°F temp variance (${coolest.name} vs ${hottest.name})`);
+
+
+            // =========================================================
+            // 🏈 FAN VIEW: BROADCAST HERO VERDICT POPULATION
+            // =========================================================
+            // Calculate consensus multi-model averages
+            // Milestone consensus averages computed above // T+3h Headed Home
 
             // Hero Verdict Top Headline
             document.getElementById('heroVenueCity').textContent = venue.city;
@@ -1845,35 +2078,7 @@
             document.getElementById('fieldWindDir').textContent = `Wind from ${series.windDirStr} (${series.windDirDeg}°)`;
             document.getElementById('fieldWindSpeed').textContent = `${series.nws.wind[koIdx]} mph G ${series.nws.wind[koIdx] + 8}`;
             
-            // Precise Stadium Vector Physics:
-            const stadiumAzimuth = venue.field_azimuth_deg || 0;
-            const windBlowingToward = (series.windDirDeg + 180) % 360;
-            const relAngle = (windBlowingToward - stadiumAzimuth + 360) % 360;
-            const rad = (relAngle * Math.PI) / 180;
-            const windSpd = series.nws.wind[koIdx] || 10;
-            const longMph = Math.cos(rad) * windSpd;
-            const crossMph = Math.sin(rad) * windSpd;
-
-            let kickNote = "";
-            const endzoneN = venue.endzone_north || "North Endzone";
-            const endzoneS = venue.endzone_south || "South Endzone";
-
-            if (Math.abs(longMph) >= Math.abs(crossMph)) {
-                if (longMph > 3) {
-                    kickNote = `Direct tailwind (~${Math.round(Math.abs(longMph))} mph) favoring kicks toward ${endzoneN}.`;
-                } else if (longMph < -3) {
-                    kickNote = `Direct headwind (~${Math.round(Math.abs(longMph))} mph) resisting kicks toward ${endzoneN}; favors kicks toward ${endzoneS}.`;
-                } else {
-                    kickNote = "Light axial air movement; negligible kicking resistance.";
-                }
-            } else {
-                if (Math.abs(crossMph) > 5) {
-                    kickNote = `Crosswind (~${Math.round(Math.abs(crossMph))} mph) cutting across field sidelines; will drift long field goals and deep touchline passes.`;
-                } else {
-                    kickNote = "Gentle cross-field breeze; neutral kicking conditions.";
-                }
-            }
-            document.getElementById('kickingAdvantage').textContent = kickNote;
+            // Vector physics computed above
 
 
             // ==========================================

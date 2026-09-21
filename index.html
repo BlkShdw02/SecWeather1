@@ -15,12 +15,54 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #080c14; color: #f3f4f6; }
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        :root {
+            --team-primary: #ba0c2f;
+            --team-glow: rgba(186, 12, 47, 0.45);
+            --team-secondary: #000000;
+        }
+
+        /* Saturday Night Stadium Floodlights Theme */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030712;
+            background-image: 
+                radial-gradient(circle 650px at 10% 0%, var(--team-glow, rgba(56, 189, 248, 0.2)), transparent),
+                radial-gradient(circle 650px at 90% 0%, var(--team-glow, rgba(245, 158, 11, 0.2)), transparent),
+                radial-gradient(ellipse 90% 45% at 50% -10%, rgba(255, 255, 255, 0.12), transparent),
+                linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 100% 100%, 44px 44px, 44px 44px;
+            color: #f1f5f9;
+            transition: background 0.6s ease;
+        }
+
         .glass-card {
-            background: rgba(15, 23, 42, 0.90);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(51, 65, 85, 0.45);
+            background: rgba(11, 19, 38, 0.88);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(56, 189, 248, 0.22);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+        }
+
+        /* Dynamic Stadium Floodlight Top Beam */
+        .floodlight-beam {
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 4px;
+            background: linear-gradient(90deg, var(--team-primary, #38bdf8), #ffffff, var(--team-primary, #fbbf24), #ffffff, var(--team-primary, #38bdf8));
+            filter: drop-shadow(0 0 12px var(--team-primary, #38bdf8));
+            z-index: 20;
+        }
+
+        /* Dynamic Team Scoreboard Card Glow */
+        .team-glow-card {
+            border: 2px solid var(--team-primary, #ba0c2f) !important;
+            box-shadow: 0 0 35px -5px var(--team-glow, rgba(186, 12, 47, 0.45)), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+        }
+
+        /* Kickoff Card Stadium Light Glow */
+        .kickoff-glow-card {
+            border: 2px solid var(--team-primary, #dc2626) !important;
+            background: linear-gradient(180deg, var(--team-glow, rgba(220, 38, 38, 0.35)) 0%, rgba(15, 23, 42, 0.95) 100%) !important;
+            box-shadow: 0 0 25px -4px var(--team-glow, rgba(220, 38, 38, 0.4)) !important;
         }
         .week-btn-active {
             background: linear-gradient(135deg, #1d4ed8, #2563eb);
@@ -34,45 +76,55 @@
         .model-nws { border-left: 4px solid #f59e0b; }
 
         /* Premium SEC Football Gridiron Theme */
-        body {
-            background-color: #06090f;
-            background-image: 
-                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(30, 58, 138, 0.25), transparent),
-                linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
-            background-size: 100% 100%, 40px 40px, 40px 40px;
-        }
-        .gridiron-border {
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            position: relative;
-        }
-        .gridiron-border::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 3px;
-            background: linear-gradient(90deg, #f59e0b, #ef4444, #3b82f6, #10b981);
-            border-radius: 12px 12px 0 0;
-        }
-        .yard-hash {
-            background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 2px, transparent 2px, transparent 20px);
-        }
-        .sec-gold {
-            color: #fbbf24;
-            text-shadow: 0 0 16px rgba(251, 191, 36, 0.35);
-        }
-        .turf-pill {
-            background: linear-gradient(180deg, #166534 0%, #14532d 100%);
-            border: 1px solid #22c55e;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+        :root {
+            --team-primary: #ba0c2f;
+            --team-glow: rgba(186, 12, 47, 0.45);
+            --team-secondary: #000000;
         }
 
-        ::-webkit-scrollbar { height: 6px; width: 6px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        @media (max-width: 640px) {
-            body { padding: 0.5rem !important; }
-            header { margin-bottom: 0.75rem !important; }
-            .glass-card { padding: 0.875rem !important; border-radius: 1rem !important; }
+        /* Saturday Night Stadium Floodlights Theme */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030712;
+            background-image: 
+                radial-gradient(circle 650px at 10% 0%, var(--team-glow, rgba(56, 189, 248, 0.2)), transparent),
+                radial-gradient(circle 650px at 90% 0%, var(--team-glow, rgba(245, 158, 11, 0.2)), transparent),
+                radial-gradient(ellipse 90% 45% at 50% -10%, rgba(255, 255, 255, 0.12), transparent),
+                linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 100% 100%, 44px 44px, 44px 44px;
+            color: #f1f5f9;
+            transition: background 0.6s ease;
+        }
+
+        .glass-card {
+            background: rgba(11, 19, 38, 0.88);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(56, 189, 248, 0.22);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+        }
+
+        /* Dynamic Stadium Floodlight Top Beam */
+        .floodlight-beam {
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 4px;
+            background: linear-gradient(90deg, var(--team-primary, #38bdf8), #ffffff, var(--team-primary, #fbbf24), #ffffff, var(--team-primary, #38bdf8));
+            filter: drop-shadow(0 0 12px var(--team-primary, #38bdf8));
+            z-index: 20;
+        }
+
+        /* Dynamic Team Scoreboard Card Glow */
+        .team-glow-card {
+            border: 2px solid var(--team-primary, #ba0c2f) !important;
+            box-shadow: 0 0 35px -5px var(--team-glow, rgba(186, 12, 47, 0.45)), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+        }
+
+        /* Kickoff Card Stadium Light Glow */
+        .kickoff-glow-card {
+            border: 2px solid var(--team-primary, #dc2626) !important;
+            background: linear-gradient(180deg, var(--team-glow, rgba(220, 38, 38, 0.35)) 0%, rgba(15, 23, 42, 0.95) 100%) !important;
+            box-shadow: 0 0 25px -4px var(--team-glow, rgba(220, 38, 38, 0.4)) !important;
+        }
             h1 { font-size: 1.35rem !important; }
             .h-80 { height: 16rem !important; }
             table th, table td { padding: 0.5rem 0.35rem !important; font-size: 0.68rem !important; }
@@ -297,7 +349,8 @@
         <div id="fanViewContainer" class="space-y-6">
 
             <!-- Executive Hero Verdict Banner -->
-            <section class="glass-card rounded-2xl p-6 bg-gradient-to-r from-blue-950/50 via-slate-900/95 to-amber-950/40 border border-slate-700 shadow-2xl relative overflow-hidden gridiron-border">
+            <section id="heroVerdictCard" class="glass-card rounded-2xl p-6 bg-gradient-to-r from-blue-950/50 via-slate-900/95 to-amber-950/40 border border-slate-700 shadow-2xl relative overflow-hidden gridiron-border team-glow-card transition-all duration-500">
+                    <div class="floodlight-beam" id="heroFloodlight"></div>
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                         <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400 font-mono">
@@ -366,7 +419,7 @@
                     </div>
 
                     <!-- 3. Kickoff (T-0h) -->
-                    <div class="bg-slate-950/80 p-3 rounded-xl border-2 border-red-600/70 hover:border-red-500 rounded-xl flex flex-col justify-between bg-gradient-to-b from-red-950/40 to-slate-900/90 shadow-lg shadow-red-950/30 transition-all">
+                    <div id="cardKickoffMilestone" class="bg-slate-950/80 p-3 rounded-xl border-2 border-red-600/70 kickoff-glow-card hover:border-red-500 rounded-xl flex flex-col justify-between bg-gradient-to-b from-red-950/40 to-slate-900/90 shadow-lg shadow-red-950/30 transition-all">
                         <div>
                             <div class="flex items-center justify-between text-[10px] font-bold uppercase text-slate-400 mb-1">
                                 <span class="text-red-400 flex items-center gap-1"><i class="fa-solid fa-football"></i> Kickoff</span>
@@ -1107,6 +1160,225 @@
 
     <!-- Application Script with Embedded Data -->
     <script>
+        const SCHOOL_COLORS = {
+    "Alabama": {
+        "primary": "#9e1b32",
+        "glow": "rgba(158, 27, 50, 0.45)",
+        "secondary": "#828a8f",
+        "accent": "#ffffff"
+    },
+    "Arkansas": {
+        "primary": "#9d2235",
+        "glow": "rgba(157, 34, 53, 0.45)",
+        "secondary": "#ffffff",
+        "accent": "#000000"
+    },
+    "Auburn": {
+        "primary": "#0c2340",
+        "glow": "rgba(232, 105, 30, 0.45)",
+        "secondary": "#e87722",
+        "accent": "#e87722"
+    },
+    "Florida": {
+        "primary": "#0021a5",
+        "glow": "rgba(250, 70, 22, 0.45)",
+        "secondary": "#fa4616",
+        "accent": "#fa4616"
+    },
+    "Georgia": {
+        "primary": "#ba0c2f",
+        "glow": "rgba(186, 12, 47, 0.48)",
+        "secondary": "#000000",
+        "accent": "#ffffff"
+    },
+    "Kentucky": {
+        "primary": "#0033a0",
+        "glow": "rgba(0, 51, 160, 0.45)",
+        "secondary": "#ffffff",
+        "accent": "#000000"
+    },
+    "LSU": {
+        "primary": "#461d7c",
+        "glow": "rgba(253, 208, 35, 0.50)",
+        "secondary": "#fdd023",
+        "accent": "#fdd023"
+    },
+    "Mississippi State": {
+        "primary": "#660000",
+        "glow": "rgba(102, 0, 0, 0.45)",
+        "secondary": "#ffffff",
+        "accent": "#cccccc"
+    },
+    "Missouri": {
+        "primary": "#000000",
+        "glow": "rgba(241, 184, 45, 0.45)",
+        "secondary": "#f1b82d",
+        "accent": "#f1b82d"
+    },
+    "Oklahoma": {
+        "primary": "#841617",
+        "glow": "rgba(132, 22, 23, 0.45)",
+        "secondary": "#fdf9d8",
+        "accent": "#ffffff"
+    },
+    "Ole Miss": {
+        "primary": "#ce1126",
+        "glow": "rgba(206, 17, 38, 0.45)",
+        "secondary": "#13294b",
+        "accent": "#13294b"
+    },
+    "South Carolina": {
+        "primary": "#73000a",
+        "glow": "rgba(115, 0, 10, 0.48)",
+        "secondary": "#000000",
+        "accent": "#ffffff"
+    },
+    "Tennessee": {
+        "primary": "#ff8200",
+        "glow": "rgba(255, 130, 0, 0.48)",
+        "secondary": "#58595b",
+        "accent": "#ffffff"
+    },
+    "Texas": {
+        "primary": "#bf5700",
+        "glow": "rgba(191, 87, 0, 0.48)",
+        "secondary": "#333f48",
+        "accent": "#ffffff"
+    },
+    "Texas A&M": {
+        "primary": "#500000",
+        "glow": "rgba(80, 0, 0, 0.48)",
+        "secondary": "#ffffff",
+        "accent": "#cccccc"
+    },
+    "Vanderbilt": {
+        "primary": "#000000",
+        "glow": "rgba(207, 169, 93, 0.45)",
+        "secondary": "#cfa95d",
+        "accent": "#cfa95d"
+    },
+    "Cotton Bowl": {
+        "primary": "#bf5700",
+        "glow": "rgba(191, 87, 0, 0.45)",
+        "secondary": "#841617",
+        "accent": "#ffffff"
+    },
+    "Clemson": {
+        "primary": "#f56600",
+        "glow": "rgba(245, 102, 0, 0.48)",
+        "secondary": "#522d80",
+        "accent": "#522d80"
+    },
+    "Florida State": {
+        "primary": "#782f40",
+        "glow": "rgba(206, 184, 136, 0.48)",
+        "secondary": "#ceb888",
+        "accent": "#ceb888"
+    },
+    "Miami": {
+        "primary": "#f47321",
+        "glow": "rgba(244, 115, 33, 0.48)",
+        "secondary": "#005030",
+        "accent": "#005030"
+    },
+    "North Carolina": {
+        "primary": "#7bafd4",
+        "glow": "rgba(123, 175, 212, 0.45)",
+        "secondary": "#13294b",
+        "accent": "#ffffff"
+    },
+    "NC State": {
+        "primary": "#cc0000",
+        "glow": "rgba(204, 0, 0, 0.45)",
+        "secondary": "#000000",
+        "accent": "#ffffff"
+    },
+    "Virginia": {
+        "primary": "#232d4b",
+        "glow": "rgba(248, 76, 30, 0.45)",
+        "secondary": "#f84c1e",
+        "accent": "#f84c1e"
+    },
+    "Virginia Tech": {
+        "primary": "#630031",
+        "glow": "rgba(207, 69, 32, 0.48)",
+        "secondary": "#cf4520",
+        "accent": "#cf4520"
+    },
+    "Louisville": {
+        "primary": "#ad0000",
+        "glow": "rgba(173, 0, 0, 0.45)",
+        "secondary": "#000000",
+        "accent": "#fdb913"
+    },
+    "Georgia Tech": {
+        "primary": "#b3a369",
+        "glow": "rgba(179, 163, 105, 0.45)",
+        "secondary": "#003057",
+        "accent": "#003057"
+    },
+    "Pitt": {
+        "primary": "#003594",
+        "glow": "rgba(255, 184, 28, 0.45)",
+        "secondary": "#ffb81c",
+        "accent": "#ffb81c"
+    },
+    "Duke": {
+        "primary": "#003087",
+        "glow": "rgba(0, 48, 135, 0.45)",
+        "secondary": "#ffffff",
+        "accent": "#001a49"
+    },
+    "Wake Forest": {
+        "primary": "#9e7e38",
+        "glow": "rgba(158, 126, 56, 0.45)",
+        "secondary": "#000000",
+        "accent": "#ffffff"
+    },
+    "Boston College": {
+        "primary": "#8c2232",
+        "glow": "rgba(219, 170, 71, 0.45)",
+        "secondary": "#dbaa47",
+        "accent": "#dbaa47"
+    },
+    "Syracuse": {
+        "primary": "#d44500",
+        "glow": "rgba(212, 69, 0, 0.45)",
+        "secondary": "#000e54",
+        "accent": "#000e54"
+    },
+    "SMU": {
+        "primary": "#cc0000",
+        "glow": "rgba(0, 51, 160, 0.45)",
+        "secondary": "#0033a0",
+        "accent": "#0033a0"
+    },
+    "Cal": {
+        "primary": "#003262",
+        "glow": "rgba(253, 181, 21, 0.45)",
+        "secondary": "#fdb515",
+        "accent": "#fdb515"
+    },
+    "Stanford": {
+        "primary": "#8c1515",
+        "glow": "rgba(140, 21, 21, 0.45)",
+        "secondary": "#ffffff",
+        "accent": "#000000"
+    },
+    "Mercedes-Benz Stadium": {
+        "primary": "#d4af37",
+        "glow": "rgba(212, 175, 55, 0.45)",
+        "secondary": "#000000",
+        "accent": "#ffffff"
+    },
+    "Bank of America Stadium": {
+        "primary": "#0085ca",
+        "glow": "rgba(0, 133, 202, 0.45)",
+        "secondary": "#101820",
+        "accent": "#bfc0bf"
+    }
+};
+
         const VENUES = {"Alabama": {"stadium": "Bryant-Denny Stadium", "city": "Tuscaloosa, AL", "lat": 33.2083, "lon": -87.5504, "orientation": "NNW-SSE", "field_azimuth_deg": 343, "endzone_north": "North Endzone (NNW)", "endzone_south": "South Endzone (SSE)", "capacity": 100077, "wfo": "BMX", "gridX": 33, "gridY": 69, "tz": "America/Chicago"}, "Arkansas": {"stadium": "Donald W. Reynolds Razorback Stadium", "city": "Fayetteville, AR", "lat": 36.0681, "lon": -94.179, "orientation": "N-S", "field_azimuth_deg": 0, "endzone_north": "North Endzone (N)", "endzone_south": "South Endzone (S)", "capacity": 76000, "wfo": "TSA", "gridX": 107, "gridY": 101, "tz": "America/Chicago"}, "Auburn": {"stadium": "Jordan-Hare Stadium", "city": "Auburn, AL", "lat": 32.6022, "lon": -85.4897, "orientation": "N-S", "field_azimuth_deg": 358, "endzone_north": "North Endzone (N)", "endzone_south": "South Endzone (S)", "capacity": 88043, "wfo": "BMX", "gridX": 79, "gridY": 44, "tz": "America/Chicago"}, "Florida": {"stadium": "Ben Hill Griffin Stadium (The Swamp)", "city": "Gainesville, FL", "lat": 29.6499, "lon": -82.3486, "orientation": "N-S", "field_azimuth_deg": 356, "endzone_north": "North Endzone (N)", "endzone_south": "South Endzone (S)", "capacity": 88548, "wfo": "JAX", "gridX": 30, "gridY": 39, "tz": "America/New_York"}, "Georgia": {"stadium": "Sanford Stadium", "city": "Athens, GA", "lat": 33.9498, "lon": -83.3734, "orientation": "E-W", "field_azimuth_deg": 88, "endzone_north": "East Endzone", "endzone_south": "West Endzone", "capacity": 93033, "wfo": "FFC", "gridX": 68, "gridY": 99, "tz": "America/New_York"}, "Kentucky": {"stadium": "Kroger Field", "city": "Lexington, KY", "lat": 38.0222, "lon": -84.5053, "orientation": "E-W", "field_azimuth_deg": 82, "endzone_north": "East Endzone", "endzone_south": "West Endzone", "capacity": 61000, "wfo": "LMK", "gridX": 72, "gridY": 66, "tz": "America/New_York"}, "LSU": {"stadium": "Tiger Stadium (Death Valley)", "city": "Baton Rouge, LA", "lat": 30.412, "lon": -91.1838, "orientation": "N-S", "field_azimuth_deg": 359, "endzone_north": "North Endzone (N)", "endzone_south": "South Endzone (S)", "capacity": 102321, "wfo": "LIX", "gridX": 32, "gridY": 88, "tz": "America/Chicago"}, "Mississippi State": {"stadium": "Davis Wade Stadium", "city": "Starkville, MS", "lat": 33.4563, "lon": -88.7934, "orientation": "NNW-SSE", "field_azimuth_deg": 349, "endzone_north": "North Endzone (NNW)", "endzone_south": "South Endzone (SSE)", "capacity": 60311, "wfo": "JAN", "gridX": 102, "gridY": 79, "tz": "America/Chicago"}, "Missouri": {"stadium": "Faurot Field at Memorial Stadium", "city": "Columbia, MO", "lat": 38.9358, "lon": -92.3332, "orientation": "N-S", "field_azimuth_deg": 0, "endzone_north": "North Endzone (Rock 'M' Endzone)", "endzone_south": "South Endzone", "capacity": 62621, "wfo": "LSX", "gridX": 33, "gridY": 68, "tz": "America/Chicago"}, "Oklahoma": {"stadium": "Gaylord Family Oklahoma Memorial Stadium", "city": "Norman, OK", "lat": 35.2059, "lon": -97.4426, "orientation": "N-S", "field_azimuth_deg": 359, "endzone_north": "North Endzone (N)", "endzone_south": "South Endzone (S)", "capacity": 80126, "wfo": "OUN", "gridX": 96, "gridY": 92, "tz": "America/Chicago"}, "Ole Miss": {"stadium": "Vaught-Hemingway Stadium", "city": "Oxford, MS", "lat": 34.362, "lon": -89.5342, "orientation": "N-S", "field_azimuth_deg": 357, "endzone_north": "North Endzone (N)", "endzone_south": "South Endzone (S)", "capacity": 64038, "wfo": "MEG", "gridX": 81, "gridY": 34, "tz": "America/Chicago"}, "South Carolina": {"stadium": "Williams-Brice Stadium", "city": "Columbia, SC", "lat": 33.973, "lon": -81.0192, "orientation": "NW-SE", "field_azimuth_deg": 328, "endzone_north": "Northwest Endzone", "endzone_south": "Southeast Endzone", "capacity": 77559, "wfo": "CAE", "gridX": 60, "gridY": 66, "tz": "America/New_York"}, "Tennessee": {"stadium": "Neyland Stadium", "city": "Knoxville, TN", "lat": 35.955, "lon": -83.925, "orientation": "NE-SW", "field_azimuth_deg": 35, "endzone_north": "NNE Endzone", "endzone_south": "River Endzone (SSW)", "capacity": 101915, "wfo": "MRX", "gridX": 73, "gridY": 54, "tz": "America/New_York"}, "Texas": {"stadium": "Darrell K Royal-Texas Memorial Stadium", "city": "Austin, TX", "lat": 30.2837, "lon": -97.7325, "orientation": "N-S", "field_azimuth_deg": 358, "endzone_north": "North Endzone (N)", "endzone_south": "South Endzone (S)", "capacity": 100119, "wfo": "EWX", "gridX": 156, "gridY": 91, "tz": "America/Chicago"}, "Texas A&M": {"stadium": "Kyle Field", "city": "College Station, TX", "lat": 30.6103, "lon": -96.3407, "orientation": "NNW-SSE", "field_azimuth_deg": 344, "endzone_north": "North Endzone (NNW)", "endzone_south": "South Endzone (SSE)", "capacity": 102733, "wfo": "HGX", "gridX": 43, "gridY": 113, "tz": "America/Chicago"}, "Vanderbilt": {"stadium": "FirstBank Stadium", "city": "Nashville, TN", "lat": 36.1441, "lon": -86.8089, "orientation": "N-S", "field_azimuth_deg": 359, "endzone_north": "North Endzone (N)", "endzone_south": "South Endzone (S)", "capacity": 28500, "wfo": "OHX", "gridX": 48, "gridY": 64, "tz": "America/Chicago"}, "Cotton Bowl": {"stadium": "Cotton Bowl Stadium", "city": "Dallas, TX", "lat": 32.7797, "lon": -96.76, "orientation": "NW-SE", "field_azimuth_deg": 320, "endzone_north": "Northwest Endzone (NW)", "endzone_south": "Southeast Endzone (SE)", "capacity": 92100, "wfo": "FWD", "gridX": 89, "gridY": 101, "tz": "America/Chicago"}, "Mercedes-Benz Stadium": {"stadium": "Mercedes-Benz Stadium", "city": "Atlanta, GA", "lat": 33.7554, "lon": -84.4008, "orientation": "Indoor/Retractable", "field_azimuth_deg": 88, "endzone_north": "East Endzone (E)", "endzone_south": "West Endzone (W)", "capacity": 75000, "wfo": "FFC", "gridX": 51, "gridY": 86, "tz": "America/New_York"}, "Clemson": {"stadium": "Memorial Stadium (Death Valley)", "city": "Clemson, SC", "lat": 34.6788, "lon": -82.8432, "orientation": "E-W", "field_azimuth_deg": 86, "endzone_north": "East Endzone (Howard's Rock)", "endzone_south": "West Endzone", "capacity": 81500, "wfo": "GSP", "gridX": 45, "gridY": 48, "tz": "America/New_York"}, "Florida State": {"stadium": "Doak S. Campbell Stadium", "city": "Tallahassee, FL", "lat": 30.4418, "lon": -84.3045, "orientation": "NNW-SSE", "field_azimuth_deg": 348, "endzone_north": "North Endzone", "endzone_south": "South Endzone", "capacity": 79560, "wfo": "TAE", "gridX": 83, "gridY": 54, "tz": "America/New_York"}, "Miami": {"stadium": "Hard Rock Stadium", "city": "Miami Gardens, FL", "lat": 25.958, "lon": -80.2389, "orientation": "NW-SE", "field_azimuth_deg": 328, "endzone_north": "Northwest Endzone", "endzone_south": "Southeast Endzone", "capacity": 65326, "wfo": "MFL", "gridX": 105, "gridY": 62, "tz": "America/New_York"}, "North Carolina": {"stadium": "Kenan Memorial Stadium", "city": "Chapel Hill, NC", "lat": 35.9069, "lon": -79.0478, "orientation": "E-W", "field_azimuth_deg": 92, "endzone_north": "East Endzone", "endzone_south": "West Endzone", "capacity": 50500, "wfo": "RAH", "gridX": 65, "gridY": 56, "tz": "America/New_York"}, "NC State": {"stadium": "Carter-Finley Stadium", "city": "Raleigh, NC", "lat": 35.7972, "lon": -78.7153, "orientation": "N-S", "field_azimuth_deg": 359, "endzone_north": "North Endzone", "endzone_south": "South Endzone", "capacity": 56919, "wfo": "RAH", "gridX": 76, "gridY": 52, "tz": "America/New_York"}, "Virginia": {"stadium": "Scott Stadium", "city": "Charlottesville, VA", "lat": 38.0311, "lon": -78.5137, "orientation": "N-S", "field_azimuth_deg": 0, "endzone_north": "North Endzone", "endzone_south": "South Endzone (The Hill)", "capacity": 61500, "wfo": "RNK", "gridX": 88, "gridY": 98, "tz": "America/New_York"}, "Virginia Tech": {"stadium": "Lane Stadium", "city": "Blacksburg, VA", "lat": 37.2197, "lon": -80.4179, "orientation": "NNE-SSW", "field_azimuth_deg": 18, "endzone_north": "North Endzone", "endzone_south": "South Endzone", "capacity": 65632, "wfo": "RNK", "gridX": 46, "gridY": 54, "tz": "America/New_York"}, "Louisville": {"stadium": "L&N Federal Credit Union Stadium", "city": "Louisville, KY", "lat": 38.2058, "lon": -85.7588, "orientation": "N-S", "field_azimuth_deg": 358, "endzone_north": "North Endzone", "endzone_south": "South Endzone", "capacity": 60800, "wfo": "LMK", "gridX": 48, "gridY": 72, "tz": "America/New_York"}, "Georgia Tech": {"stadium": "Bobby Dodd Stadium at Hyundai Field", "city": "Atlanta, GA", "lat": 33.7724, "lon": -84.3928, "orientation": "N-S", "field_azimuth_deg": 359, "endzone_north": "North Endzone", "endzone_south": "South Endzone", "capacity": 55000, "wfo": "FFC", "gridX": 51, "gridY": 87, "tz": "America/New_York"}, "Pitt": {"stadium": "Acrisure Stadium", "city": "Pittsburgh, PA", "lat": 40.4468, "lon": -80.0158, "orientation": "NNW-SSE", "field_azimuth_deg": 344, "endzone_north": "North Endzone", "endzone_south": "South Endzone (River View)", "capacity": 68400, "wfo": "PBZ", "gridX": 79, "gridY": 67, "tz": "America/New_York"}, "Duke": {"stadium": "Wallace Wade Stadium", "city": "Durham, NC", "lat": 35.9953, "lon": -78.9417, "orientation": "NW-SE", "field_azimuth_deg": 315, "endzone_north": "Northwest Endzone", "endzone_south": "Southeast Endzone", "capacity": 40004, "wfo": "RAH", "gridX": 69, "gridY": 60, "tz": "America/New_York"}, "Wake Forest": {"stadium": "Allegacy Federal Credit Union Stadium", "city": "Winston-Salem, NC", "lat": 36.13, "lon": -80.2547, "orientation": "N-S", "field_azimuth_deg": 357, "endzone_north": "North Endzone", "endzone_south": "South Endzone", "capacity": 31500, "wfo": "RNK", "gridX": 56, "gridY": 21, "tz": "America/New_York"}, "Boston College": {"stadium": "Alumni Stadium", "city": "Chestnut Hill, MA", "lat": 42.3351, "lon": -71.1665, "orientation": "N-S", "field_azimuth_deg": 355, "endzone_north": "North Endzone", "endzone_south": "South Endzone", "capacity": 44500, "wfo": "BOX", "gridX": 70, "gridY": 88, "tz": "America/New_York"}, "Syracuse": {"stadium": "JMA Wireless Dome", "city": "Syracuse, NY", "lat": 43.0362, "lon": -76.1363, "orientation": "Indoor/Dome", "field_azimuth_deg": 0, "endzone_north": "North Endzone", "endzone_south": "South Endzone", "capacity": 49057, "wfo": "BGM", "gridX": 48, "gridY": 76, "tz": "America/New_York"}, "SMU": {"stadium": "Gerald J. Ford Stadium", "city": "Dallas, TX", "lat": 32.8378, "lon": -96.7831, "orientation": "N-S", "field_azimuth_deg": 358, "endzone_north": "North Endzone", "endzone_south": "South Endzone", "capacity": 32000, "wfo": "FWD", "gridX": 88, "gridY": 105, "tz": "America/Chicago"}, "Cal": {"stadium": "California Memorial Stadium", "city": "Berkeley, CA", "lat": 37.8711, "lon": -122.2508, "orientation": "NW-SE", "field_azimuth_deg": 332, "endzone_north": "Northwest Endzone", "endzone_south": "Southeast Endzone", "capacity": 62467, "wfo": "MTR", "gridX": 93, "gridY": 102, "tz": "America/Los_Angeles"}, "Stanford": {"stadium": "Stanford Stadium", "city": "Stanford, CA", "lat": 37.4345, "lon": -122.1611, "orientation": "NW-SE", "field_azimuth_deg": 315, "endzone_north": "Northwest Endzone", "endzone_south": "Southeast Endzone", "capacity": 50424, "wfo": "MTR", "gridX": 88, "gridY": 89, "tz": "America/Los_Angeles"}, "Bank of America Stadium": {"stadium": "Bank of America Stadium", "city": "Charlotte, NC", "lat": 35.2258, "lon": -80.8528, "orientation": "N-S", "field_azimuth_deg": 0, "endzone_north": "North Endzone", "endzone_south": "South Endzone", "capacity": 74867, "wfo": "GSP", "gridX": 112, "gridY": 62, "tz": "America/New_York"}};
 
         const SEC_WEEKS = [{"week": 3, "date_str": "Saturday, Sep 19, 2026", "games": [{"away": "Georgia", "home": "Arkansas", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Arkansas", "tv": "ABC", "featured": true}, {"away": "Florida State", "home": "Alabama", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Alabama", "tv": "ABC", "featured": true}, {"away": "Florida", "home": "Auburn", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "Auburn", "tv": "ESPN"}, {"away": "LSU", "home": "Ole Miss", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Ole Miss", "tv": "ABC", "featured": true}, {"away": "Kentucky", "home": "Texas A&M", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Texas A&M", "tv": "SEC Network"}, {"away": "Mississippi State", "home": "South Carolina", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "South Carolina", "tv": "SEC Network"}, {"away": "UTSA", "home": "Texas", "time": "8:00 PM EDT", "hour": 20.0, "venue_key": "Texas", "tv": "ESPN"}, {"away": "New Mexico", "home": "Oklahoma", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Oklahoma", "tv": "ESPN2"}, {"away": "Kennesaw State", "home": "Tennessee", "time": "4:15 PM EDT", "hour": 16.25, "venue_key": "Tennessee", "tv": "SEC Network"}, {"away": "NC State", "home": "Vanderbilt", "time": "12:45 PM EDT", "hour": 12.75, "venue_key": "Vanderbilt", "tv": "SEC Network"}]}, {"week": 4, "date_str": "Saturday, Sep 26, 2026", "games": [{"away": "Oklahoma", "home": "Georgia", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Georgia", "tv": "ABC", "featured": true}, {"away": "Texas", "home": "Tennessee", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Tennessee", "tv": "ABC", "featured": true}, {"away": "South Carolina", "home": "Alabama", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Alabama", "tv": "ABC"}, {"away": "Texas A&M", "home": "LSU", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "LSU", "tv": "ESPN", "featured": true}, {"away": "Ole Miss", "home": "Florida", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Florida", "tv": "ESPN"}, {"away": "Vanderbilt", "home": "Auburn", "time": "12:45 PM EDT", "hour": 12.75, "venue_key": "Auburn", "tv": "SEC Network"}, {"away": "Missouri", "home": "Mississippi State", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Mississippi State", "tv": "SEC Network"}, {"away": "Tulsa", "home": "Arkansas", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Arkansas", "tv": "ESPN+"}, {"away": "South Alabama", "home": "Kentucky", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Kentucky", "tv": "SEC Network"}]}, {"week": 5, "date_str": "Saturday, Oct 3, 2026", "games": [{"away": "Auburn", "home": "Tennessee", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Tennessee", "tv": "ABC", "featured": true}, {"away": "Arkansas", "home": "Texas A&M", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "Texas A&M", "tv": "ESPN"}, {"away": "Vanderbilt", "home": "Georgia", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Georgia", "tv": "ABC"}, {"away": "Alabama", "home": "Mississippi State", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Mississippi State", "tv": "ABC"}, {"away": "Florida", "home": "Missouri", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Missouri", "tv": "SEC Network"}, {"away": "Kentucky", "home": "South Carolina", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "South Carolina", "tv": "SEC Network"}, {"away": "McNeese State", "home": "LSU", "time": "8:00 PM EDT", "hour": 20.0, "venue_key": "LSU", "tv": "SECN+"}]}, {"week": 6, "date_str": "Saturday, Oct 10, 2026", "games": [{"away": "Texas", "home": "Oklahoma", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Cotton Bowl", "tv": "ABC", "featured": true, "neutral_note": "Red River Rivalry (Dallas, TX)"}, {"away": "Georgia", "home": "Alabama", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Alabama", "tv": "ABC", "featured": true}, {"away": "Tennessee", "home": "Arkansas", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Arkansas", "tv": "ESPN"}, {"away": "South Carolina", "home": "Florida", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Florida", "tv": "SEC Network"}, {"away": "LSU", "home": "Kentucky", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "Kentucky", "tv": "ESPN"}, {"away": "Texas A&M", "home": "Missouri", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Missouri", "tv": "SEC Network"}, {"away": "Ole Miss", "home": "Vanderbilt", "time": "12:45 PM EDT", "hour": 12.75, "venue_key": "Vanderbilt", "tv": "SEC Network"}]}, {"week": 7, "date_str": "Saturday, Oct 17, 2026", "games": [{"away": "Alabama", "home": "Tennessee", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Tennessee", "tv": "ABC", "featured": true, "note": "Third Saturday in October"}, {"away": "Auburn", "home": "Georgia", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Georgia", "tv": "ABC", "featured": true, "note": "Deep South's Oldest Rivalry"}, {"away": "Florida", "home": "Texas", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Texas", "tv": "ABC"}, {"away": "Mississippi State", "home": "LSU", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "LSU", "tv": "ESPN"}, {"away": "Missouri", "home": "Ole Miss", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Ole Miss", "tv": "SEC Network"}, {"away": "Kentucky", "home": "Oklahoma", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Oklahoma", "tv": "SEC Network"}, {"away": "Arkansas", "home": "Vanderbilt", "time": "12:45 PM EDT", "hour": 12.75, "venue_key": "Vanderbilt", "tv": "SECN+"}, {"away": "The Citadel", "home": "Texas A&M", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Texas A&M", "tv": "SECN+"}]}, {"week": 8, "date_str": "Saturday, Oct 24, 2026", "games": [{"away": "Texas A&M", "home": "Alabama", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Alabama", "tv": "ABC", "featured": true}, {"away": "Ole Miss", "home": "Texas", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Texas", "tv": "ABC", "featured": true}, {"away": "LSU", "home": "Auburn", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "Auburn", "tv": "ESPN"}, {"away": "Tennessee", "home": "South Carolina", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "South Carolina", "tv": "SEC Network"}, {"away": "Oklahoma", "home": "Mississippi State", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Mississippi State", "tv": "ESPN"}, {"away": "Vanderbilt", "home": "Kentucky", "time": "12:45 PM EDT", "hour": 12.75, "venue_key": "Kentucky", "tv": "SEC Network"}]}, {"week": 9, "date_str": "Saturday, Oct 31, 2026", "games": [{"away": "Florida", "home": "Georgia", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Mercedes-Benz Stadium", "tv": "ABC", "featured": true, "neutral_note": "World's Largest Outdoor Cocktail Party (Atlanta, GA 2026)"}, {"away": "Auburn", "home": "Ole Miss", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "Ole Miss", "tv": "ESPN"}, {"away": "Missouri", "home": "Arkansas", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Arkansas", "tv": "ABC", "featured": true, "note": "Battle Line Rivalry"}, {"away": "Mississippi State", "home": "Texas", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Texas", "tv": "SEC Network"}, {"away": "South Carolina", "home": "Oklahoma", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Oklahoma", "tv": "SEC Network"}]}, {"week": 10, "date_str": "Saturday, Nov 7, 2026", "games": [{"away": "Alabama", "home": "LSU", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "LSU", "tv": "ABC", "featured": true, "note": "Death Valley Night Showdown"}, {"away": "Georgia", "home": "Ole Miss", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Ole Miss", "tv": "ABC", "featured": true}, {"away": "Texas", "home": "Missouri", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Missouri", "tv": "ESPN"}, {"away": "Texas A&M", "home": "South Carolina", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "South Carolina", "tv": "ESPN"}, {"away": "Oklahoma", "home": "Florida", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Florida", "tv": "SEC Network"}, {"away": "Arkansas", "home": "Auburn", "time": "12:45 PM EDT", "hour": 12.75, "venue_key": "Auburn", "tv": "SEC Network"}, {"away": "Kentucky", "home": "Tennessee", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Tennessee", "tv": "SEC Network"}, {"away": "Vanderbilt", "home": "Mississippi State", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Mississippi State", "tv": "SECN+"}]}, {"week": 11, "date_str": "Saturday, Nov 14, 2026", "games": [{"away": "Texas", "home": "LSU", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "LSU", "tv": "ABC", "featured": true}, {"away": "Tennessee", "home": "Texas A&M", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Texas A&M", "tv": "ABC", "featured": true}, {"away": "Ole Miss", "home": "Oklahoma", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Oklahoma", "tv": "ABC"}, {"away": "Missouri", "home": "Georgia", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Georgia", "tv": "ESPN"}, {"away": "South Carolina", "home": "Arkansas", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Arkansas", "tv": "SEC Network"}, {"away": "Florida", "home": "Kentucky", "time": "12:45 PM EDT", "hour": 12.75, "venue_key": "Kentucky", "tv": "SEC Network"}, {"away": "Alabama", "home": "Vanderbilt", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Vanderbilt", "tv": "ESPN"}, {"away": "Auburn", "home": "Mississippi State", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "Mississippi State", "tv": "SEC Network"}]}, {"week": 12, "date_str": "Saturday, Nov 21, 2026", "games": [{"away": "LSU", "home": "Tennessee", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Tennessee", "tv": "ABC", "featured": true}, {"away": "Texas A&M", "home": "Oklahoma", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Oklahoma", "tv": "ABC", "featured": true}, {"away": "Georgia", "home": "South Carolina", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "South Carolina", "tv": "ABC"}, {"away": "Arkansas", "home": "Texas", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Texas", "tv": "ESPN"}, {"away": "Kentucky", "home": "Missouri", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Missouri", "tv": "SEC Network"}, {"away": "Vanderbilt", "home": "Florida", "time": "12:45 PM EDT", "hour": 12.75, "venue_key": "Florida", "tv": "SEC Network"}, {"away": "Chattanooga", "home": "Alabama", "time": "2:00 PM EDT", "hour": 14.0, "venue_key": "Alabama", "tv": "SECN+"}, {"away": "Samford", "home": "Auburn", "time": "1:00 PM EDT", "hour": 13.0, "venue_key": "Auburn", "tv": "SECN+"}, {"away": "Tennessee Tech", "home": "Mississippi State", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Mississippi State", "tv": "SECN+"}, {"away": "Wofford", "home": "Ole Miss", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Ole Miss", "tv": "SECN+"}]}, {"week": 13, "date_str": "Saturday, Nov 28, 2026 (Rivalry Week)", "games": [{"away": "Auburn", "home": "Alabama", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Alabama", "tv": "ABC", "featured": true, "note": "The Iron Bowl"}, {"away": "Texas", "home": "Texas A&M", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Texas A&M", "tv": "ABC", "featured": true, "note": "The Lone Star Showdown"}, {"away": "Mississippi State", "home": "Ole Miss", "time": "3:30 PM EDT", "hour": 15.5, "venue_key": "Ole Miss", "tv": "ESPN", "featured": true, "note": "The Egg Bowl"}, {"away": "LSU", "home": "Arkansas", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Arkansas", "tv": "ABC", "featured": true, "note": "The Golden Boot"}, {"away": "Tennessee", "home": "Vanderbilt", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Vanderbilt", "tv": "SEC Network"}, {"away": "Oklahoma", "home": "Missouri", "time": "7:00 PM EDT", "hour": 19.0, "venue_key": "Missouri", "tv": "SEC Network"}, {"away": "Georgia Tech", "home": "Georgia", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Georgia", "tv": "ABC", "note": "Clean, Old-Fashioned Hate"}, {"away": "Florida", "home": "Florida State", "time": "7:30 PM EDT", "hour": 19.5, "venue_key": "Florida", "tv": "ESPN"}, {"away": "Louisville", "home": "Kentucky", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "Kentucky", "tv": "SEC Network", "note": "Governor's Cup"}, {"away": "South Carolina", "home": "Clemson", "time": "12:00 PM EDT", "hour": 12.0, "venue_key": "South Carolina", "tv": "ESPN", "note": "Palmetto Bowl"}]}, {"week": 14, "date_str": "Saturday, Dec 5, 2026", "games": [{"away": "SEC East/Seed 1", "home": "SEC West/Seed 2", "time": "4:00 PM EDT", "hour": 16.0, "venue_key": "Mercedes-Benz Stadium", "tv": "ABC", "featured": true, "note": "SEC Championship Game (Atlanta, GA)"}]}];
@@ -1276,6 +1548,29 @@
                 lat: 33.0,
                 lon: -85.0
             };
+
+            // =========================================================
+            // 🏟️ DYNAMIC TEAM COLOR & STADIUM FLOODLIGHT INJECTION
+            // =========================================================
+            const homeKey = game.home || game.venue_key;
+            const teamTheme = SCHOOL_COLORS[homeKey] || SCHOOL_COLORS[game.venue_key] || {
+                primary: "#ba0c2f",
+                glow: "rgba(186, 12, 47, 0.45)",
+                secondary: "#000000"
+            };
+
+            // Dynamically set CSS variables on document root
+            if (document.documentElement && document.documentElement.style) {
+                document.documentElement.style.setProperty('--team-primary', teamTheme.primary);
+                document.documentElement.style.setProperty('--team-glow', teamTheme.glow);
+                document.documentElement.style.setProperty('--team-secondary', teamTheme.secondary);
+            }
+
+            // Update Header Icon Pill border with school color
+            const headerPill = document.getElementById('headerConfPill');
+            if (headerPill) {
+                headerPill.style.borderColor = teamTheme.primary;
+            }
 
             document.getElementById('metaStadium').textContent = venue.stadium;
             document.getElementById('metaCity').textContent = venue.city;

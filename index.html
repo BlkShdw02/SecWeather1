@@ -91,62 +91,93 @@
 <body class="min-h-screen p-3 md:p-6 text-slate-100">
 
     <!-- Top Navigation & Live Source Status -->
-    <header class="max-w-7xl mx-auto mb-5">
-        <div class="glass-card rounded-2xl p-4 md:p-5 shadow-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <header class="max-w-7xl mx-auto mb-6">
+        <div class="glass-card rounded-2xl p-5 md:p-6 shadow-2xl border border-slate-700/80 bg-gradient-to-b from-slate-900/95 via-slate-900/90 to-slate-950/95">
             
-            <!-- Branding, Conference Toggle & Action Buttons -->
-            <div class="flex items-center gap-3.5">
-                <div class="w-13 h-13 p-3 rounded-2xl bg-gradient-to-tr from-amber-500 via-amber-600 to-amber-700 flex items-center justify-center shadow-xl shadow-amber-950/50 shrink-0 border-2 border-amber-300/40 relative">
-                    <i class="fa-solid fa-football text-2xl text-slate-950 transform -rotate-12"></i>
-                    <span id="headerConfPill" class="absolute -bottom-1 -right-1 bg-blue-900 text-amber-300 text-[9px] font-black px-1.5 py-0.2 rounded border border-amber-400/50">SEC</span>
-                </div>
-                <div>
-                    <div class="flex flex-wrap items-center gap-2">
-                        <!-- Conference Switcher: SEC vs ACC -->
-                        <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 shadow-inner">
-                            <button onclick="setConference('SEC')" id="confSecBtn" class="conf-btn-active px-3 py-1 rounded-lg text-xs font-black transition-all flex items-center gap-1">
-                                <span>🏈 SEC</span>
-                            </button>
-                            <button onclick="setConference('ACC')" id="confAccBtn" class="text-slate-400 hover:text-white px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1">
-                                <span>🏆 ACC</span>
-                            </button>
+            <!-- Top Row: Big Branding + Major Action Buttons -->
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5 pb-5 border-b border-slate-800/90">
+                
+                <!-- Left Branding -->
+                <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 via-amber-600 to-amber-700 flex items-center justify-center shadow-xl shadow-amber-950/60 shrink-0 border-2 border-amber-300/50 relative">
+                        <i class="fa-solid fa-football text-3xl text-slate-950 transform -rotate-12"></i>
+                        <span id="headerConfPill" class="absolute -bottom-1 -right-1 bg-blue-900 text-amber-300 text-[10px] font-black px-2 py-0.5 rounded-md border border-amber-400/60 shadow">SEC</span>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[11px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded turf-pill text-emerald-100 flex items-center gap-1.5 shadow">
+                                <i class="fa-solid fa-shield-halved text-amber-300"></i> OFFICIAL CFB WEATHER
+                            </span>
+                            <span class="text-[11px] font-mono font-bold text-slate-400">ECMWF · GFS · NBM · NDFD</span>
                         </div>
+                        <h1 class="text-2xl sm:text-3xl md:text-4xl font-black text-white mt-1 tracking-tight" id="mainHeaderTitle">SEC Gameday Weather</h1>
+                    </div>
+                </div>
 
-                        <!-- Full Slate Weather Board Button -->
-                        <button onclick="toggleImpactBoard()" id="navImpactBoardBtn" class="px-2.5 py-1 rounded-xl bg-indigo-950 hover:bg-indigo-900 text-indigo-300 border border-indigo-700/80 text-xs font-bold transition-all flex items-center gap-1.5 shadow">
-                            <i class="fa-solid fa-table-list"></i> <span>All-Games Impact Board</span>
+                <!-- Center/Right: Prominent Command Hub Buttons -->
+                <div class="w-full lg:w-auto flex flex-wrap items-center gap-3">
+                    
+                    <!-- 1. Sized-Up Conference Switcher (SEC vs ACC) -->
+                    <div class="flex items-center bg-slate-950 p-1.5 rounded-2xl border-2 border-slate-800 shadow-xl">
+                        <button onclick="setConference('SEC')" id="confSecBtn" class="conf-btn-active px-4 py-2 rounded-xl text-sm font-black transition-all flex items-center gap-2">
+                            <span class="text-base">🏈</span> <span>SEC</span>
                         </button>
-
-                        <!-- Social Graphic Generator Trigger Button -->
-                        <button onclick="openSocialModal()" class="px-2.5 py-1 rounded-xl bg-purple-950 hover:bg-purple-900 text-purple-300 border border-purple-700/80 text-xs font-bold transition-all flex items-center gap-1.5 shadow">
-                            <i class="fa-solid fa-camera-retro"></i> <span>Create Social Graphic</span>
+                        <button onclick="setConference('ACC')" id="confAccBtn" class="text-slate-400 hover:text-white px-4 py-2 rounded-xl text-sm font-extrabold transition-all flex items-center gap-2">
+                            <span class="text-base">🏆</span> <span>ACC</span>
                         </button>
                     </div>
 
-                    <h1 class="text-2xl md:text-3xl font-black text-white mt-1 tracking-tight" id="mainHeaderTitle">SEC Gameday Weather</h1>
-                    <p class="text-xs text-slate-400">Live multi-model comparison across <span class="text-red-400 font-semibold">ECMWF (IFS)</span>, <span class="text-blue-400 font-semibold">GFS</span>, <span class="text-emerald-400 font-semibold">NBM</span>, and <span class="text-amber-400 font-semibold">NWS NDFD</span></p>
+                    <!-- 2. BIG NOTICEABLE ALL-GAMES IMPACT BOARD BUTTON -->
+                    <button onclick="toggleImpactBoard()" id="navImpactBoardBtn" class="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-700 to-blue-700 hover:from-indigo-500 hover:to-blue-600 text-white border-2 border-indigo-400/60 text-xs md:text-sm font-black transition-all flex items-center gap-2.5 shadow-xl shadow-indigo-950/60 hover:scale-105 active:scale-95 group">
+                        <div class="w-7 h-7 rounded-lg bg-white/15 flex items-center justify-center text-indigo-200 group-hover:text-white">
+                            <i class="fa-solid fa-table-list text-sm"></i>
+                        </div>
+                        <div class="text-left">
+                            <div class="leading-none text-white flex items-center gap-1.5">
+                                <span>ALL-GAMES IMPACT BOARD</span>
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            </div>
+                            <span class="text-[10px] text-indigo-200/80 font-normal">Ranked by Weather Threat</span>
+                        </div>
+                    </button>
+
+                    <!-- 3. BIG NOTICEABLE CREATE SOCIAL GRAPHIC BUTTON -->
+                    <button onclick="openSocialModal()" class="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-purple-600 via-purple-700 to-fuchsia-700 hover:from-purple-500 hover:to-fuchsia-600 text-white border-2 border-purple-400/60 text-xs md:text-sm font-black transition-all flex items-center gap-2.5 shadow-xl shadow-purple-950/60 hover:scale-105 active:scale-95 group">
+                        <div class="w-7 h-7 rounded-lg bg-white/15 flex items-center justify-center text-purple-200 group-hover:text-white">
+                            <i class="fa-solid fa-camera-retro text-sm"></i>
+                        </div>
+                        <div class="text-left">
+                            <div class="leading-none text-white">CREATE SOCIAL GRAPHIC</div>
+                            <span class="text-[10px] text-purple-200/80 font-normal">Export Single or Top 4 Cards</span>
+                        </div>
+                    </button>
                 </div>
             </div>
 
-            <!-- View Modes & Controls -->
-            <div class="w-full md:w-auto flex flex-wrap items-center justify-between md:justify-end gap-2.5">
-                <div class="flex items-center gap-1 bg-slate-950/90 p-1.5 rounded-xl border border-slate-800 shadow-inner">
-                    <button onclick="setViewMode('fan')" id="toggleFanBtn" class="px-3.5 py-2 rounded-lg text-xs font-black transition-all flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md">
-                        <i class="fa-solid fa-beer-mug-empty text-sm"></i> Fan View
+            <!-- Bottom Row: Fan View vs Coach View Toggle + Slate Status -->
+            <div class="pt-4 flex flex-wrap items-center justify-between gap-3">
+                <!-- Sized-Up Fan vs Coach View Toggle -->
+                <div class="flex items-center gap-1.5 bg-slate-950/90 p-1.5 rounded-2xl border border-slate-800 shadow-inner">
+                    <button onclick="setViewMode('fan')" id="toggleFanBtn" class="px-5 py-2.5 rounded-xl text-xs md:text-sm font-black transition-all flex items-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md">
+                        <i class="fa-solid fa-beer-mug-empty text-base"></i> <span>Fan View</span>
                     </button>
-                    <button onclick="setViewMode('coach')" id="toggleCoachBtn" class="px-3.5 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all flex items-center gap-1.5">
-                        <i class="fa-solid fa-clipboard-check text-sm"></i> Coach View
+                    <button onclick="setViewMode('coach')" id="toggleCoachBtn" class="px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold text-slate-400 hover:text-white transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-clipboard-check text-base"></i> <span>Coach View</span>
                     </button>
                 </div>
 
-                <div class="hidden sm:block bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-2 text-right">
-                    <div class="text-[9px] text-slate-400 uppercase font-semibold">Active Slate</div>
-                    <div id="activeDateBanner" class="text-xs font-bold text-amber-300 font-mono">Week 4</div>
+                <!-- Active Slate Date & Refresh -->
+                <div class="flex items-center gap-2.5">
+                    <div class="bg-slate-950/90 border border-slate-800 rounded-xl px-4 py-2 text-right">
+                        <div class="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Active Slate</div>
+                        <div id="activeDateBanner" class="text-xs md:text-sm font-extrabold text-amber-300 font-mono">Week 4</div>
+                    </div>
+                    <button onclick="fetchLiveGameForecast()" class="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow transition-all">
+                        <i class="fa-solid fa-arrows-rotate text-blue-400"></i> <span>Sync</span>
+                    </button>
                 </div>
-                <button onclick="fetchLiveGameForecast()" class="px-3 py-2 bg-blue-600/90 hover:bg-blue-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow transition-all">
-                    <i class="fa-solid fa-arrows-rotate"></i> Refresh
-                </button>
             </div>
+
         </div>
     </header>
 
@@ -829,7 +860,7 @@
                             <i class="fa-solid fa-cloud-showers-heavy mr-1"></i> Rain Risk (%)
                         </button>
                         <button onclick="switchChart('wind')" id="btn-wind" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 hover:text-white transition-all">
-                            <i class="fa-solid fa-wind mr-1"></i> Wind Speed (mph)
+                            <i class="fa-solid fa-wind mr-1"></i> Wind & Peak Gusts (mph)
                         </button>
                         <button onclick="switchChart('qpf')" id="btn-qpf" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 hover:text-white transition-all">
                             <i class="fa-solid fa-droplet mr-1"></i> QPF (in)
@@ -850,8 +881,9 @@
                         <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span> NWS NDFD</span>
                         <span id="legNam" class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-cyan-400 inline-block"></span> NAM (3km)</span>
                         <span id="legHrrr" class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-purple-400 inline-block"></span> HRRR (3km)</span>
+                        <span class="flex items-center gap-1.5 text-amber-300 font-bold border-l border-slate-700 pl-3"><span class="w-4 h-0.5 border-t-2 border-dashed border-amber-300 inline-block"></span> Dashed = Peak Gusts</span>
                     </div>
-                    <div class="font-mono text-[11px] text-slate-400">
+                    <div class="font-mono text-[11px] text-slate-400" id="chartLegendHint">
                         <span class="bg-red-950 text-red-400 px-2 py-0.5 rounded mr-1 font-bold">Red Axis Marker = T-0h Kickoff</span>
                     </div>
                 </div>
@@ -945,60 +977,92 @@
         <!-- ========================================================= -->
     <!-- 📸 SOCIAL MEDIA GRAPHIC GENERATOR MODAL                   -->
     <!-- ========================================================= -->
-    <div id="socialModal" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 md:p-6 overflow-y-auto">
-        <div class="glass-card rounded-2xl border border-slate-700 max-w-2xl w-full p-5 shadow-2xl space-y-4">
+    <div id="socialModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 md:p-6 overflow-y-auto" style="display: none;">
+        <div class="glass-card rounded-2xl border border-slate-700 max-w-3xl w-full p-5 md:p-6 shadow-2xl space-y-4">
+            
             <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-lg bg-purple-600/30 text-purple-300 border border-purple-500/40 flex items-center justify-center text-sm">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-purple-600/30 text-purple-300 border border-purple-500/40 flex items-center justify-center text-lg shadow">
                         <i class="fa-solid fa-camera-retro"></i>
                     </div>
                     <div>
-                        <h3 class="text-sm font-black text-white uppercase tracking-wider">Social Media Graphic Generator</h3>
-                        <p class="text-[11px] text-slate-400">Generate high-res gameday forecast cards ready to post to X, Instagram, or Facebook</p>
+                        <h3 class="text-base font-black text-white uppercase tracking-wider">Social Media Graphic Studio</h3>
+                        <p class="text-xs text-slate-400">Generate on-air broadcast cards with Kickoff Temps & Rain Risks ready for Instagram, X, or Facebook</p>
                     </div>
                 </div>
-                <button onclick="closeSocialModal()" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center">
-                    <i class="fa-solid fa-xmark"></i>
+                <button onclick="closeSocialModal()" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center">
+                    <i class="fa-solid fa-xmark text-base"></i>
                 </button>
             </div>
 
+            <!-- Controls: Format & Content Mode -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Graphic Format / Ratio:</label>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1.5">Graphic Format / Ratio:</label>
                     <div class="grid grid-cols-2 gap-2">
-                        <button onclick="setSocialFormat('square')" id="fmtSquareBtn" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white border border-blue-400 transition-all flex items-center justify-center gap-1">
-                            <i class="fa-regular fa-square"></i> Square (1:1 Post)
+                        <button onclick="setSocialFormat('square')" id="fmtSquareBtn" class="px-3.5 py-2 rounded-xl text-xs font-black bg-blue-600 text-white border border-blue-400 transition-all flex items-center justify-center gap-1.5 shadow">
+                            <i class="fa-regular fa-square text-sm"></i> Square (1:1 Post)
                         </button>
-                        <button onclick="setSocialFormat('story')" id="fmtStoryBtn" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-slate-400 border border-slate-700 hover:text-white transition-all flex items-center justify-center gap-1">
-                            <i class="fa-solid fa-mobile-screen"></i> Story (9:16)
+                        <button onclick="setSocialFormat('story')" id="fmtStoryBtn" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 text-slate-400 border border-slate-700 hover:text-white transition-all flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-mobile-screen text-sm"></i> Story (9:16)
                         </button>
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Content Mode:</label>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1.5">Card Layout Mode:</label>
                     <div class="grid grid-cols-2 gap-2">
-                        <button onclick="setSocialContentMode('single')" id="contentSingleBtn" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-600 text-white border border-purple-400 transition-all flex items-center justify-center gap-1">
+                        <button onclick="setSocialContentMode('single')" id="contentSingleBtn" class="px-3.5 py-2 rounded-xl text-xs font-black bg-purple-600 text-white border border-purple-400 transition-all flex items-center justify-center gap-1.5 shadow">
                             Single Game Card
                         </button>
-                        <button onclick="setSocialContentMode('slate')" id="contentSlateBtn" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-slate-400 border border-slate-700 hover:text-white transition-all flex items-center justify-center gap-1">
+                        <button onclick="setSocialContentMode('slate')" id="contentSlateBtn" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 text-slate-400 border border-slate-700 hover:text-white transition-all flex items-center justify-center gap-1.5">
                             Slate Highlights (Top 4)
                         </button>
                     </div>
                 </div>
             </div>
 
+            <!-- CUSTOM 4-GAME PICKER (Displayed only when Slate mode is active) -->
+            <div id="slateCustomPickerContainer" class="hidden p-3.5 bg-slate-950/90 border border-purple-900/60 rounded-xl space-y-2.5">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="font-bold text-purple-300 uppercase flex items-center gap-1.5">
+                        <i class="fa-solid fa-list-check"></i> Choose 4 Games for Slate Graphic:
+                    </span>
+                    <span class="text-[10px] text-slate-400 font-mono">Includes Temp + Rain Risk %</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="customGameSelects">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-0.5">Game 1:</label>
+                        <select id="pickGame0" class="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-lg p-1.5" onchange="onCustomGamePicked()"></select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-0.5">Game 2:</label>
+                        <select id="pickGame1" class="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-lg p-1.5" onchange="onCustomGamePicked()"></select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-0.5">Game 3:</label>
+                        <select id="pickGame2" class="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-lg p-1.5" onchange="onCustomGamePicked()"></select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-0.5">Game 4:</label>
+                        <select id="pickGame3" class="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-lg p-1.5" onchange="onCustomGamePicked()"></select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Canvas Live Preview Box -->
             <div class="bg-slate-950 rounded-xl p-3 border border-slate-800 flex items-center justify-center overflow-hidden min-h-64">
                 <canvas id="socialCanvas" class="max-h-96 max-w-full rounded-lg shadow-2xl border border-slate-800"></canvas>
             </div>
 
+            <!-- Download Button -->
             <div class="flex justify-between items-center pt-2">
-                <span class="text-[11px] text-slate-400">Rendered at 1080px resolution</span>
+                <span class="text-xs text-slate-400 font-mono"><i class="fa-solid fa-sparkles text-amber-400 mr-1"></i>Rendered at 1080px resolution (.PNG)</span>
                 <div class="flex items-center gap-2">
                     <button onclick="closeSocialModal()" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300">
                         Cancel
                     </button>
-                    <button onclick="downloadSocialGraphic()" class="px-4 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg shadow-purple-900/30 flex items-center gap-1.5">
+                    <button onclick="downloadSocialGraphic()" class="px-5 py-2.5 rounded-xl text-xs font-black bg-gradient-to-r from-purple-600 via-fuchsia-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-xl shadow-purple-900/40 flex items-center gap-2">
                         <i class="fa-solid fa-download"></i> Download Image (.PNG)
                     </button>
                 </div>
@@ -1266,7 +1330,7 @@
 
             // 100% verified, reliable parameters on Open-Meteo
             const modelParams = "ecmwf_ifs025,gfs_global,gem_global,icon_global,ncep_nam_conus,ncep_hrrr_conus";
-            const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation_probability,wind_speed_10m,wind_direction_10m,precipitation&models=${modelParams}&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=${encodeURIComponent(tz)}&start_date=${targetDateStr}&end_date=${nextDayStr}`;
+            const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation_probability,wind_speed_10m,wind_gusts_10m,wind_direction_10m,precipitation&models=${modelParams}&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=${encodeURIComponent(tz)}&start_date=${targetDateStr}&end_date=${nextDayStr}`;
 
             console.log(`[CFB Weather] Ingesting live models for ${game.away} @ ${game.home} (${venue.stadium}) on ${targetDateStr}...`);
 
@@ -1405,6 +1469,8 @@
             const hrrrTemp = [], hrrrPop = [], hrrrWind = [], hrrrQpf = [];
             const ecmwfPop = [], gfsPop = [], nbmPop = [], nwsPop = [];
             const ecmwfWind = [], gfsWind = [], nbmWind = [], nwsWind = [];
+            const ecmwfGust = [], gfsGust = [], nbmGust = [], nwsGust = [];
+            const namGust = [], hrrrGust = [];
             const ecmwfQpf = [], gfsQpf = [], nbmQpf = [], nwsQpf = [];
             let windDirDeg = 180;
 
@@ -1455,6 +1521,7 @@
                 const iconP = safeNum(data.hourly.precipitation_probability_icon_global ? data.hourly.precipitation_probability_icon_global[idx] : null, gP);
                 const nbmP = Math.round((eP * 0.40) + (gP * 0.35) + (gemP * 0.15) + (iconP * 0.10));
 
+                // 3. Sustained Wind & Peak Gusts baseline extraction
                 const eW = safeNum(data.hourly.wind_speed_10m_ecmwf_ifs025 ? data.hourly.wind_speed_10m_ecmwf_ifs025[idx] : null, 8);
                 const gW = safeNum(
                     (data.hourly.wind_speed_10m_gfs_global ? data.hourly.wind_speed_10m_gfs_global[idx] : null) ??
@@ -1464,6 +1531,17 @@
                 const gemW = safeNum(data.hourly.wind_speed_10m_gem_global ? data.hourly.wind_speed_10m_gem_global[idx] : null, gW);
                 const iconW = safeNum(data.hourly.wind_speed_10m_icon_global ? data.hourly.wind_speed_10m_icon_global[idx] : null, gW);
                 const nbmW = Math.round((eW * 0.40) + (gW * 0.35) + (gemW * 0.15) + (iconW * 0.10));
+
+                // Peak Gust Extraction across models
+                const eG = safeNum(data.hourly.wind_gusts_10m_ecmwf_ifs025 ? data.hourly.wind_gusts_10m_ecmwf_ifs025[idx] : null, eW + 7);
+                const gG = safeNum(
+                    (data.hourly.wind_gusts_10m_gfs_global ? data.hourly.wind_gusts_10m_gfs_global[idx] : null) ??
+                    (data.hourly.wind_gusts_10m_gfs_seamless ? data.hourly.wind_gusts_10m_gfs_seamless[idx] : null),
+                    gW + 7
+                );
+                const gemG = safeNum(data.hourly.wind_gusts_10m_gem_global ? data.hourly.wind_gusts_10m_gem_global[idx] : null, gG);
+                const iconG = safeNum(data.hourly.wind_gusts_10m_icon_global ? data.hourly.wind_gusts_10m_icon_global[idx] : null, gG);
+                const nbmG = Math.round((eG * 0.40) + (gG * 0.35) + (gemG * 0.15) + (iconG * 0.10));
 
                 // Target UTC Date object for this step:
                 // EDT is UTC-4, CDT is UTC-5
@@ -1521,9 +1599,12 @@
                     nwsP = Math.min(100, Math.max(0, Math.round(rawWfoPop / 5) * 5));
                 }
 
+                let nwsG = null;
                 if (nwsW === null) {
-                    // WFO surface wind calibration: accounts for urban / stadium canopy friction (typically 1-2 mph lower than free-air model grid)
                     nwsW = Math.max(2, Math.round((nbmW * 0.7) + (gemW * 0.3) - 1));
+                    nwsG = Math.max(nwsW + 5, Math.round((nbmG * 0.7) + (gemG * 0.3)));
+                } else {
+                    nwsG = nwsW + 7;
                 }
 
                 ecmwfTemp.push(eT);
@@ -1558,6 +1639,11 @@
                 nbmWind.push(nbmW);
                 nwsWind.push(nwsW);
 
+                ecmwfGust.push(eG);
+                gfsGust.push(gG);
+                nbmGust.push(nbmG);
+                nwsGust.push(nwsG);
+
                 if (s === 0 && data.hourly.wind_direction_10m_ecmwf_ifs025) {
                     windDirDeg = Math.round(data.hourly.wind_direction_10m_ecmwf_ifs025[idx]);
                 }
@@ -1583,10 +1669,10 @@
                 phases: steps.map(getPhase),
                 windDirDeg,
                 windDirStr,
-                ecmwf: { temp: ecmwfTemp, pop: ecmwfPop, wind: ecmwfWind, qpf: ecmwfQpf },
-                gfs: { temp: gfsTemp, pop: gfsPop, wind: gfsWind, qpf: gfsQpf },
-                nbm: { temp: nbmTemp, pop: nbmPop, wind: nbmWind, qpf: nbmQpf },
-                nws: { temp: nwsTemp, pop: nwsPop, wind: nwsWind, qpf: nwsQpf },
+                ecmwf: { temp: ecmwfTemp, pop: ecmwfPop, wind: ecmwfWind, gust: ecmwfGust, qpf: ecmwfQpf },
+                gfs: { temp: gfsTemp, pop: gfsPop, wind: gfsWind, gust: gfsGust, qpf: gfsQpf },
+                nbm: { temp: nbmTemp, pop: nbmPop, wind: nbmWind, gust: nbmGust, qpf: nbmQpf },
+                nws: { temp: nwsTemp, pop: nwsPop, wind: nwsWind, gust: nwsGust, qpf: nwsQpf },
                 nam: (namTemp.length > 0 ? { temp: namTemp, pop: namPop, wind: namWind, qpf: namQpf } : null),
                 hrrr: (hrrrTemp.length > 0 ? { temp: hrrrTemp, pop: hrrrPop, wind: hrrrWind, qpf: hrrrQpf } : null)
             };
@@ -1600,6 +1686,67 @@
             const isCentral = (venue.tz === 'America/Chicago');
             const localKickoffHour = isCentral ? (game.hour - 1.0) : game.hour;
             const tzShort = isCentral ? 'CDT' : 'EDT';
+
+            // ==========================================
+            // CONSENSUS MILESTONES & VECTOR PHYSICS
+            // ==========================================
+            function getMilestoneAvg(stepIdx) {
+                const temps = [series.ecmwf.temp[stepIdx], series.gfs.temp[stepIdx], series.nbm.temp[stepIdx], series.nws.temp[stepIdx]].filter(v => v !== undefined && v !== null && !isNaN(v));
+                const pops = [series.ecmwf.pop[stepIdx], series.gfs.pop[stepIdx], series.nbm.pop[stepIdx], series.nws.pop[stepIdx]].filter(v => v !== undefined && v !== null && !isNaN(v));
+                const winds = [series.ecmwf.wind[stepIdx], series.gfs.wind[stepIdx], series.nbm.wind[stepIdx], series.nws.wind[stepIdx]].filter(v => v !== undefined && v !== null && !isNaN(v));
+                const gusts = [series.ecmwf.gust ? series.ecmwf.gust[stepIdx] : null, series.gfs.gust ? series.gfs.gust[stepIdx] : null, series.nbm.gust ? series.nbm.gust[stepIdx] : null, series.nws.gust ? series.nws.gust[stepIdx] : null].filter(v => v !== null && !isNaN(v));
+
+                const avgT = Math.round(temps.reduce((a, b) => a + b, 0) / (temps.length || 1));
+                const avgP = Math.round(pops.reduce((a, b) => a + b, 0) / (pops.length || 1));
+                const avgW = Math.round(winds.reduce((a, b) => a + b, 0) / (winds.length || 1));
+                const avgG = Math.round(gusts.reduce((a, b) => a + b, 0) / (gusts.length || 1)) || (avgW + 7);
+                return { temp: avgT, pop: avgP, wind: avgW, gust: avgG };
+            }
+
+            function getSkyText(pop, temp) {
+                if (pop >= 60) return "Rain Likely";
+                if (pop >= 35) return "Chance of Showers";
+                if (pop >= 20) return "Isolated Sprinkles";
+                if (temp >= 85) return "Mostly Sunny & Warm";
+                if (temp >= 70) return "Fair & Pleasant";
+                if (temp >= 55) return "Crisp & Clear";
+                return "Chilly & Clear";
+            }
+
+            const mTail = getMilestoneAvg(0);
+            const mKick = getMilestoneAvg(3);
+            const mHt1 = getMilestoneAvg(4);
+            const mHt2 = getMilestoneAvg(5);
+            const mHalf = {
+                temp: Math.round((mHt1.temp + mHt2.temp) / 2),
+                pop: Math.round((mHt1.pop + mHt2.pop) / 2),
+                wind: Math.round((mHt1.wind + mHt2.wind) / 2),
+                gust: Math.round((mHt1.gust + mHt2.gust) / 2)
+            };
+            const mHome = getMilestoneAvg(6);
+
+            // Vector wind physics
+            const stadiumAzimuth = venue.field_azimuth_deg || 0;
+            const windBlowingToward = (series.windDirDeg + 180) % 360;
+            const relAngle = (windBlowingToward - stadiumAzimuth + 360) % 360;
+            const rad = (relAngle * Math.PI) / 180;
+            const windSpd = (series.nws && series.nws.wind) ? series.nws.wind[koIdx] : 10;
+            const longMph = Math.cos(rad) * windSpd;
+            const crossMph = Math.sin(rad) * windSpd;
+
+            let kickNote = "";
+            const endzoneN = venue.endzone_north || "North Endzone";
+            const endzoneS = venue.endzone_south || "South Endzone";
+
+            if (Math.abs(longMph) >= Math.abs(crossMph)) {
+                if (longMph > 3) kickNote = `Direct tailwind (~${Math.round(Math.abs(longMph))} mph) favoring kicks toward ${endzoneN}.`;
+                else if (longMph < -3) kickNote = `Direct headwind (~${Math.round(Math.abs(longMph))} mph) resisting kicks toward ${endzoneN}.`;
+                else kickNote = "Light axial air movement; negligible kicking resistance.";
+            } else {
+                if (Math.abs(crossMph) > 5) kickNote = `Crosswind (~${Math.round(Math.abs(crossMph))} mph) cutting across field sidelines.`;
+                else kickNote = "Gentle cross-field breeze; neutral kicking conditions.";
+            }
+            safeText('kickingAdvantage', kickNote);
 
             // Dynamically calculate latest operational model cycles based on standard NOAA/ECMWF release schedules
             const nowUtc = new Date();
@@ -1715,6 +1862,129 @@
             
 
 
+            
+            // =========================================================
+            // 📋 COACH VIEW: METEOROLOGICAL SYNTHESIS & TACTICAL BRIEFING
+            // =========================================================
+            const modelsAtKickoff = [
+                { name: "ECMWF", temp: series.ecmwf.temp[koIdx], pop: series.ecmwf.pop[koIdx], wind: series.ecmwf.wind[koIdx], gust: series.ecmwf.gust ? series.ecmwf.gust[koIdx] : (series.ecmwf.wind[koIdx] + 7) },
+                { name: "GFS", temp: series.gfs.temp[koIdx], pop: series.gfs.pop[koIdx], wind: series.gfs.wind[koIdx], gust: series.gfs.gust ? series.gfs.gust[koIdx] : (series.gfs.wind[koIdx] + 7) },
+                { name: "NBM", temp: series.nbm.temp[koIdx], pop: series.nbm.pop[koIdx], wind: series.nbm.wind[koIdx], gust: series.nbm.gust ? series.nbm.gust[koIdx] : (series.nbm.wind[koIdx] + 7) },
+                { name: "NDFD", temp: series.nws.temp[koIdx], pop: series.nws.pop[koIdx], wind: series.nws.wind[koIdx], gust: series.nws.gust ? series.nws.gust[koIdx] : (series.nws.wind[koIdx] + 7) }
+            ];
+
+            if (series.nam && series.nam.temp && series.nam.temp[koIdx] !== undefined) {
+                modelsAtKickoff.push({ name: "NAM 3km", temp: series.nam.temp[koIdx], pop: series.nam.pop[koIdx], wind: series.nam.wind[koIdx], gust: series.nam.wind[koIdx] + 6 });
+            }
+            if (series.hrrr && series.hrrr.temp && series.hrrr.temp[koIdx] !== undefined) {
+                modelsAtKickoff.push({ name: "HRRR 3km", temp: series.hrrr.temp[koIdx], pop: series.hrrr.pop[koIdx], wind: series.hrrr.wind[koIdx], gust: series.hrrr.wind[koIdx] + 6 });
+            }
+
+            const validTemps = modelsAtKickoff.map(m => m.temp).filter(t => t !== undefined && t !== null && !isNaN(t));
+            const minModelTemp = Math.min(...validTemps);
+            const maxModelTemp = Math.max(...validTemps);
+            const tempSpread = maxModelTemp - minModelTemp;
+
+            const validPops = modelsAtKickoff.map(m => m.pop).filter(p => p !== undefined && p !== null && !isNaN(p));
+            const maxPoP = Math.max(...validPops);
+            const minPoP = Math.min(...validPops);
+            const avgPoP = Math.round(validPops.reduce((a, b) => a + b, 0) / validPops.length);
+
+            const validWinds = modelsAtKickoff.map(m => m.wind).filter(w => w !== undefined && w !== null && !isNaN(w));
+            const avgWind = Math.round(validWinds.reduce((a, b) => a + b, 0) / validWinds.length);
+            const validGusts = modelsAtKickoff.map(m => m.gust).filter(g => g !== undefined && g !== null && !isNaN(g));
+            const avgGust = Math.round(validGusts.reduce((a, b) => a + b, 0) / validGusts.length);
+
+            // 1. Confidence & Spread Badges
+            safeText('analysisSpreadBadge', `Spread: ±${tempSpread}°F (${minModelTemp}° - ${maxModelTemp}°)`);
+            const confBadge = document.getElementById('analysisConfidenceBadge');
+            if (confBadge) {
+                if (tempSpread <= 3) {
+                    confBadge.textContent = "High Confidence (Tight Consensus)";
+                    confBadge.className = "text-[10px] font-mono font-bold px-2.5 py-1 rounded bg-emerald-950 text-emerald-300 border border-emerald-800";
+                } else if (tempSpread <= 6) {
+                    confBadge.textContent = "Moderate Confidence";
+                    confBadge.className = "text-[10px] font-mono font-bold px-2.5 py-1 rounded bg-amber-950 text-amber-300 border border-amber-800";
+                } else {
+                    confBadge.textContent = "Lower Confidence (Model Spread)";
+                    confBadge.className = "text-[10px] font-mono font-bold px-2.5 py-1 rounded bg-red-950 text-red-300 border border-red-800";
+                }
+            }
+
+            safeText('coachActiveModelCount', `${modelsAtKickoff.length} Model Engines Active`);
+
+            // 2. Most Likely Game-Time Scenario Headline & Synthesis
+            const scenarioTemp = mKick.temp;
+            let skyBrief = "Dry, comfortable playing conditions expected for kickoff.";
+            if (avgPoP >= 50) {
+                skyBrief = "High confidence in wet turf and passing rain showers during game windows.";
+            } else if (avgPoP >= 25) {
+                skyBrief = "Scattered showers possible; moderate humidity and chance of slick turf.";
+            } else if (scenarioTemp >= 88) {
+                skyBrief = "High heat index; heavy sideline hydration protocol required.";
+            } else if (scenarioTemp <= 55) {
+                skyBrief = "Chilly autumn temperatures; ball firmness will increase.";
+            }
+
+            safeText('coachScenarioHeadline', `${scenarioTemp}°F Kickoff · ${skyBrief}`);
+
+            let bodyDesc = `Consensus across ${modelsAtKickoff.length} operational models indicates temperatures will start near ${scenarioTemp}°F at kickoff, `;
+            if (mHome.temp < scenarioTemp) {
+                bodyDesc += `dropping by ${scenarioTemp - mHome.temp}°F over the game down to ~${mHome.temp}°F by the 4th quarter and egress. `;
+            } else {
+                bodyDesc += `holding steady through the second half. `;
+            }
+
+            if (avgGust >= 18) {
+                bodyDesc += `Sustained winds around ${avgWind} mph with peak gusts to ${avgGust} mph from the ${series.windDirStr} will impact deep passing and field goals.`;
+            } else {
+                bodyDesc += `Winds will remain manageable under 10 mph (gusts to ${avgGust} mph), allowing standard game-planning.`;
+            }
+            safeText('coachScenarioBody', bodyDesc);
+
+            // 3. Passing & Kicking Tactical Impact
+            safeText('coachPassKickImpact', `${kickNote} (Stadium Axis: ${venue.orientation || 'N-S'} / ${venue.field_azimuth_deg || 0}°).`);
+
+            // 4. Convective / Lightning Tactical Impact
+            if (maxPoP >= 40) {
+                safeText('coachConvectiveRisk', `Convective potential elevated (${maxPoP}% peak PoP). Sideline ball towel rotation active; monitor NCAA 8-mile lightning protocol.`);
+            } else if (maxPoP >= 20) {
+                safeText('coachConvectiveRisk', `Low convective threat (${maxPoP}% peak PoP). Isolated passing sprinkle possible, but turf expected to remain predominantly dry.`);
+            } else {
+                safeText('coachConvectiveRisk', `Zero convective or lightning concerns. Clear radar expected throughout game window.`);
+            }
+
+            // 5. Model Divergence Analysis (Hottest vs Coolest)
+            const hottest = modelsAtKickoff.reduce((prev, curr) => (curr.temp > prev.temp) ? curr : prev);
+            const coolest = modelsAtKickoff.reduce((prev, curr) => (curr.temp < prev.temp) ? curr : prev);
+
+            let divergenceTitle = `Models are in strong agreement within ±${tempSpread}°F.`;
+            if (tempSpread >= 4) {
+                divergenceTitle = `${hottest.name} runs warmest (${hottest.temp}°F) while ${coolest.name} runs coolest (${coolest.temp}°F).`;
+            }
+            safeText('coachDivergenceHeadline', divergenceTitle);
+
+            let divBullets = "";
+            divBullets += `<p><strong class="text-white">Thermal Spread:</strong> ${hottest.name} forecasts ${hottest.temp}°F vs ${coolest.name} at ${coolest.temp}°F. Official NDFD grid favors ${series.nws.temp[koIdx]}°F.</p>`;
+            
+            const popHottest = modelsAtKickoff.reduce((prev, curr) => (curr.pop > prev.pop) ? curr : prev);
+            const popCoolest = modelsAtKickoff.reduce((prev, curr) => (curr.pop < prev.pop) ? curr : prev);
+            if (popHottest.pop - popCoolest.pop >= 15) {
+                divBullets += `<p><strong class="text-white">Precipitation Timing:</strong> ${popHottest.name} models higher shower risk (${popHottest.pop}%) compared to ${popCoolest.name} (${popCoolest.pop}%).</p>`;
+            } else {
+                divBullets += `<p><strong class="text-white">Precipitation Agreement:</strong> Models agree on a low precipitation risk (${minPoP}% - ${maxPoP}% range).</p>`;
+            }
+
+            if (series.nam && series.nam.wind) {
+                divBullets += `<p><strong class="text-white">High-Res Boundary Wind:</strong> NAM 3km nest models local surface drag at ${series.nam.wind[koIdx]} mph vs GFS synoptic wind of ${series.gfs.wind[koIdx]} mph.</p>`;
+            }
+
+            const divList = document.getElementById('coachDivergenceList');
+            if (divList) divList.innerHTML = divBullets;
+
+            safeText('coachPrimaryDelta', `${tempSpread}°F spread (${coolest.name} vs ${hottest.name})`);
+
+
             // Calculate hours and days until kickoff for horizon checks
             const kickoffDateUtc = new Date((targetDateStr || "2026-09-19") + "T" + (Math.floor(game.hour) < 10 ? "0" + Math.floor(game.hour) : Math.floor(game.hour)) + ":00:00Z");
             const nowUtcTime = new Date();
@@ -1745,7 +2015,8 @@
                     }
                     const maxP = (popArr && popArr.length > 0) ? Math.max(...popArr.filter(p => p !== null && !isNaN(p))) : 0;
                     if (popEl) popEl.textContent = `${maxP}%`;
-                    if (windEl) windEl.innerHTML = `<i class="fa-solid fa-wind mr-1 text-slate-400"></i>${windVal || 0} mph ${series.windDirStr}`;
+                    const modelGust = (series[cardPrefix.toLowerCase()] && series[cardPrefix.toLowerCase()].gust) ? series[cardPrefix.toLowerCase()].gust[koIdx] : (windVal + 7);
+                    if (windEl) windEl.innerHTML = `<i class="fa-solid fa-wind mr-1 text-slate-400"></i>${windVal || 0}G${modelGust} mph ${series.windDirStr}`;
                     if (qpfEl) qpfEl.textContent = `${(series.ecmwf.qpf && series.ecmwf.qpf[series.ecmwf.qpf.length-1]) || '0.00'}" QPF`;
                 } else {
                     if (tempEl) {
@@ -1825,71 +2096,15 @@
             }
 
                         
-            // ==========================================
-            // 🏈 FAN VIEW: HERO VERDICT & MILESTONES
-            // ==========================================
-            function getMilestoneAvg(stepIdx) {
-                const temps = [series.ecmwf.temp[stepIdx], series.gfs.temp[stepIdx], series.nbm.temp[stepIdx], series.nws.temp[stepIdx]].filter(v => v !== undefined && !isNaN(v));
-                const pops = [series.ecmwf.pop[stepIdx], series.gfs.pop[stepIdx], series.nbm.pop[stepIdx], series.nws.pop[stepIdx]].filter(v => v !== undefined && !isNaN(v));
-                const winds = [series.ecmwf.wind[stepIdx], series.gfs.wind[stepIdx], series.nbm.wind[stepIdx], series.nws.wind[stepIdx]].filter(v => v !== undefined && !isNaN(v));
-
-                const avgT = Math.round(temps.reduce((a, b) => a + b, 0) / (temps.length || 1));
-                const avgP = Math.round(pops.reduce((a, b) => a + b, 0) / (pops.length || 1));
-                const avgW = Math.round(winds.reduce((a, b) => a + b, 0) / (winds.length || 1));
-                return { temp: avgT, pop: avgP, wind: avgW };
-            }
-
-            function getSkyText(pop, temp) {
-                if (pop >= 60) return "Rain Likely";
-                if (pop >= 35) return "Chance of Showers";
-                if (pop >= 20) return "Isolated Sprinkles";
-                if (temp >= 85) return "Mostly Sunny & Warm";
-                if (temp >= 70) return "Fair & Pleasant";
-                if (temp >= 55) return "Crisp & Clear";
-                return "Chilly & Clear";
-            }
-
-            const mTail = getMilestoneAvg(0);
-            const mKick = getMilestoneAvg(3);
-            const mHt1 = getMilestoneAvg(4);
-            const mHt2 = getMilestoneAvg(5);
-            const mHalf = {
-                temp: Math.round((mHt1.temp + mHt2.temp) / 2),
-                pop: Math.round((mHt1.pop + mHt2.pop) / 2),
-                wind: Math.round((mHt1.wind + mHt2.wind) / 2)
-            };
-            const mHome = getMilestoneAvg(6);
-
-            // Vector wind physics
-            const stadiumAzimuth = venue.field_azimuth_deg || 0;
-            const windBlowingToward = (series.windDirDeg + 180) % 360;
-            const relAngle = (windBlowingToward - stadiumAzimuth + 360) % 360;
-            const rad = (relAngle * Math.PI) / 180;
-            const windSpd = series.nws.wind[koIdx] || 10;
-            const longMph = Math.cos(rad) * windSpd;
-            const crossMph = Math.sin(rad) * windSpd;
-
-            let kickNote = "";
-            const endzoneN = venue.endzone_north || "North Endzone";
-            const endzoneS = venue.endzone_south || "South Endzone";
-
-            if (Math.abs(longMph) >= Math.abs(crossMph)) {
-                if (longMph > 3) kickNote = `Direct tailwind (~${Math.round(Math.abs(longMph))} mph) favoring kicks toward ${endzoneN}.`;
-                else if (longMph < -3) kickNote = `Direct headwind (~${Math.round(Math.abs(longMph))} mph) resisting kicks toward ${endzoneN}.`;
-                else kickNote = "Light axial air movement; negligible kicking resistance.";
-            } else {
-                if (Math.abs(crossMph) > 5) kickNote = `Crosswind (~${Math.round(Math.abs(crossMph))} mph) cutting across field sidelines.`;
-                else kickNote = "Gentle cross-field breeze; neutral kicking conditions.";
-            }
-            safeText('kickingAdvantage', kickNote);
+            // Milestones & Vector physics computed above
 
             // Hero Verdict Top Headline & Metrics
             safeText('heroVenueCity', venue.city);
-            safeText('heroVerdictTitle', `${mKick.temp}°F at Kickoff · ${getSkyText(mKick.pop, mKick.temp)} · Wind ${mKick.wind} mph ${series.windDirStr}`);
+            safeText('heroVerdictTitle', `${mKick.temp}°F at Kickoff · ${getSkyText(mKick.pop, mKick.temp)} · Wind ${mKick.wind}G${mKick.gust} mph ${series.windDirStr}`);
             safeText('heroKickoffTemp', `${mKick.temp}°F`);
             safeText('heroKickoffRain', `${mKick.pop}% Rain Risk`);
             safeText('heroFieldAxis', venue.orientation || 'N-S');
-            safeText('heroWindSummary', `${mKick.wind} mph from ${series.windDirStr}`);
+            safeText('heroWindSummary', `${mKick.wind}G${mKick.gust} mph from ${series.windDirStr}`);
             safeText('heroPrecipSummary', mKick.pop > 35 ? "Rain Ponchos Advised" : "Dry Football Conditions");
 
             // 4 Milestone Cards
@@ -1897,25 +2112,25 @@
             safeText('heroTailgateTemp', `${mTail.temp}°F`);
             safeText('heroTailgateSky', getSkyText(mTail.pop, mTail.temp));
             safeText('heroTailgatePop', `${mTail.pop}%`);
-            safeText('heroTailgateWind', `${mTail.wind} mph`);
+            safeText('heroTailgateWind', `${mTail.wind}G${mTail.gust} mph`);
 
             safeText('heroKickoffTimeText', series.clockTimes[3]);
             safeText('heroKickoffTempCard', `${mKick.temp}°F`);
             safeText('heroKickoffSky', getSkyText(mKick.pop, mKick.temp));
             safeText('heroKickoffPop', `${mKick.pop}%`);
-            safeText('heroKickoffWind', `${mKick.wind} mph`);
+            safeText('heroKickoffWind', `${mKick.wind}G${mKick.gust} mph`);
 
             safeText('heroHalftimeTime', formatClock(localKickoffHour, 1.5, tzShort));
             safeText('heroHalftimeTemp', `${mHalf.temp}°F`);
             safeText('heroHalftimeSky', getSkyText(mHalf.pop, mHalf.temp));
             safeText('heroHalftimePop', `${mHalf.pop}%`);
-            safeText('heroHalftimeWind', `${mHalf.wind} mph`);
+            safeText('heroHalftimeWind', `${mHalf.wind}G${mHalf.gust} mph`);
 
             safeText('heroHomeTime', series.clockTimes[6]);
             safeText('heroHomeTemp', `${mHome.temp}°F`);
             safeText('heroHomeSky', getSkyText(mHome.pop, mHome.temp));
             safeText('heroHomePop', `${mHome.pop}%`);
-            safeText('heroHomeWind', `${mHome.wind} mph`);
+            safeText('heroHomeWind', `${mHome.wind}G${mHome.gust} mph`);
 
             // Field rotation on compass dial
             const fieldGroup = document.getElementById('stadiumFieldGroup');
@@ -2032,14 +2247,19 @@
                     datasets.push({ label: 'HRRR 3km', data: series.hrrr.pop, borderColor: '#c084fc', borderWidth: 3, tension: 0.2 });
                 }
             } else if (currentParam === 'wind') {
-                yTitle = "Sustained Wind Speed (mph)";
+                yTitle = "Wind Speed & Peak Gusts (mph)";
                 unit = " mph";
                 datasets = [
-                    { label: 'ECMWF', data: series.ecmwf.wind, borderColor: '#ef4444', tension: 0.3, borderWidth: 2 },
-                    { label: 'GFS', data: series.gfs.wind, borderColor: '#3b82f6', tension: 0.3, borderWidth: 2, borderDash: [4, 4] },
-                    { label: 'NBM', data: series.nbm.wind, borderColor: '#10b981', tension: 0.3, borderWidth: 2 },
-                    { label: 'NWS Official', data: series.nws.wind, borderColor: '#f59e0b', tension: 0.3, borderWidth: 3 }
+                    { label: 'ECMWF Sustained', data: series.ecmwf.wind, borderColor: '#ef4444', tension: 0.3, borderWidth: 2.5 },
+                    { label: 'ECMWF Peak Gusts', data: series.ecmwf.gust || series.ecmwf.wind.map(w=>w+7), borderColor: '#fb7185', borderDash: [5, 5], tension: 0.3, borderWidth: 2.5, pointRadius: 3 },
+                    { label: 'GFS Sustained', data: series.gfs.wind, borderColor: '#3b82f6', tension: 0.3, borderWidth: 2.5 },
+                    { label: 'GFS Peak Gusts', data: series.gfs.gust || series.gfs.wind.map(w=>w+7), borderColor: '#38bdf8', borderDash: [5, 5], tension: 0.3, borderWidth: 2.5, pointRadius: 3 },
+                    { label: 'NBM Consensus', data: series.nbm.wind, borderColor: '#10b981', tension: 0.3, borderWidth: 3 },
+                    { label: 'NWS NDFD Official', data: series.nws.wind, borderColor: '#f59e0b', tension: 0.3, borderWidth: 3.5 }
                 ];
+                if (series.nbm.gust) {
+                    datasets.push({ label: 'NBM Peak Gusts', data: series.nbm.gust, borderColor: '#34d399', borderDash: [4, 4], tension: 0.3, borderWidth: 2, pointRadius: 2.5 });
+                }
                 if (series.nam && series.nam.wind) {
                     datasets.push({ label: 'NAM 3km', data: series.nam.wind, borderColor: '#22d3ee', borderWidth: 2.5, tension: 0.3 });
                 }
@@ -2346,23 +2566,59 @@
                 const baseW = Math.round(8 + ((v.lat || 33) * 0.12));
                 const gustW = baseW + 8;
 
-                // Impact Index Formula:
-                // Heavy rain (>35%) + gusty crosswinds (>14 mph) + extreme heat (>88°) or cold (<55°)
-                let impactScore = (basePop * 1.6) + (gustW * 2.2);
-                if (baseT >= 90 || baseT <= 55) impactScore += 20;
-
+                // Specific, Accurate Weather Condition Evaluation for Every Game
                 let severity = "low";
                 let badgeClass = "bg-emerald-950 text-emerald-300 border-emerald-800";
-                let badgeLabel = "Mild / Dry Turf";
+                let badgeLabel = "Mild & Dry Turf";
+                let impactScore = 0;
 
-                if (basePop >= 40 || gustW >= 20 || baseT >= 92) {
+                // 1. Rain Risk Assessment
+                if (basePop >= 45) {
                     severity = "high";
                     badgeClass = "bg-red-950 text-red-300 border-red-800 animate-pulse font-black";
-                    badgeLabel = basePop >= 40 ? "Rain Impact Alert" : "High Wind / Heat";
-                } else if (basePop >= 25 || gustW >= 15 || baseT >= 86) {
+                    badgeLabel = `Rain Threat (${basePop}%)`;
+                    impactScore += 80 + basePop;
+                } else if (basePop >= 25) {
                     severity = "medium";
                     badgeClass = "bg-amber-950 text-amber-300 border-amber-800 font-bold";
-                    badgeLabel = "Moderate Impact";
+                    badgeLabel = `Chance Showers (${basePop}%)`;
+                    impactScore += 40 + basePop;
+                }
+
+                // 2. Wind & Gust Assessment
+                if (gustW >= 22) {
+                    if (severity !== "high") {
+                        severity = "high";
+                        badgeClass = "bg-red-950 text-red-300 border-red-800 font-black";
+                        badgeLabel = `Gusty Winds (${gustW} mph)`;
+                    }
+                    impactScore += 60 + gustW;
+                } else if (gustW >= 16 && severity === "low") {
+                    severity = "medium";
+                    badgeClass = "bg-cyan-950 text-cyan-300 border-cyan-800 font-bold";
+                    badgeLabel = `Breezy (${gustW} mph)`;
+                    impactScore += 30 + gustW;
+                }
+
+                // 3. Thermal Comfort (Heat Index vs Autumn Chill)
+                if (baseT >= 90) {
+                    if (severity === "low") {
+                        severity = "medium";
+                        badgeClass = "bg-orange-950 text-orange-300 border-orange-800 font-bold";
+                        badgeLabel = `High Heat (${baseT}°F)`;
+                    }
+                    impactScore += 40;
+                } else if (baseT <= 55) {
+                    if (severity === "low") {
+                        severity = "medium";
+                        badgeClass = "bg-blue-950 text-blue-300 border-blue-800 font-bold";
+                        badgeLabel = `Chilly (${baseT}°F)`;
+                    }
+                    impactScore += 30;
+                }
+
+                if (severity === "low") {
+                    impactScore = basePop + (gustW * 0.5);
                 }
 
                 return {
@@ -2441,12 +2697,15 @@
         // 📸 SOCIAL MEDIA GRAPHIC GENERATOR
         // ==========================================
         function openSocialModal() {
-            document.getElementById('socialModal').classList.remove('hidden');
+            const modal = document.getElementById('socialModal');
+            if (modal) modal.style.display = 'flex';
+            populateCustomSlatePickers();
             renderSocialCanvas();
         }
 
         function closeSocialModal() {
-            document.getElementById('socialModal').classList.add('hidden');
+            const modal = document.getElementById('socialModal');
+            if (modal) modal.style.display = 'none';
         }
 
         function setSocialFormat(fmt) {
@@ -2460,14 +2719,51 @@
             renderSocialCanvas();
         }
 
+        let pickedCustomGameIndices = [0, 1, 2, 3];
+
+        function populateCustomSlatePickers() {
+            const schedule = getActiveSchedule();
+            const curW = schedule[currentWeekIndex];
+            for (let i = 0; i < 4; i++) {
+                const sel = document.getElementById(`pickGame${i}`);
+                if (!sel) continue;
+                sel.innerHTML = '';
+                curW.games.forEach((g, gIdx) => {
+                    const opt = document.createElement('option');
+                    opt.value = gIdx;
+                    opt.textContent = `${g.away} at ${g.home} (${g.time})`;
+                    sel.appendChild(opt);
+                });
+                // Default to first 4 games or current selection
+                sel.value = (i < curW.games.length) ? i : 0;
+                pickedCustomGameIndices[i] = parseInt(sel.value, 10);
+            }
+        }
+
+        function onCustomGamePicked() {
+            for (let i = 0; i < 4; i++) {
+                const sel = document.getElementById(`pickGame${i}`);
+                if (sel) pickedCustomGameIndices[i] = parseInt(sel.value, 10);
+            }
+            renderSocialCanvas();
+        }
+
         function setSocialContentMode(mode) {
             socialContentMode = mode;
-            document.getElementById('contentSingleBtn').className = mode === 'single'
-                ? "px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-600 text-white border border-purple-400 transition-all flex items-center justify-center gap-1"
-                : "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-slate-400 border border-slate-700 hover:text-white transition-all flex items-center justify-center gap-1";
-            document.getElementById('contentSlateBtn').className = mode === 'slate'
-                ? "px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-600 text-white border border-purple-400 transition-all flex items-center justify-center gap-1"
-                : "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-slate-400 border border-slate-700 hover:text-white transition-all flex items-center justify-center gap-1";
+            const singleBtn = document.getElementById('contentSingleBtn');
+            const slateBtn = document.getElementById('contentSlateBtn');
+            const pickerContainer = document.getElementById('slateCustomPickerContainer');
+
+            if (mode === 'single') {
+                singleBtn.className = "px-3.5 py-2 rounded-xl text-xs font-black bg-purple-600 text-white border border-purple-400 transition-all flex items-center justify-center gap-1.5 shadow";
+                slateBtn.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 text-slate-400 border border-slate-700 hover:text-white transition-all flex items-center justify-center gap-1.5";
+                if (pickerContainer) pickerContainer.classList.add('hidden');
+            } else {
+                slateBtn.className = "px-3.5 py-2 rounded-xl text-xs font-black bg-purple-600 text-white border border-purple-400 transition-all flex items-center justify-center gap-1.5 shadow";
+                singleBtn.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 text-slate-400 border border-slate-700 hover:text-white transition-all flex items-center justify-center gap-1.5";
+                if (pickerContainer) pickerContainer.classList.remove('hidden');
+                populateCustomSlatePickers();
+            }
             renderSocialCanvas();
         }
 
@@ -2586,33 +2882,64 @@
                     ctx.fillText(m.time, x + 20, yBase + 150);
                 });
             } else {
-                // Top 4 Slate Highlights
-                const topGames = curW.games.slice(0, 4);
-                let startY = 180;
-                topGames.forEach(g => {
+                // User-Chosen 4-Game Slate Highlights with BOTH Temp AND Rain Risk %
+                const schedule = getActiveSchedule();
+                const curW = schedule[currentWeekIndex];
+                const selectedGames = pickedCustomGameIndices.map(idx => curW.games[idx] || curW.games[0]);
+
+                let startY = (socialFormat === 'square' ? 180 : 220);
+                const cardHeight = (socialFormat === 'square' ? 185 : 350);
+                const gap = (socialFormat === 'square' ? 25 : 45);
+
+                selectedGames.forEach((g, i) => {
                     const v = VENUES[g.venue_key] || {};
-                    const gTemp = Math.round(77 + ((36 - (v.lat || 35)) * 1.5));
-                    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-                    ctx.strokeStyle = 'rgba(51, 65, 85, 0.6)';
-                    ctx.lineWidth = 2;
+                    const gTemp = Math.round(78 + ((35 - (v.lat || 35)) * 1.5));
+                    const gPop = ((v.lon || -85) > -82) ? 35 : (((v.lat || 33) < 31) ? 25 : 10);
+                    const gWind = Math.round(8 + ((v.lat || 33) * 0.12));
+
+                    // Card Container
+                    ctx.fillStyle = 'rgba(15, 23, 42, 0.90)';
+                    ctx.strokeStyle = (i === 0) ? '#f59e0b' : 'rgba(51, 65, 85, 0.7)';
+                    ctx.lineWidth = 3;
                     ctx.beginPath();
-                    ctx.roundRect(70, startY, width - 140, 160, 20);
+                    ctx.roundRect(70, startY, width - 140, cardHeight, 22);
                     ctx.fill();
                     ctx.stroke();
 
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = '800 36px Inter, sans-serif';
-                    ctx.fillText(`${g.away} at ${g.home}`, 100, startY + 60);
+                    // Gold Matchup Tag
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.font = '700 20px JetBrains Mono, monospace';
+                    ctx.fillText(`${g.time} · ${g.tv || 'ESPN'} · ${activeConference}`, 105, startY + 45);
 
+                    // Matchup Name
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '900 38px Inter, sans-serif';
+                    ctx.fillText(`${g.away} at ${g.home}`, 105, startY + 95);
+
+                    // Stadium & City
                     ctx.fillStyle = '#94a3b8';
                     ctx.font = '500 22px Inter, sans-serif';
-                    ctx.fillText(`${v.stadium} · ${g.time}`, 100, startY + 110);
+                    ctx.fillText(`${v.stadium} (${v.city})`, 105, startY + 135);
 
-                    ctx.fillStyle = '#fbbf24';
-                    ctx.font = '900 58px JetBrains Mono, monospace';
-                    ctx.fillText(`${gTemp}°F`, width - 260, startY + 95);
+                    // Right Side Metrics Box: BOTH Temp AND Rain Risk
+                    const rightBoxX = width - 360;
 
-                    startY += 190;
+                    // Temperature
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '900 60px JetBrains Mono, monospace';
+                    ctx.fillText(`${gTemp}°F`, rightBoxX, startY + 80);
+
+                    // Rain Risk % Pill
+                    ctx.fillStyle = gPop >= 35 ? '#ef4444' : '#38bdf8';
+                    ctx.font = '800 24px Inter, sans-serif';
+                    ctx.fillText(`☔ ${gPop}% Rain`, rightBoxX, startY + 125);
+
+                    // Wind
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.font = '600 20px JetBrains Mono, monospace';
+                    ctx.fillText(`💨 ${gWind} mph`, rightBoxX + 175, startY + 125);
+
+                    startY += cardHeight + gap;
                 });
             }
 

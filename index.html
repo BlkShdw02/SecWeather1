@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -773,7 +774,10 @@
                             <i class="fa-solid fa-clipboard-user"></i>
                         </div>
                         <div>
-                            <h3 class="text-sm font-black text-white uppercase tracking-wider">Coach & Coordinator Weather Briefing</h3>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-sm font-black text-white uppercase tracking-wider">Coach & Coordinator Weather Briefing</h3>
+                                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-900/80 text-blue-200 border border-blue-600/60 font-bold activeMatchupTag">--</span>
+                            </div>
                             <p class="text-[11px] text-slate-400">Tactical multi-model divergence analysis & high-confidence scenario for game operations</p>
                         </div>
                     </div>
@@ -893,10 +897,13 @@
             <section class="glass-card rounded-2xl p-5 shadow-xl overflow-hidden">
                 <div class="flex justify-between items-center mb-3">
                     <div>
-                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                            <i class="fa-solid fa-table-cells text-amber-400"></i> Hourly Multi-Model Cross Reference Table
-                        </h3>
-                        <p class="text-xs text-slate-400">Live operational outputs for each hour from T-3h to T+6h</p>
+                        <div class="flex flex-wrap items-center gap-2.5">
+                            <h3 class="text-base md:text-lg font-bold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-table-cells text-amber-400"></i> Hourly Multi-Model Cross Reference Table
+                            </h3>
+                            <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-amber-950 text-amber-300 border border-amber-700 font-black activeMatchupTag">--</span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-0.5">Live operational outputs for each hour from T-3h to T+6h</p>
                     </div>
                     <span class="text-xs font-mono bg-slate-800 text-slate-300 px-3 py-1 rounded-lg border border-slate-700">10 Time Steps</span>
                 </div>
@@ -924,9 +931,12 @@
 
             <!-- Sideline Operational Protocols & Lightning Watch -->
             <section class="glass-card rounded-2xl p-5 shadow-xl">
-                <h3 class="text-base font-bold text-white mb-1 flex items-center gap-2">
-                    <i class="fa-solid fa-shield-halved text-emerald-400"></i> Sideline Operations & Tactical Guidance
-                </h3>
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-1">
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-shield-halved text-emerald-400"></i> Sideline Operations & Tactical Guidance
+                    </h3>
+                    <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-slate-900 text-slate-300 border border-slate-700 font-bold activeMatchupTag">--</span>
+                </div>
                 <p class="text-xs text-slate-400 mb-3">Operational thresholds driven by live model data</p>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -1228,6 +1238,13 @@
 
         async function selectGame(gameIdx) {
             currentGameIndex = gameIdx;
+
+            // Explicitly sync the HTML dropdown so it matches the selected matchup
+            const selDropdown = document.getElementById('gameSelect');
+            if (selDropdown) {
+                selDropdown.value = String(gameIdx);
+            }
+
             const curW = getActiveSchedule()[currentWeekIndex];
             const game = curW.games[currentGameIndex];
             const venue = VENUES[game.venue_key] || {
@@ -1247,6 +1264,12 @@
             document.getElementById('metaCapacity').textContent = `${venue.capacity.toLocaleString()} cap`;
             document.getElementById('metaWfo').textContent = `WFO ${venue.wfo}`;
             document.getElementById('metaOrientation').textContent = `Field Axis: ${venue.orientation}`;
+
+            // Update all persistent section matchup banners throughout the page
+            const activeMatchupString = `${game.away} @ ${game.home} · ${venue.stadium} (${game.time})`;
+            document.querySelectorAll('.activeMatchupTag').forEach(tag => {
+                tag.textContent = activeMatchupString;
+            });
 
             const noteAlert = document.getElementById('gameNoteAlert');
             const noteText = document.getElementById('gameNoteText');
@@ -2658,10 +2681,14 @@
                 const card = document.createElement('div');
                 card.className = "bg-slate-900/95 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 rounded-xl p-3.5 flex flex-col justify-between transition-all cursor-pointer shadow hover:shadow-xl relative overflow-hidden group";
                 card.onclick = () => {
-                    // Switch conference context to match game and open
-                    setConference(item.conf);
+                    if (activeConference !== item.conf) {
+                        setConference(item.conf);
+                    }
                     toggleImpactBoard();
-                    onGameSelected(item.gameIndex);
+                    // Select game and ensure dropdown reflects selection
+                    const gameSelectEl = document.getElementById('gameSelect');
+                    if (gameSelectEl) gameSelectEl.value = item.gameIndex;
+                    selectGame(item.gameIndex);
                 };
 
                 card.innerHTML = `

@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -325,78 +324,99 @@
                 </div>
 
                 <!-- 4 Milestone Cards Integrated Inside Hero -->
-                <div class="mt-6 pt-5 border-t border-slate-800/90 grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-                    <!-- Tailgating -->
-                    <div class="bg-slate-950/70 p-3.5 rounded-xl border border-slate-800 flex flex-col justify-between">
+                <!-- 5 Milestone Cards (T-6h to T+3h) -->
+                <div class="mt-6 pt-5 border-t border-slate-800/90 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 md:gap-3">
+                    
+                    <!-- 1. Arrival / Setup (T-6h) -->
+                    <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 flex flex-col justify-between hover:border-slate-700 transition-all">
                         <div>
-                            <div class="flex items-center justify-between text-[11px] font-bold uppercase text-slate-400 mb-1">
-                                <span class="text-amber-400"><i class="fa-solid fa-beer-mug-empty mr-1"></i> Tailgating</span>
-                                <span class="font-mono text-[10px] bg-slate-800 px-1.5 py-0.5 rounded">T-3h</span>
+                            <div class="flex items-center justify-between text-[10px] font-bold uppercase text-slate-400 mb-1">
+                                <span class="text-amber-300 flex items-center gap-1"><i class="fa-solid fa-tent"></i> Arrival/Setup</span>
+                                <span class="font-mono text-[9px] bg-slate-800 px-1.5 py-0.5 rounded">T-6h</span>
                             </div>
-                            <div class="text-[11px] text-slate-400 font-mono" id="heroTailgateTime">--</div>
+                            <div class="text-[10px] text-slate-400 font-mono truncate" id="heroArrivalTime">--</div>
                         </div>
-                        <div class="my-2">
-                            <div class="text-2xl md:text-3xl font-black text-white font-mono" id="heroTailgateTemp">--°F</div>
-                            <div class="text-xs font-semibold text-slate-300 mt-0.5" id="heroTailgateSky">--</div>
+                        <div class="my-1.5">
+                            <div class="text-xl md:text-2xl font-black text-white font-mono" id="heroArrivalTemp">--°F</div>
+                            <div class="text-[11px] font-semibold text-slate-300 mt-0.5 truncate" id="heroArrivalSky">--</div>
                         </div>
-                        <div class="pt-2 border-t border-slate-800/80 text-[11px] flex justify-between items-center text-slate-300">
+                        <div class="pt-1.5 border-t border-slate-800/80 text-[10px] flex justify-between items-center text-slate-300 font-mono">
+                            <span><i class="fa-solid fa-umbrella text-blue-400 mr-1"></i><span id="heroArrivalPop">--%</span></span>
+                            <span><i class="fa-solid fa-wind text-slate-400 mr-1"></i><span id="heroArrivalWind">-- mph</span></span>
+                        </div>
+                    </div>
+
+                    <!-- 2. Tailgating (T-3h) -->
+                    <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 flex flex-col justify-between hover:border-slate-700 transition-all">
+                        <div>
+                            <div class="flex items-center justify-between text-[10px] font-bold uppercase text-slate-400 mb-1">
+                                <span class="text-amber-400 flex items-center gap-1"><i class="fa-solid fa-beer-mug-empty"></i> Tailgating</span>
+                                <span class="font-mono text-[9px] bg-slate-800 px-1.5 py-0.5 rounded">T-3h</span>
+                            </div>
+                            <div class="text-[10px] text-slate-400 font-mono truncate" id="heroTailgateTime">--</div>
+                        </div>
+                        <div class="my-1.5">
+                            <div class="text-xl md:text-2xl font-black text-white font-mono" id="heroTailgateTemp">--°F</div>
+                            <div class="text-[11px] font-semibold text-slate-300 mt-0.5 truncate" id="heroTailgateSky">--</div>
+                        </div>
+                        <div class="pt-1.5 border-t border-slate-800/80 text-[10px] flex justify-between items-center text-slate-300 font-mono">
                             <span><i class="fa-solid fa-umbrella text-blue-400 mr-1"></i><span id="heroTailgatePop">--%</span></span>
                             <span><i class="fa-solid fa-wind text-slate-400 mr-1"></i><span id="heroTailgateWind">-- mph</span></span>
                         </div>
                     </div>
 
-                    <!-- Kickoff -->
-                    <div class="bg-slate-950/70 p-3.5 rounded-xl border border-red-800/70 flex flex-col justify-between bg-gradient-to-b from-red-950/20 to-transparent">
+                    <!-- 3. Kickoff (T-0h) -->
+                    <div class="bg-slate-950/80 p-3 rounded-xl border-2 border-red-600/70 hover:border-red-500 rounded-xl flex flex-col justify-between bg-gradient-to-b from-red-950/40 to-slate-900/90 shadow-lg shadow-red-950/30 transition-all">
                         <div>
-                            <div class="flex items-center justify-between text-[11px] font-bold uppercase text-slate-400 mb-1">
-                                <span class="text-red-400"><i class="fa-solid fa-football mr-1"></i> Kickoff</span>
-                                <span class="font-mono text-[10px] bg-red-900/80 text-red-200 px-1.5 py-0.5 rounded font-bold">T-0h</span>
+                            <div class="flex items-center justify-between text-[10px] font-bold uppercase text-slate-400 mb-1">
+                                <span class="text-red-400 flex items-center gap-1"><i class="fa-solid fa-football"></i> Kickoff</span>
+                                <span class="font-mono text-[9px] bg-red-900/80 text-red-200 px-1.5 py-0.5 rounded font-bold">T-0h</span>
                             </div>
-                            <div class="text-[11px] text-slate-400 font-mono" id="heroKickoffTimeText">--</div>
+                            <div class="text-[10px] text-slate-400 font-mono truncate" id="heroKickoffTimeText">--</div>
                         </div>
-                        <div class="my-2">
-                            <div class="text-2xl md:text-3xl font-black text-white font-mono" id="heroKickoffTempCard">--°F</div>
-                            <div class="text-xs font-semibold text-slate-300 mt-0.5" id="heroKickoffSky">--</div>
+                        <div class="my-1.5">
+                            <div class="text-xl md:text-2xl font-black text-white font-mono" id="heroKickoffTempCard">--°F</div>
+                            <div class="text-[11px] font-semibold text-slate-300 mt-0.5 truncate" id="heroKickoffSky">--</div>
                         </div>
-                        <div class="pt-2 border-t border-slate-800/80 text-[11px] flex justify-between items-center text-slate-300">
+                        <div class="pt-1.5 border-t border-slate-800/80 text-[10px] flex justify-between items-center text-slate-300 font-mono">
                             <span><i class="fa-solid fa-umbrella text-blue-400 mr-1"></i><span id="heroKickoffPop">--%</span></span>
                             <span><i class="fa-solid fa-wind text-slate-400 mr-1"></i><span id="heroKickoffWind">-- mph</span></span>
                         </div>
                     </div>
 
-                    <!-- Halftime -->
-                    <div class="bg-slate-950/70 p-3.5 rounded-xl border border-slate-800 flex flex-col justify-between">
+                    <!-- 4. Halftime (T+1.5h) -->
+                    <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 flex flex-col justify-between hover:border-slate-700 transition-all">
                         <div>
-                            <div class="flex items-center justify-between text-[11px] font-bold uppercase text-slate-400 mb-1">
-                                <span class="text-emerald-400"><i class="fa-solid fa-drum mr-1"></i> Halftime</span>
-                                <span class="font-mono text-[10px] bg-slate-800 px-1.5 py-0.5 rounded">T+1.5h</span>
+                            <div class="flex items-center justify-between text-[10px] font-bold uppercase text-slate-400 mb-1">
+                                <span class="text-emerald-400 flex items-center gap-1"><i class="fa-solid fa-drum"></i> Halftime</span>
+                                <span class="font-mono text-[9px] bg-slate-800 px-1.5 py-0.5 rounded">T+1.5h</span>
                             </div>
-                            <div class="text-[11px] text-slate-400 font-mono" id="heroHalftimeTime">--</div>
+                            <div class="text-[10px] text-slate-400 font-mono truncate" id="heroHalftimeTime">--</div>
                         </div>
-                        <div class="my-2">
-                            <div class="text-2xl md:text-3xl font-black text-white font-mono" id="heroHalftimeTemp">--°F</div>
-                            <div class="text-xs font-semibold text-slate-300 mt-0.5" id="heroHalftimeSky">--</div>
+                        <div class="my-1.5">
+                            <div class="text-xl md:text-2xl font-black text-white font-mono" id="heroHalftimeTemp">--°F</div>
+                            <div class="text-[11px] font-semibold text-slate-300 mt-0.5 truncate" id="heroHalftimeSky">--</div>
                         </div>
-                        <div class="pt-2 border-t border-slate-800/80 text-[11px] flex justify-between items-center text-slate-300">
+                        <div class="pt-1.5 border-t border-slate-800/80 text-[10px] flex justify-between items-center text-slate-300 font-mono">
                             <span><i class="fa-solid fa-umbrella text-blue-400 mr-1"></i><span id="heroHalftimePop">--%</span></span>
                             <span><i class="fa-solid fa-wind text-slate-400 mr-1"></i><span id="heroHalftimeWind">-- mph</span></span>
                         </div>
                     </div>
 
-                    <!-- Headed Home -->
-                    <div class="bg-slate-950/70 p-3.5 rounded-xl border border-slate-800 flex flex-col justify-between">
+                    <!-- 5. Headed Home (T+3h) -->
+                    <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 flex flex-col justify-between hover:border-slate-700 transition-all">
                         <div>
-                            <div class="flex items-center justify-between text-[11px] font-bold uppercase text-slate-400 mb-1">
-                                <span class="text-indigo-400"><i class="fa-solid fa-car-side mr-1"></i> Headed Home</span>
-                                <span class="font-mono text-[10px] bg-slate-800 px-1.5 py-0.5 rounded">T+3h</span>
+                            <div class="flex items-center justify-between text-[10px] font-bold uppercase text-slate-400 mb-1">
+                                <span class="text-indigo-400 flex items-center gap-1"><i class="fa-solid fa-car-side"></i> Headed Home</span>
+                                <span class="font-mono text-[9px] bg-slate-800 px-1.5 py-0.5 rounded">T+3h</span>
                             </div>
-                            <div class="text-[11px] text-slate-400 font-mono" id="heroHomeTime">--</div>
+                            <div class="text-[10px] text-slate-400 font-mono truncate" id="heroHomeTime">--</div>
                         </div>
-                        <div class="my-2">
-                            <div class="text-2xl md:text-3xl font-black text-white font-mono" id="heroHomeTemp">--°F</div>
-                            <div class="text-xs font-semibold text-slate-300 mt-0.5" id="heroHomeSky">--</div>
+                        <div class="my-1.5">
+                            <div class="text-xl md:text-2xl font-black text-white font-mono" id="heroHomeTemp">--°F</div>
+                            <div class="text-[11px] font-semibold text-slate-300 mt-0.5 truncate" id="heroHomeSky">--</div>
                         </div>
-                        <div class="pt-2 border-t border-slate-800/80 text-[11px] flex justify-between items-center text-slate-300">
+                        <div class="pt-1.5 border-t border-slate-800/80 text-[10px] flex justify-between items-center text-slate-300 font-mono">
                             <span><i class="fa-solid fa-umbrella text-blue-400 mr-1"></i><span id="heroHomePop">--%</span></span>
                             <span><i class="fa-solid fa-wind text-slate-400 mr-1"></i><span id="heroHomeWind">-- mph</span></span>
                         </div>
@@ -850,7 +870,7 @@
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                     <div>
                         <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                            <i class="fa-solid fa-chart-line text-emerald-400"></i> Multi-Model Trend Comparison (T-3h to T+6h)
+                            <i class="fa-solid fa-chart-line text-emerald-400"></i> Multi-Model Trend Comparison (T-6h to T+6h)
                         </h3>
                         <p class="text-xs text-slate-400">Live operational curves for ECMWF, GFS, NBM, and NDFD</p>
                     </div>
@@ -903,9 +923,9 @@
                             </h3>
                             <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-amber-950 text-amber-300 border border-amber-700 font-black activeMatchupTag">--</span>
                         </div>
-                        <p class="text-xs text-slate-400 mt-0.5">Live operational outputs for each hour from T-3h to T+6h</p>
+                        <p class="text-xs text-slate-400 mt-0.5">Live operational outputs for each hour from T-6h to T+6h</p>
                     </div>
-                    <span class="text-xs font-mono bg-slate-800 text-slate-300 px-3 py-1 rounded-lg border border-slate-700">10 Time Steps</span>
+                    <span class="text-xs font-mono bg-slate-800 text-slate-300 px-3 py-1 rounded-lg border border-slate-700">13 Time Steps</span>
                 </div>
 
                 <div class="overflow-x-auto">
@@ -1457,10 +1477,12 @@
             const kickoffInt = Math.floor(localKickoffHour);
             const tzShort = isCentral ? 'CDT' : 'EDT';
 
-            const steps = [-3, -2, -1, 0, 1, 2, 3, 4, 5, 6];
+            // Expanded 13-Hour Operational Window: T-6h (Arrival/Setup) through T+6h (Post-Game Egress)
+            const steps = [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6];
             const labels = steps.map(s => (s === 0 ? 'T-0h (KO)' : (s < 0 ? `T${s}h` : `T+${s}h`)));
 
             function getPhase(s) {
+                if (s <= -5) return "Arrival/Setup";
                 if (s <= -2) return "Tailgate";
                 if (s === -1) return "Gates Open";
                 if (s === 0) return "Kickoff";
@@ -1705,7 +1727,7 @@
                 
 
         function updateDashboardWithLiveSeries(series, game, venue, targetDateStr) {
-            const koIdx = 3; // Index of T0 kickoff
+            const koIdx = 6; // Index of T0 kickoff (steps: -6 to +6)
             const isCentral = (venue.tz === 'America/Chicago');
             const localKickoffHour = isCentral ? (game.hour - 1.0) : game.hour;
             const tzShort = isCentral ? 'CDT' : 'EDT';
@@ -1736,17 +1758,19 @@
                 return "Chilly & Clear";
             }
 
-            const mTail = getMilestoneAvg(0);
-            const mKick = getMilestoneAvg(3);
-            const mHt1 = getMilestoneAvg(4);
-            const mHt2 = getMilestoneAvg(5);
+            // 5 Distinct Game-Day Milestones across 13 hours:
+            const mArrive = getMilestoneAvg(0); // T-6h: Arrival & Setup
+            const mTail   = getMilestoneAvg(3); // T-3h: Tailgate Party
+            const mKick   = getMilestoneAvg(6); // T-0h: Kickoff
+            const mHt1    = getMilestoneAvg(7); // T+1h
+            const mHt2    = getMilestoneAvg(8); // T+2h
             const mHalf = {
                 temp: Math.round((mHt1.temp + mHt2.temp) / 2),
                 pop: Math.round((mHt1.pop + mHt2.pop) / 2),
                 wind: Math.round((mHt1.wind + mHt2.wind) / 2),
                 gust: Math.round((mHt1.gust + mHt2.gust) / 2)
             };
-            const mHome = getMilestoneAvg(6);
+            const mHome   = getMilestoneAvg(9); // T+3h: Headed Home
 
             // Vector wind physics
             const stadiumAzimuth = venue.field_azimuth_deg || 0;
@@ -2130,14 +2154,23 @@
             safeText('heroWindSummary', `${mKick.wind}G${mKick.gust} mph from ${series.windDirStr}`);
             safeText('heroPrecipSummary', mKick.pop > 35 ? "Rain Ponchos Advised" : "Dry Football Conditions");
 
-            // 4 Milestone Cards
-            safeText('heroTailgateTime', series.clockTimes[0]);
+            // 5 Milestone Cards (T-6h to T+3h)
+            // 1. Arrival / Setup (T-6h)
+            safeText('heroArrivalTime', series.clockTimes[0]);
+            safeText('heroArrivalTemp', `${mArrive.temp}°F`);
+            safeText('heroArrivalSky', getSkyText(mArrive.pop, mArrive.temp));
+            safeText('heroArrivalPop', `${mArrive.pop}%`);
+            safeText('heroArrivalWind', `${mArrive.wind}G${mArrive.gust} mph`);
+
+            // 2. Tailgating (T-3h)
+            safeText('heroTailgateTime', series.clockTimes[3]);
             safeText('heroTailgateTemp', `${mTail.temp}°F`);
             safeText('heroTailgateSky', getSkyText(mTail.pop, mTail.temp));
             safeText('heroTailgatePop', `${mTail.pop}%`);
             safeText('heroTailgateWind', `${mTail.wind}G${mTail.gust} mph`);
 
-            safeText('heroKickoffTimeText', series.clockTimes[3]);
+            // 3. Kickoff (T-0h)
+            safeText('heroKickoffTimeText', series.clockTimes[6]);
             safeText('heroKickoffTempCard', `${mKick.temp}°F`);
             safeText('heroKickoffSky', getSkyText(mKick.pop, mKick.temp));
             safeText('heroKickoffPop', `${mKick.pop}%`);
@@ -2149,7 +2182,7 @@
             safeText('heroHalftimePop', `${mHalf.pop}%`);
             safeText('heroHalftimeWind', `${mHalf.wind}G${mHalf.gust} mph`);
 
-            safeText('heroHomeTime', series.clockTimes[6]);
+            safeText('heroHomeTime', series.clockTimes[9]);
             safeText('heroHomeTemp', `${mHome.temp}°F`);
             safeText('heroHomeSky', getSkyText(mHome.pop, mHome.temp));
             safeText('heroHomePop', `${mHome.pop}%`);
@@ -2339,14 +2372,14 @@
                     scales: {
                         x: {
                             grid: {
-                                color: (tCtx) => (tCtx.index === 3 ? 'rgba(239, 68, 68, 0.5)' : 'rgba(51, 65, 85, 0.3)'),
-                                lineWidth: (tCtx) => (tCtx.index === 3 ? 2 : 1)
+                                color: (tCtx) => (tCtx.index === 6 ? 'rgba(239, 68, 68, 0.7)' : 'rgba(51, 65, 85, 0.3)'),
+                                lineWidth: (tCtx) => (tCtx.index === 6 ? 2.5 : 1)
                             },
                             ticks: {
-                                color: (tCtx) => (tCtx.index === 3 ? '#f87171' : '#94a3b8'),
+                                color: (tCtx) => (tCtx.index === 6 ? '#f87171' : '#94a3b8'),
                                 font: {
                                     size: 10,
-                                    weight: (tCtx) => (tCtx.index === 3 ? 'bold' : 'normal')
+                                    weight: (tCtx) => (tCtx.index === 6 ? 'bold' : 'normal')
                                 }
                             }
                         },
@@ -2876,37 +2909,47 @@
                 ctx.font = '700 32px Inter, sans-serif';
                 ctx.fillText(`${rainRisk} · Wind: ${windText}`, 110, 630);
 
-                // 4 Milestones
-                const yBase = (socialFormat === 'square' ? 740 : 1080);
-                const colW = (width - 140) / 4;
+                // Bottom 5 Gameday Milestones (T-6h to T+3h)
+                // Extract real local clock times for all 5 gameday milestones (T-6h to T+3h)
+                const arriveLocalTime = (document.getElementById('heroArrivalTime') && document.getElementById('heroArrivalTime').textContent) ? document.getElementById('heroArrivalTime').textContent.trim() : "10:00 AM";
+                const tailLocalTime   = (document.getElementById('heroTailgateTime') && document.getElementById('heroTailgateTime').textContent) ? document.getElementById('heroTailgateTime').textContent.trim() : "1:00 PM";
+                const kickLocalTime   = (document.getElementById('heroKickoffTimeText') && document.getElementById('heroKickoffTimeText').textContent) ? document.getElementById('heroKickoffTimeText').textContent.trim() : game.time;
+                const halfLocalTime   = (document.getElementById('heroHalftimeTime') && document.getElementById('heroHalftimeTime').textContent) ? document.getElementById('heroHalftimeTime').textContent.trim() : "5:30 PM";
+                const homeLocalTime   = (document.getElementById('heroHomeTime') && document.getElementById('heroHomeTime').textContent) ? document.getElementById('heroHomeTime').textContent.trim() : "7:00 PM";
+
                 const milestones = [
-                    { label: "TAILGATE", time: "T-3h", temp: document.getElementById('heroTailgateTemp').textContent || "89°F" },
-                    { label: "KICKOFF", time: "T-0h", temp: koTemp },
-                    { label: "HALFTIME", time: "T+1.5h", temp: document.getElementById('heroHalftimeTemp').textContent || "82°F" },
-                    { label: "HOME", time: "T+3h", temp: document.getElementById('heroHomeTemp').textContent || "79°F" }
+                    { label: "ARRIVAL",  sub: "Setup (T-6h)",  time: arriveLocalTime, temp: (document.getElementById('heroArrivalTemp') && document.getElementById('heroArrivalTemp').textContent) || "78°F" },
+                    { label: "TAILGATE", sub: "Party (T-3h)",  time: tailLocalTime,   temp: (document.getElementById('heroTailgateTemp') && document.getElementById('heroTailgateTemp').textContent) || "89°F" },
+                    { label: "KICKOFF",  sub: "Game (T-0h)",   time: kickLocalTime,   temp: koTemp },
+                    { label: "HALFTIME", sub: "Band (T+1.5h)", time: halfLocalTime,   temp: (document.getElementById('heroHalftimeTemp') && document.getElementById('heroHalftimeTemp').textContent) || "82°F" },
+                    { label: "HOME",     sub: "Exit (T+3h)",   time: homeLocalTime,   temp: (document.getElementById('heroHomeTemp') && document.getElementById('heroHomeTemp').textContent) || "79°F" }
                 ];
+
+                const yBase = (socialFormat === 'square' ? 740 : 1080);
+                const colW = (width - 140) / 5;
 
                 milestones.forEach((m, idx) => {
                     const x = 70 + (idx * colW);
-                    ctx.fillStyle = 'rgba(30, 41, 59, 0.7)';
-                    ctx.strokeStyle = idx === 1 ? '#dc2626' : 'rgba(51, 65, 85, 0.4)';
-                    ctx.lineWidth = 2;
+                    const isKick = (idx === 2); // Kickoff is index 2 in 5-item array
+                    ctx.fillStyle = isKick ? 'rgba(127, 29, 29, 0.45)' : 'rgba(30, 41, 59, 0.7)';
+                    ctx.strokeStyle = isKick ? '#dc2626' : 'rgba(51, 65, 85, 0.5)';
+                    ctx.lineWidth = isKick ? 3 : 2;
                     ctx.beginPath();
-                    ctx.roundRect(x + 5, yBase, colW - 10, 180, 16);
+                    ctx.roundRect(x + 4, yBase, colW - 8, 185, 16);
                     ctx.fill();
                     ctx.stroke();
 
-                    ctx.fillStyle = idx === 1 ? '#ef4444' : '#fbbf24';
-                    ctx.font = '800 20px Inter, sans-serif';
-                    ctx.fillText(m.label, x + 20, yBase + 45);
+                    ctx.fillStyle = isKick ? '#ef4444' : '#fbbf24';
+                    ctx.font = '800 16px Inter, sans-serif';
+                    ctx.fillText(m.label, x + 14, yBase + 38);
 
                     ctx.fillStyle = '#ffffff';
-                    ctx.font = '900 48px JetBrains Mono, monospace';
-                    ctx.fillText(m.temp, x + 20, yBase + 115);
+                    ctx.font = '900 40px JetBrains Mono, monospace';
+                    ctx.fillText(m.temp, x + 14, yBase + 100);
 
                     ctx.fillStyle = '#94a3b8';
-                    ctx.font = '600 18px JetBrains Mono, monospace';
-                    ctx.fillText(m.time, x + 20, yBase + 150);
+                    ctx.font = '700 13px JetBrains Mono, monospace';
+                    ctx.fillText(m.time, x + 12, yBase + 145);
                 });
             } else {
                 // User-Chosen 4-Game Slate Highlights with BOTH Temp AND Rain Risk %

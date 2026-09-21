@@ -310,6 +310,58 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- SIMPLE WEATHER ALERT BADGES (TRAFFIC LIGHT SYSTEM) -->
+                <div class="mt-5 pt-4 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <!-- Rain Status Pill -->
+                        <div id="badgeRainPill" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-800/80 shadow-sm">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                            <span id="badgeRainText">Rain Risk: Low (Dry Turf)</span>
+                        </div>
+                        <!-- Lightning / Delay Risk Pill -->
+                        <div id="badgeLightningPill" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-800/80 shadow-sm">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                            <span id="badgeLightningText">Game Delay Risk: None</span>
+                        </div>
+                        <!-- Heat / Wind Comfort Pill -->
+                        <div id="badgeComfortPill" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-slate-300 border border-slate-700 shadow-sm">
+                            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                            <span id="badgeComfortText">Comfort: Pleasant</span>
+                        </div>
+                    </div>
+
+                    <!-- Quick Share / Copy Forecast Summary Button -->
+                    <button onclick="copyForecastSummary()" id="copyForecastBtn" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-amber-300 border border-slate-700 hover:border-amber-400/50 transition-all flex items-center gap-1.5">
+                        <i class="fa-solid fa-share-nodes"></i> <span>Copy Tailgate Forecast</span>
+                    </button>
+                </div>
+
+                <!-- QUICK PACK GAMEDAY CHECKLIST -->
+                <div class="mt-4 p-4 rounded-xl bg-slate-950/80 border border-slate-800">
+                    <div class="text-[11px] font-bold text-amber-400 uppercase tracking-wider mb-2.5 flex items-center gap-2">
+                        <i class="fa-solid fa-suitcase-rolling"></i> <span>Gameday Packing Checklist (What to Bring)</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5" id="fanChecklistContainer">
+                        <!-- Checklist items populated dynamically -->
+                        <div id="checkItemHat" class="flex items-center gap-2 p-2 rounded-lg bg-slate-900/90 border border-slate-800 text-xs">
+                            <i id="checkIconHat" class="fa-solid fa-circle-check text-emerald-400"></i>
+                            <span id="checkTextHat">Hat & Sunglasses</span>
+                        </div>
+                        <div id="checkItemJacket" class="flex items-center gap-2 p-2 rounded-lg bg-slate-900/90 border border-slate-800 text-xs">
+                            <i id="checkIconJacket" class="fa-solid fa-circle-check text-emerald-400"></i>
+                            <span id="checkTextJacket">Light Jacket / Layer</span>
+                        </div>
+                        <div id="checkItemRain" class="flex items-center gap-2 p-2 rounded-lg bg-slate-900/90 border border-slate-800 text-xs">
+                            <i id="checkIconRain" class="fa-solid fa-circle-xmark text-slate-500"></i>
+                            <span id="checkTextRain">Rain Poncho (Not Needed)</span>
+                        </div>
+                        <div id="checkItemWater" class="flex items-center gap-2 p-2 rounded-lg bg-slate-900/90 border border-slate-800 text-xs">
+                            <i id="checkIconWater" class="fa-solid fa-circle-check text-emerald-400"></i>
+                            <span id="checkTextWater">Tailgate Hydration Pack</span>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <!-- Stadium Field Compass & Quick Fan Advice -->
@@ -1160,19 +1212,57 @@
         // Current real-world reference date
         const CURRENT_DATE = new Date("2026-09-15T12:00:00Z");
 
+        // Helper to parse Saturday gameday dates
+        function parseWeekDate(dateStr) {
+            const clean = dateStr.replace(/^[A-Za-z]+,\s*/, '').replace(/\s*\([^)]*\)/, '').trim();
+            return new Date(clean + " 23:59:59 UTC");
+        }
+
+        // Find the current active week dynamically:
+        function findInitialActiveWeekIndex() {
+            const now = new Date();
+            // Find first week whose gameday has not passed by more than 1 day
+            for (let i = 0; i < SEASON_WEEKS.length; i++) {
+                const wDate = parseWeekDate(SEASON_WEEKS[i].date_str);
+                // If game is in future or happened within past 24h
+                if (wDate.getTime() >= now.getTime() - (24 * 3600 * 1000)) {
+                    return i;
+                }
+            }
+            return 0; // Default to first available if season over
+        }
+
         function initWeekTabs() {
             const container = document.getElementById('weekTabsContainer');
             container.innerHTML = '';
+            const now = new Date();
 
             SEASON_WEEKS.forEach((w, idx) => {
                 const btn = document.createElement('button');
                 btn.id = `weekTab-${idx}`;
-                btn.className = idx === currentWeekIndex 
-                    ? "week-btn-active px-3.5 py-1.5 rounded-lg text-xs font-bold border border-blue-500 transition-all flex items-center gap-1.5"
-                    : "bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 px-3.5 py-1.5 rounded-lg text-xs font-medium border border-slate-800 transition-all flex items-center gap-1.5";
                 
+                const wDate = parseWeekDate(w.date_str);
+                const isPastWeek = (wDate.getTime() < now.getTime() - (36 * 3600 * 1000));
+                const isCurrent = (idx === currentWeekIndex);
+
+                let btnClass = "";
+                let statusIcon = "";
+
+                if (isCurrent) {
+                    btnClass = "week-btn-active px-3.5 py-1.5 rounded-lg text-xs font-black border border-blue-500 transition-all flex items-center gap-1.5 shadow-lg shadow-blue-900/40";
+                    statusIcon = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>`;
+                } else if (isPastWeek) {
+                    // Grayed out completed week
+                    btnClass = "opacity-45 bg-slate-950 text-slate-500 hover:opacity-75 hover:text-slate-300 px-3 py-1 rounded-lg text-xs font-medium border border-slate-900 transition-all flex items-center gap-1.5";
+                    statusIcon = `<i class="fa-solid fa-check text-[9px] text-slate-500"></i>`;
+                } else {
+                    // Future upcoming week
+                    btnClass = "bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold border border-slate-800 transition-all flex items-center gap-1.5";
+                }
+
+                btn.className = btnClass;
                 const label = w.week === 14 ? "SEC Champ" : `Week ${w.week}`;
-                btn.innerHTML = `<span>${label}</span><span class="text-[10px] opacity-75 font-mono">(${w.games.length})</span>`;
+                btn.innerHTML = `${statusIcon}<span>${label}</span><span class="text-[10px] opacity-70 font-mono">(${w.games.length})</span>`;
                 btn.onclick = () => selectWeek(idx);
                 container.appendChild(btn);
             });
@@ -1250,9 +1340,23 @@
                 noteAlert.classList.add('hidden');
             }
 
-            // Check if game is within active model window (Week 3 is Sep 19, 2026, which is within 4 days of Sep 15)
-            // Anything week > 3 is outside the 7-day model horizon
-            const isInsideModelWindow = (curW.week === 3);
+            // Parse game date dynamically from curW.date_str (e.g. 'Saturday, Sep 19, 2026' or 'Saturday, Sep 26, 2026')
+            function parseGameDate(dateStr) {
+                // Match month and day, e.g. Sep 19, 2026
+                const clean = dateStr.replace(/^[A-Za-z]+,\s*/, '').replace(/\s*\([^)]*\)/, '').trim();
+                return new Date(clean + " 12:00:00 UTC");
+            }
+
+            const gameDate = parseGameDate(curW.date_str);
+            const nowTime = new Date();
+            // In 2026 reference context or live time:
+            // Calculate days between reference date (Sep 16-20, 2026) and game date
+            const daysUntilGame = (gameDate.getTime() - nowTime.getTime()) / (1000 * 3600 * 24);
+            
+            // Operational global models (GFS/ECMWF) run out to 10-16 days!
+            // Games within 10 days are ACTIVE in the model forecast window:
+            // Week 3 (Sep 19) and Week 4 (Sep 26) are currently inside this live operational window!
+            const isInsideModelWindow = (daysUntilGame <= 10.5 && daysUntilGame >= -1.0) || (curW.week === 3 || curW.week === 4);
 
             const pendingBanner = document.getElementById('pendingForecastBanner');
             const activeContainer = document.getElementById('activeForecastContainer');
@@ -1296,7 +1400,25 @@
             // 3. NBM: best_match (National Blend calibrated)
             // 4. GEM: Canadian Global / ICON for independent physics
             const modelParams = "ecmwf_ifs025,gfs_global,gem_global,icon_global,ncep_nam_conus,ncep_hrrr_conus";
-            const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation_probability,wind_speed_10m,wind_direction_10m,precipitation&models=${modelParams}&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=${encodeURIComponent(tz)}&start_date=2026-09-19&end_date=2026-09-20`;
+            // Helper to get YYYY-MM-DD from game date
+            function getGameIsoDate(dateStr) {
+                const months = { 'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12' };
+                const match = dateStr.match(/([A-Za-z]{3})\s+(\d{1,2}),\s*(\d{4})/);
+                if (match) {
+                    const m = months[match[1]] || '09';
+                    const d = parseInt(match[2], 10) < 10 ? '0' + parseInt(match[2], 10) : match[2];
+                    return `${match[3]}-${m}-${d}`;
+                }
+                return '2026-09-19';
+            }
+
+            const targetDateStr = getGameIsoDate(curW.date_str);
+            // Next day for end_date
+            const targetDateObj = new Date(targetDateStr + "T12:00:00Z");
+            const nextDayObj = new Date(targetDateObj.getTime() + (24 * 3600 * 1000));
+            const nextDayStr = nextDayObj.toISOString().split('T')[0];
+
+            const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation_probability,wind_speed_10m,wind_direction_10m,precipitation&models=${modelParams}&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=${encodeURIComponent(tz)}&start_date=${targetDateStr}&end_date=${nextDayStr}`;
 
             try {
                 // Query Open-Meteo for ECMWF, GFS, and NBM
@@ -1325,7 +1447,7 @@
                     console.warn("Direct NDFD grid fetch unavailable via browser, using NDFD-derived blend:", ndfdErr);
                 }
 
-                const series = parseLiveModelData(data, game, venue, ndfdData);
+                const series = parseLiveModelData(data, game, venue, ndfdData, targetDateStr);
                 cachedSeries = series;
 
                 badge.className = "text-[11px] font-semibold px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 flex items-center gap-1.5";
@@ -1401,7 +1523,7 @@
             return null;
         }
 
-        function parseLiveModelData(data, game, venue, ndfdData) {
+        function parseLiveModelData(data, game, venue, ndfdData, targetDateStr) {
             const isCentral = (venue.tz === 'America/Chicago');
             // Kickoff local hour:
             // e.g. 16:00 EDT in Columbia, SC (Eastern) -> localKickoffHour = 16.0
@@ -1450,13 +1572,16 @@
 
             steps.forEach(s => {
                 let targetH = kickoffInt + s;
-                let dateStr = "2026-09-19";
+                const baseDt = new Date((targetDateStr || "2026-09-19") + "T12:00:00Z");
+                let dateStr = targetDateStr || "2026-09-19";
                 if (targetH >= 24) {
                     targetH -= 24;
-                    dateStr = "2026-09-20";
+                    const nextDt = new Date(baseDt.getTime() + 86400000);
+                    dateStr = nextDt.toISOString().split('T')[0];
                 } else if (targetH < 0) {
                     targetH += 24;
-                    dateStr = "2026-09-18";
+                    const prevDt = new Date(baseDt.getTime() - 86400000);
+                    dateStr = prevDt.toISOString().split('T')[0];
                 }
 
                 const isoTarget = `${dateStr}T${targetH < 10 ? '0' + targetH : targetH}:00`;
@@ -1496,11 +1621,13 @@
                 // Target UTC Date object for this step:
                 // EDT is UTC-4, CDT is UTC-5
                 const utcHour = isCentral ? (kickoffInt + s + 5) : (kickoffInt + s + 4);
-                let utcDateStr = "2026-09-19";
+                const baseDtUtc = new Date((targetDateStr || "2026-09-19") + "T12:00:00Z");
+                let utcDateStr = targetDateStr || "2026-09-19";
                 let normUtcHour = utcHour;
                 if (normUtcHour >= 24) {
                     normUtcHour -= 24;
-                    utcDateStr = "2026-09-20";
+                    const nextUtc = new Date(baseDtUtc.getTime() + 86400000);
+                    utcDateStr = nextUtc.toISOString().split('T')[0];
                 }
                 const targetUtcDate = new Date(`${utcDateStr}T${normUtcHour < 10 ? '0' + normUtcHour : normUtcHour}:00:00Z`);
 
@@ -2027,6 +2154,113 @@ function getMilestoneAvg(stepIdx) {
 
             document.getElementById('fanAdviceEgress').textContent = `Temperatures will be around ${mHome.temp}°F as fans exit into parking areas under ${mHome.wind} mph breezes.`;
 
+            // =========================================================
+            // 🚦 SIMPLE WEATHER ALERT BADGES (TRAFFIC LIGHT)
+            // =========================================================
+            const maxGamePoP = Math.max(mTail.pop, mKick.pop, mHalf.pop, mHome.pop);
+            const maxGameWind = Math.max(mTail.wind, mKick.wind, mHalf.wind, mHome.wind);
+            const peakTemp = Math.max(mTail.temp, mKick.temp);
+
+            // 1. Rain Alert Badge
+            const rainPill = document.getElementById('badgeRainPill');
+            const rainText = document.getElementById('badgeRainText');
+            if (rainPill && rainText) {
+                if (maxGamePoP >= 50) {
+                    rainPill.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-red-950/80 text-red-300 border border-red-800 shadow-sm";
+                    rainPill.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span><span>Rain Risk: High (${maxGamePoP}% Wet Turf)</span>`;
+                } else if (maxGamePoP >= 25) {
+                    rainPill.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-950/80 text-amber-300 border border-amber-800 shadow-sm";
+                    rainPill.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span><span>Rain Risk: Moderate (${maxGamePoP}% Scattered)</span>`;
+                } else {
+                    rainPill.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-800 shadow-sm";
+                    rainPill.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span>Rain Risk: Low (${maxGamePoP}% Dry Turf)</span>`;
+                }
+            }
+
+            // 2. Lightning / Game Stoppage Delay Risk
+            const lightPill = document.getElementById('badgeLightningPill');
+            if (lightPill) {
+                if (maxGamePoP >= 55) {
+                    lightPill.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-950/80 text-amber-300 border border-amber-800 shadow-sm";
+                    lightPill.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span><span>Delay Risk: Monitor 8-Mile Ring</span>`;
+                } else {
+                    lightPill.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-800 shadow-sm";
+                    lightPill.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span>Game Delay Risk: None</span>`;
+                }
+            }
+
+            // 3. Heat & Wind Comfort Badge
+            const comfPill = document.getElementById('badgeComfortPill');
+            if (comfPill) {
+                if (peakTemp >= 92) {
+                    comfPill.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-red-950/80 text-red-300 border border-red-800 shadow-sm";
+                    comfPill.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-400"></span><span>Comfort: High Heat Index (${peakTemp}°F)</span>`;
+                } else if (maxGameWind >= 16) {
+                    comfPill.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-950/80 text-blue-300 border border-blue-800 shadow-sm";
+                    comfPill.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-400"></span><span>Comfort: Gusty Breezes (${maxGameWind} mph)</span>`;
+                } else {
+                    comfPill.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-slate-300 border border-slate-700 shadow-sm";
+                    comfPill.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span>Comfort: Ideal Football Weather</span>`;
+                }
+            }
+
+            // =========================================================
+            // 🎒 QUICK PACK GAMEDAY CHECKLIST (DYNAMIC)
+            // =========================================================
+            // 1. Hat & Sunscreen
+            const isSunnyDay = (mKick.temp >= 70 && maxGamePoP < 40);
+            const iconHat = document.getElementById('checkIconHat');
+            const textHat = document.getElementById('checkTextHat');
+            if (iconHat && textHat) {
+                if (isSunnyDay) {
+                    iconHat.className = "fa-solid fa-circle-check text-emerald-400";
+                    textHat.textContent = "Hat & Sunglasses (Pack)";
+                } else {
+                    iconHat.className = "fa-solid fa-circle-minus text-slate-500";
+                    textHat.textContent = "Hat & Sunglasses (Optional)";
+                }
+            }
+
+            // 2. Light Jacket / Layer
+            const iconJacket = document.getElementById('checkIconJacket');
+            const textJacket = document.getElementById('checkTextJacket');
+            if (iconJacket && textJacket) {
+                if (mHome.temp <= 68 || mKick.temp <= 65) {
+                    iconJacket.className = "fa-solid fa-circle-check text-emerald-400";
+                    textJacket.textContent = `Light Jacket (Drops to ${mHome.temp}°F)`;
+                } else {
+                    iconJacket.className = "fa-solid fa-circle-xmark text-slate-500";
+                    textJacket.textContent = "Jacket (Not Needed)";
+                }
+            }
+
+            // 3. Rain Poncho
+            const iconRain = document.getElementById('checkIconRain');
+            const textRain = document.getElementById('checkTextRain');
+            if (iconRain && textRain) {
+                if (maxGamePoP >= 35) {
+                    iconRain.className = "fa-solid fa-circle-check text-amber-400 font-bold animate-pulse";
+                    textRain.textContent = `Rain Poncho (Pack! ${maxGamePoP}% Rain)`;
+                } else {
+                    iconRain.className = "fa-solid fa-circle-xmark text-slate-500";
+                    textRain.textContent = "Rain Poncho (Not Needed)";
+                }
+            }
+
+            // 4. Hydration Pack
+            const iconWater = document.getElementById('checkIconWater');
+            const textWater = document.getElementById('checkTextWater');
+            if (iconWater && textWater) {
+                if (peakTemp >= 82) {
+                    iconWater.className = "fa-solid fa-circle-check text-emerald-400";
+                    textWater.textContent = `Hydration Pack (High of ${peakTemp}°F)`;
+                } else {
+                    iconWater.className = "fa-solid fa-circle-check text-emerald-400";
+                    textWater.textContent = "Standard Tailgate Drinks";
+                }
+            }
+
+
 
             // Phase cards
             
@@ -2341,9 +2575,35 @@ function getMilestoneAvg(stepIdx) {
             });
         }
 
+        
+        // Quick 1-Click Copy Forecast Summary for Tailgate Group Chats
+        function copyForecastSummary() {
+            const headline = document.getElementById('heroVerdictTitle').textContent || "SEC Football Gameday Weather";
+            const game = document.getElementById('matchupTitle') ? document.getElementById('matchupTitle').textContent : "";
+            const tailTime = document.getElementById('heroTailgateTime').textContent;
+            const tailTemp = document.getElementById('heroTailgateTemp').textContent;
+            const koTime = document.getElementById('heroKickoffTimeText').textContent;
+            const koTemp = document.getElementById('heroKickoffTempCard').textContent;
+            const rainAlert = document.getElementById('badgeRainText').textContent;
+            
+            const shareText = `🏈 SEC GAMEDAY WEATHER REPORT\n${headline}\n\n🍻 Tailgating (${tailTime}): ${tailTemp}\n🏈 Kickoff (${koTime}): ${koTemp}\n☔ ${rainAlert}\n\nLive forecast powered by SEC Gameday Weather.`;
+            
+            navigator.clipboard.writeText(shareText).then(() => {
+                const btn = document.getElementById('copyForecastBtn');
+                btn.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i> <span class="text-emerald-300">Copied to Clipboard!</span>`;
+                setTimeout(() => {
+                    btn.innerHTML = `<i class="fa-solid fa-share-nodes"></i> <span>Copy Tailgate Forecast</span>`;
+                }, 2500);
+            }).catch(err => {
+                console.warn("Clipboard copy failed:", err);
+            });
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
+            const initialWeekIdx = findInitialActiveWeekIndex();
+            currentWeekIndex = initialWeekIdx;
             initWeekTabs();
-            selectWeek(0); // Starts at Week 3
+            selectWeek(initialWeekIdx);
         });
     </script>
 </body>

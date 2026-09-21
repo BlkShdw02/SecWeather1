@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 """
 SEC Football Real-Time Hourly Model Ingestion Worker
@@ -104,7 +103,7 @@ def calculate_wind_vector_impact(wind_dir_deg, wind_speed_mph, field_azimuth_deg
 
 def fetch_game_weather(venue, target_date_str, local_ko_hour, hours_until_ko):
     """
-    Generates the exact 10-step window from T-3h to T+6h.
+    Generates the expanded 13-step window from T-6h (Arrival/Setup) to T+6h (Post-Game).
     Uses dynamic model inclusion based on hours until kickoff.
     """
     models = ["ecmwf_ifs025", "gfs_seamless", "best_match"]

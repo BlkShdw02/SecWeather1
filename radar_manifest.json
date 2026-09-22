@@ -1,0 +1,200 @@
+{
+  "south_carolina": {
+    "venue": "South Carolina",
+    "stadium": "Williams-Brice Stadium",
+    "city": "Columbia, SC",
+    "last_updated_utc": "2026-09-22T15:20:05.850171+00:00",
+    "total_frames": 8,
+    "loop_interval_ms": 500,
+    "frames": [
+      {
+        "index": 0,
+        "filename": "radar_south_carolina_frame_0.png",
+        "time": "02:41 PM UTC",
+        "mins_ago": 38.5,
+        "is_latest": false
+      },
+      {
+        "index": 1,
+        "filename": "radar_south_carolina_frame_1.png",
+        "time": "02:47 PM UTC",
+        "mins_ago": 33.0,
+        "is_latest": false
+      },
+      {
+        "index": 2,
+        "filename": "radar_south_carolina_frame_2.png",
+        "time": "02:52 PM UTC",
+        "mins_ago": 27.5,
+        "is_latest": false
+      },
+      {
+        "index": 3,
+        "filename": "radar_south_carolina_frame_3.png",
+        "time": "02:58 PM UTC",
+        "mins_ago": 22.0,
+        "is_latest": false
+      },
+      {
+        "index": 4,
+        "filename": "radar_south_carolina_frame_4.png",
+        "time": "03:03 PM UTC",
+        "mins_ago": 16.5,
+        "is_latest": false
+      },
+      {
+        "index": 5,
+        "filename": "radar_south_carolina_frame_5.png",
+        "time": "03:09 PM UTC",
+        "mins_ago": 11.0,
+        "is_latest": false
+      },
+      {
+        "index": 6,
+        "filename": "radar_south_carolina_frame_6.png",
+        "time": "03:14 PM UTC",
+        "mins_ago": 5.5,
+        "is_latest": false
+      },
+      {
+        "index": 7,
+        "filename": "radar_south_carolina_frame_7.png",
+        "time": "03:20 PM UTC",
+        "mins_ago": 0.0,
+        "is_latest": true
+      }
+    ]
+  },
+  "georgia": {
+    "venue": "Georgia",
+    "stadium": "Sanford Stadium",
+    "city": "Athens, GA",
+    "last_updated_utc": "2026-09-22T15:20:07.590761+00:00",
+    "total_frames": 8,
+    "loop_interval_ms": 500,
+    "frames": [
+      {
+        "index": 0,
+        "filename": "radar_georgia_frame_0.png",
+        "time": "02:41 PM UTC",
+        "mins_ago": 38.5,
+        "is_latest": false
+      },
+      {
+        "index": 1,
+        "filename": "radar_georgia_frame_1.png",
+        "time": "02:47 PM UTC",
+        "mins_ago": 33.0,
+        "is_latest": false
+      },
+      {
+        "index": 2,
+        "filename": "radar_georgia_frame_2.png",
+        "time": "02:52 PM UTC",
+        "mins_ago": 27.5,
+        "is_latest": false
+      },
+      {
+        "index": 3,
+        "filename": "radar_georgia_frame_3.png",
+        "time": "02:58 PM UTC",
+        "mins_ago": 22.0,
+        "is_latest": false
+      },
+      {
+        "index": 4,
+        "filename": "radar_georgia_frame_4.png",
+        "time": "03:03 PM UTC",
+        "mins_ago": 16.5,
+        "is_latest": false
+      },
+      {
+        "index": 5,
+        "filename": "radar_georgia_frame_5.png",
+        "time": "03:09 PM UTC",
+        "mins_ago": 11.0,
+        "is_latest": false
+      },
+      {
+        "index": 6,
+        "filename": "radar_georgia_frame_6.png",
+        "time": "03:14 PM UTC",
+        "mins_ago": 5.5,
+        "is_latest": false
+      },
+      {
+        "index": 7,
+        "filename": "radar_georgia_frame_7.png",
+        "time": "03:20 PM UTC",
+        "mins_ago": 0.0,
+        "is_latest": true
+      }
+    ]
+  },
+  "alabama": {
+    "venue": "Alabama",
+    "stadium": "Bryant-Denny Stadium",
+    "city": "Tuscaloosa, AL",
+    "last_updated_utc": "2026-09-22T15:20:09.170489+00:00",
+    "total_frames": 8,
+    "loop_interval_ms": 500,
+    "frames": [
+      {
+        "index": 0,
+        "filename": "radar_alabama_frame_0.png",
+        "time": "02:41 PM UTC",
+        "mins_ago": 38.5,
+        "is_latest": false
+      },
+      {
+        "index": 1,
+        "filename": "radar_alabama_frame_1.png",
+        "time": "02:47 PM UTC",
+        "mins_ago": 33.0,
+        "is_latest": false
+      },
+      {
+        "index": 2,
+        "filename": "radar_alabama_frame_2.png",
+        "time": "02:52 PM UTC",
+        "mins_ago": 27.5,
+        "is_latest": false
+      },
+      {
+        "index": 3,
+        "filename": "radar_alabama_frame_3.png",
+        "time": "02:58 PM UTC",
+        "mins_ago": 22.0,
+        "is_latest": false
+      },
+      {
+        "index": 4,
+        "filename": "radar_alabama_frame_4.png",
+        "time": "03:03 PM UTC",
+        "mins_ago": 16.5,
+        "is_latest": false
+      },
+      {
+        "index": 5,
+        "filename": "radar_alabama_frame_5.png",
+        "time": "03:09 PM UTC",
+        "mins_ago": 11.0,
+        "is_latest": false
+      },
+      {
+        "index": 6,
+        "filename": "radar_alabama_frame_6.png",
+        "time": "03:14 PM UTC",
+        "mins_ago": 5.5,
+        "is_latest": false
+      },
+      {
+        "index": 7,
+        "filename": "radar_alabama_frame_7.png",
+        "time": "03:20 PM UTC",
+        "mins_ago": 0.0,
+        "is_latest": true
+      }
+    ]
+  }
+}

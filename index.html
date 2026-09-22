@@ -461,7 +461,7 @@
             <!-- Live Doppler Radar + Stadium Field Compass + Fan Essentials -->
             <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5">
                 
-                <!-- 1. LIVE IEM NOAA RADAR (Span 5 on Desktop) -->
+                <!-- 1. LIVE IEM NOAA RADAR WITH ESRI SATELLITE BASEMAP (Span 5 on Desktop) -->
                 <div class="glass-card rounded-2xl p-4 md:p-5 shadow-xl md:col-span-1 lg:col-span-5 flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between mb-1">
@@ -1269,7 +1269,7 @@
         }
 
         // ==========================================
-        // 📡 LIVE IEM / NOAA INTERACTIVE RADAR PLAYER
+        // 📡 LIVE IEM / NOAA INTERACTIVE RADAR PLAYER (ESRI Satellite Basemap)
         // ==========================================
         let iemMap = null;
         let radarTileLayers = [];
@@ -1308,9 +1308,16 @@
                 attributionControl: false
             }).setView([lat, lon], 9);
 
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                maxZoom: 14,
-                subdomains: 'abcd'
+            // 1. High-Resolution ESRI World Imagery (Free, No API Key Required)
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 18,
+                attribution: 'Tiles &copy; Esri'
+            }).addTo(iemMap);
+
+            // 2. High-Contrast Overlay for Boundaries, Roads & Labels
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 18,
+                zIndex: 400
             }).addTo(iemMap);
 
             buildIEMLayers();
@@ -1343,7 +1350,7 @@
             radarTimestamps = getIEMTimestamps(10);
             radarTileLayers = radarTimestamps.map((item, idx) => {
                 return L.tileLayer(`https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/ridge::USCOMP-N0Q-${item.ts}/{z}/{x}/{y}.png`, {
-                    opacity: (idx === 9 ? 0.75 : 0),
+                    opacity: (idx === 9 ? 0.78 : 0),
                     zIndex: 500 + idx,
                     maxZoom: 10
                 }).addTo(iemMap);
@@ -1356,7 +1363,7 @@
             if (!radarTileLayers.length) return;
 
             radarTileLayers.forEach((layer, idx) => {
-                layer.setOpacity(idx === currentRadarIndex ? 0.75 : 0);
+                layer.setOpacity(idx === currentRadarIndex ? 0.78 : 0);
             });
 
             const scrubber = document.getElementById('radarScrubber');
@@ -1443,10 +1450,8 @@
             const game = curW.games[gameIdx];
             const venue = VENUES[game.venue_key] || {};
 
-            // Center Radar on Venue
             updateRadarForVenue(venue);
 
-            // Dynamic Team Theme
             const homeKey = game.home || game.venue_key;
             const teamTheme = SCHOOL_COLORS[homeKey] || SCHOOL_COLORS[game.venue_key] || {
                 primary: "#ba0c2f",
@@ -1608,8 +1613,6 @@
             const clockTimes = steps.map(s => formatClock(localKickoffHour, s, tzShort));
             const timeArr = data.hourly.time;
             const ecmwfTemp = [], gfsTemp = [], nbmTemp = [], nwsTemp = [];
-            const namTemp = [], namPop = [], namWind = [], namQpf = [];
-            const hrrrTemp = [], hrrrPop = [], hrrrWind = [], hrrrQpf = [];
             const ecmwfPop = [], gfsPop = [], nbmPop = [], nwsPop = [];
             const ecmwfWind = [], gfsWind = [], nbmWind = [], nwsWind = [];
             const ecmwfGust = [], gfsGust = [], nbmGust = [], nwsGust = [];
@@ -1784,7 +1787,6 @@
             safeText('fieldWindDir', `Wind from ${series.windDirStr} (${series.windDirDeg}°)`);
             safeText('fieldWindSpeed', `${series.nws.wind[koIdx]} mph G ${series.nws.gust[koIdx]}`);
 
-            // Model Cards
             safeText('cardEcmwfTemp', `${series.ecmwf.temp[koIdx]}°F`);
             safeText('cardEcmwfPop', `${Math.max(...series.ecmwf.pop)}%`);
             safeText('cardEcmwfWind', `${series.ecmwf.wind[koIdx]}G${series.ecmwf.gust[koIdx]} mph`);

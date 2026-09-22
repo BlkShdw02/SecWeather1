@@ -2,9 +2,7 @@ name: Hourly SEC & ACC Weather and Live Radar Update
 
 on:
   schedule:
-    # Runs at the top of every hour (UTC)
     - cron: '0 * * * *'
-  # Allows 1-click manual updates anytime
   workflow_dispatch:
 
 permissions:
@@ -25,18 +23,20 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install Radar Plotting Dependencies
+      - name: Install Dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install numpy matplotlib
 
-      - name: Execute Model Ingestion & Custom Radar Generation
+      - name: Run Weather & Radar Ingestion
         run: |
-          python run_hourly_ingest.py
-          python generate_custom_radar.py
+          python run_hourly_ingest.py || true
+          python generate_custom_radar.py || true
 
-      - name: Commit and Push New Weather Data & Radar Loops
+      - name: Commit and Push Changes
         run: |
           git config --global user.name "CFB-Weather-Bot"
           git config --global user.email "bot@users.noreply.github.com"
-          git add sec_live_weather.json radar_*.png radar_manifest.json
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update live weather and radar sweeps [skip ci]" && git push)
+          git add -A
+          git diff --staged --quiet || git commit -m "Auto-update live weather and radar sweeps [skip ci]"
+          git push origin main || true

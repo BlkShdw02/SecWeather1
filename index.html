@@ -569,52 +569,29 @@
 
             <!-- Live Doppler Radar + Stadium Field Compass + Fan Essentials -->
             <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5">
-                
-                <!-- 1. LIVE DOPPLER RADAR WIDGET (Span 5 on Desktop) -->
-                <div class="glass-card rounded-2xl p-4 md:p-5 shadow-xl md:col-span-2 lg:col-span-5 flex flex-col justify-between border-t-2 border-t-emerald-500 relative">
-                    <div>
-                        <div class="flex items-center justify-between mb-1.5">
-                            <h3 class="text-base font-black text-white flex items-center gap-2">
-                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                                <span>Live Gameday Doppler Radar</span>
-                            </h3>
-                            <span class="text-[10px] font-mono px-2.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 font-bold" id="radarTimeBadge">
-                                Live NEXRAD Loop
-                            </span>
-                        </div>
-                        <p class="text-[11px] text-slate-400 mb-3">Real-time WSR-88D Doppler loop centered over <strong id="radarVenueName" class="text-slate-200">Sanford Stadium</strong> with NCAA 8-mile ring</p>
-                        
-                        <!-- Interactive Multi-Frame Doppler Radar Player (Custom .pal) -->
-                        <div class="relative overflow-hidden rounded-xl border border-slate-700/80 shadow-2xl bg-slate-950" id="radarImageContainer">
-                            <!-- The Active Frame Image -->
-                            <img id="customRadarImg" 
-                                 src="radar_south_carolina.png" 
-                                 alt="Live Doppler Radar Loop" 
-                                 class="w-full h-[290px] object-cover rounded-xl transition-opacity duration-150 cursor-pointer" 
-                                 onclick="openRadarModal()"
-                                 onerror="handleRadarImgFallback(this)">
+                                        <!-- Interactive IEM NOAA Live Radar Map (Replaces Static PNG) -->
+                        <div class="relative overflow-hidden rounded-xl border border-slate-700/80 shadow-2xl bg-slate-950" id="radarImageContainer" style="height: 310px; width: 100%;">
+                            <!-- Live Leaflet Map Container -->
+                            <div id="iemRadarMap" style="height: 100%; width: 100%; z-index: 10;"></div>
 
                             <!-- Top Sweep Timestamp & NCAA Ring Overlay Badge -->
                             <div class="absolute top-2.5 left-2.5 z-20 bg-slate-950/90 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-800 text-[10px] font-mono text-slate-200 flex items-center gap-2 shadow-lg">
                                 <span class="flex items-center gap-1.5 font-bold text-emerald-400" id="radarLiveIndicator">
-                                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> LIVE LOOP
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> LIVE IEM LOOP
                                 </span>
                                 <span class="text-slate-600">|</span>
                                 <span class="text-amber-300 font-bold"><i class="fa-solid fa-shield mr-1"></i>8-Mile Ring Active</span>
                             </div>
 
-                            <!-- Expand Full Screen Button -->
-                            <button onclick="openRadarModal()" class="absolute top-2.5 right-2.5 z-20 bg-slate-950/80 hover:bg-slate-800 text-slate-300 hover:text-white px-2 py-1 rounded-lg border border-slate-800 text-[10px] font-bold flex items-center gap-1 shadow backdrop-blur-sm transition-all">
-                                <i class="fa-solid fa-expand"></i> Full Screen
-                            </button>
-
-                            <!-- Timeline Scrubber Bar Overlay at Bottom of Image -->
+                            <!-- Timeline Scrubber Bar Overlay at Bottom of Map -->
                             <div class="absolute bottom-2 inset-x-3 z-20 bg-slate-950/90 backdrop-blur-md p-2 rounded-xl border border-slate-800/90 flex flex-col gap-1.5 shadow-xl">
                                 <div class="flex items-center justify-between text-[10px] font-mono text-slate-300">
                                     <span class="flex items-center gap-1 text-cyan-300 font-bold" id="radarCurrentSweepTime">
-                                        <i class="fa-regular fa-clock"></i> Sweep 8 of 8 (Latest)
+                                        <i class="fa-regular fa-clock"></i> Sweep 10 of 10 (Latest)
                                     </span>
-                                    <span class="text-slate-400" id="radarSweepAge">Just Now</span>
+                                    <button onclick="toggleRadarLoop()" id="radarPlayPauseBtn" class="text-xs text-amber-400 hover:text-white font-bold flex items-center gap-1">
+                                        <i class="fa-solid fa-pause" id="radarPlayPauseIcon"></i> <span id="radarPlayPauseText">Pause</span>
+                                    </button>
                                 </div>
                                 
                                 <!-- Range Slider Scrubber -->
@@ -622,7 +599,7 @@
                                     <button onclick="stepRadarFrame(-1)" class="w-6 h-6 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center text-xs">
                                         <i class="fa-solid fa-step-backward text-[9px]"></i>
                                     </button>
-                                    <input type="range" id="radarScrubber" min="0" max="7" value="7" 
+                                    <input type="range" id="radarScrubber" min="0" max="9" value="9" 
                                            class="w-full accent-amber-400 h-1.5 bg-slate-800 rounded-lg cursor-pointer" 
                                            oninput="onScrubRadar(this.value)">
                                     <button onclick="stepRadarFrame(1)" class="w-6 h-6 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center text-xs">
@@ -631,18 +608,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Radar Controls Footer -->
-                    <div class="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-xs">
-                        <span class="text-[11px] text-slate-300 font-medium flex items-center gap-1.5">
-                            <i class="fa-solid fa-satellite-dish text-emerald-400"></i> Auto-updates every 5-10 mins
-                        </span>
-                        <button onclick="refreshRadarIframe()" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-semibold transition-all text-[11px] flex items-center gap-1">
-                            <i class="fa-solid fa-arrows-rotate text-blue-400"></i> Reload Radar
-                        </button>
-                    </div>
-                </div>
 
                 <!-- 2. STADIUM FIELD COMPASS ALIGNMENT (Span 3 on Desktop) -->
                 <div class="glass-card rounded-2xl p-4 md:p-5 shadow-xl md:col-span-1 lg:col-span-3 flex flex-col justify-between">
@@ -1823,111 +1789,119 @@
         
 
 
+              // ==========================================
+        // 📡 LIVE IEM / NOAA INTERACTIVE RADAR PLAYER
         // ==========================================
-        // 📡 INTERACTIVE MULTI-FRAME DOPPLER RADAR PLAYER
-        // ==========================================
-        let radarManifest = null;
-        let activeRadarFrames = [];
-        let currentRadarIndex = 7; // Start on latest frame
+        let iemMap = null;
+        let radarTileLayers = [];
+        let radarTimestamps = [];
+        let currentRadarIndex = 9; // 10 frames total (0-9)
         let isRadarLooping = true;
         let radarAnimationTimer = null;
-        let radarAutoPollTimer = null;
-        let currentActiveVenueKey = "south_carolina";
+        let ncaa8MileCircle = null;
+        let stadiumMarker = null;
 
-        // Preload image cache to guarantee zero-flicker smooth looping
-        const preloadedRadarImages = {};
-
-        function getSafeVenueKey(venue) {
-            const homeKey = (currentGame && currentGame.home) || (currentRadarVenue && currentRadarVenue.stadium) || "South Carolina";
-            return homeKey.toLowerCase().replace(/\s+/g, '_').replace(/&/g, 'and');
-        }
-
-        // Initialize and load radar manifest from server/repository
-        async function fetchRadarManifest() {
-            try {
-                // In production, radar_manifest.json is auto-generated by generate_custom_radar.py on every scan
-                const resp = await fetch(`radar_manifest.json?t=${Date.now()}`);
-                if (resp.ok) {
-                    radarManifest = await resp.json();
-                    loadRadarFramesForVenue(currentActiveVenueKey);
-                } else {
-                    // Fallback to static frame naming pattern
-                    buildFallbackFrameSeries(currentActiveVenueKey);
-                }
-            } catch (e) {
-                buildFallbackFrameSeries(currentActiveVenueKey);
-            }
-        }
-
-        function buildFallbackFrameSeries(safeKey) {
-            activeRadarFrames = [];
-            const times = ["2:41 PM", "2:47 PM", "2:52 PM", "2:58 PM", "3:03 PM", "3:09 PM", "3:14 PM", "3:20 PM"];
-            for (let i = 0; i < 8; i++) {
-                activeRadarFrames.push({
-                    index: i,
-                    src: `radar_${safeKey}_frame_${i}.png`,
-                    time: `${times[i]} EDT`,
-                    is_latest: (i === 7)
+        // Generate UTC timestamps for the last 10 5-minute scans from IEM
+        function getIEMTimestamps(count = 10, intervalMinutes = 5) {
+            const list = [];
+            const now = new Date();
+            // Round down to nearest 5 min mark
+            const roundedMs = Math.floor(now.getTime() / (intervalMinutes * 60 * 1000)) * (intervalMinutes * 60 * 1000);
+            
+            for (let i = count - 1; i >= 0; i--) {
+                const d = new Date(roundedMs - i * intervalMinutes * 60 * 1000);
+                const y = d.getUTCFullYear();
+                const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+                const day = String(d.getUTCDate()).padStart(2, '0');
+                const h = String(d.getUTCHours()).padStart(2, '0');
+                const min = String(d.getUTCMinutes()).padStart(2, '0');
+                list.push({
+                    ts: `${y}${m}${day}${h}${min}`,
+                    label: d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' })
                 });
             }
+            return list;
+        }
+
+        function initIEMRadarMap(lat = 33.9500, lon = -83.3734) {
+            if (iemMap) return;
+
+            // 1. Initialize Map
+            iemMap = L.map('iemRadarMap', {
+                zoomControl: false,
+                attributionControl: false
+            }).setView([lat, lon], 9);
+
+            // 2. Base Dark Map Tiles
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                maxZoom: 14,
+                subdomains: 'abcd'
+            }).addTo(iemMap);
+
+            // 3. Setup Layers
+            buildIEMLayers();
+
+            // 4. Draw NCAA 8-mile Safety Ring (8 NM = 14,816 meters)
+            ncaa8MileCircle = L.circle([lat, lon], {
+                radius: 14816,
+                color: '#fbbf24',
+                dashArray: '6, 6',
+                fillColor: 'transparent',
+                weight: 2
+            }).addTo(iemMap);
+
+            // 5. Add Stadium Icon Marker
+            stadiumMarker = L.circleMarker([lat, lon], {
+                radius: 7,
+                fillColor: '#f59e0b',
+                color: '#ffffff',
+                weight: 2,
+                fillOpacity: 1
+            }).addTo(iemMap);
+
             startRadarLoop();
         }
 
-        function loadRadarFramesForVenue(safeKey) {
-            currentActiveVenueKey = safeKey;
-            if (radarManifest && radarManifest[safeKey] && radarManifest[safeKey].frames) {
-                activeRadarFrames = radarManifest[safeKey].frames.map(f => ({
-                    index: f.index,
-                    src: f.filename,
-                    time: f.time,
-                    is_latest: f.is_latest
-                }));
-            } else {
-                buildFallbackFrameSeries(safeKey);
-            }
+        function buildIEMLayers() {
+            // Remove old layers if refreshing
+            radarTileLayers.forEach(l => iemMap.removeLayer(l));
+            radarTileLayers = [];
 
-            // Preload all 8 frames
-            activeRadarFrames.forEach(f => {
-                const img = new Image();
-                img.src = f.src;
-                preloadedRadarImages[f.src] = img;
+            radarTimestamps = getIEMTimestamps(10);
+            radarTileLayers = radarTimestamps.map((item, idx) => {
+                return L.tileLayer(`https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/ridge::USCOMP-N0Q-${item.ts}/{z}/{x}/{y}.png`, {
+                    opacity: (idx === 9 ? 0.75 : 0),
+                    zIndex: 500 + idx,
+                    maxZoom: 10
+                }).addTo(iemMap);
             });
-
-            // Start on latest frame
-            currentRadarIndex = activeRadarFrames.length - 1;
+            currentRadarIndex = radarTileLayers.length - 1;
             renderCurrentRadarFrame();
-            startRadarLoop();
         }
 
         function renderCurrentRadarFrame() {
-            if (!activeRadarFrames || activeRadarFrames.length === 0) return;
-            const frame = activeRadarFrames[currentRadarIndex];
-            if (!frame) return;
+            if (!radarTileLayers.length) return;
 
-            const mainImg = document.getElementById('customRadarImg');
-            if (mainImg && mainImg.src !== frame.src) {
-                mainImg.src = frame.src;
-            }
+            // Toggle active frame opacity
+            radarTileLayers.forEach((layer, idx) => {
+                layer.setOpacity(idx === currentRadarIndex ? 0.75 : 0);
+            });
 
-            // Update modal image if open
-            const expandedImg = document.getElementById('expandedRadarImg');
-            if (expandedImg) expandedImg.src = frame.src;
-
-            // Update Scrubber Slider value
+            // Update Scrubber
             const scrubber = document.getElementById('radarScrubber');
             if (scrubber) scrubber.value = currentRadarIndex;
 
-            // Update Time Indicators
+            // Update Sweep Time Text
             const timeText = document.getElementById('radarCurrentSweepTime');
-            if (timeText) {
-                const isLatest = (currentRadarIndex === activeRadarFrames.length - 1);
-                timeText.innerHTML = `<i class="fa-regular fa-clock"></i> Sweep ${currentRadarIndex + 1} of ${activeRadarFrames.length} (${frame.time})`;
+            if (timeText && radarTimestamps[currentRadarIndex]) {
+                const isLatest = (currentRadarIndex === radarTileLayers.length - 1);
+                timeText.innerHTML = `<i class="fa-regular fa-clock"></i> Sweep ${currentRadarIndex + 1} of ${radarTileLayers.length} (${radarTimestamps[currentRadarIndex].label})`;
             }
 
             const liveIndicator = document.getElementById('radarLiveIndicator');
             if (liveIndicator) {
-                if (currentRadarIndex === activeRadarFrames.length - 1) {
-                    liveIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> LIVE SWEEP`;
+                if (currentRadarIndex === radarTileLayers.length - 1) {
+                    liveIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> LIVE IEM`;
                     liveIndicator.className = "flex items-center gap-1.5 font-bold text-emerald-400";
                 } else {
                     liveIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-cyan-400"></span> LOOP PLAYBACK`;
@@ -1940,10 +1914,10 @@
             clearInterval(radarAnimationTimer);
             if (!isRadarLooping) return;
             radarAnimationTimer = setInterval(() => {
-                if (activeRadarFrames.length === 0) return;
-                currentRadarIndex = (currentRadarIndex + 1) % activeRadarFrames.length;
+                if (!radarTileLayers.length) return;
+                currentRadarIndex = (currentRadarIndex + 1) % radarTileLayers.length;
                 renderCurrentRadarFrame();
-            }, 550); // 550ms per frame = smooth cinematic loop
+            }, 550);
         }
 
         function toggleRadarLoop() {
@@ -1952,117 +1926,34 @@
             const btnIcon = document.getElementById('radarPlayPauseIcon');
 
             if (isRadarLooping) {
-                if (btnText) btnText.textContent = "Pause Loop";
+                if (btnText) btnText.textContent = "Pause";
                 if (btnIcon) btnIcon.className = "fa-solid fa-pause text-xs";
                 startRadarLoop();
             } else {
-                if (btnText) btnText.textContent = "Play Loop";
+                if (btnText) btnText.textContent = "Play";
                 if (btnIcon) btnIcon.className = "fa-solid fa-play text-xs";
                 clearInterval(radarAnimationTimer);
             }
         }
 
         function onScrubRadar(val) {
-            // Pause loop when user drags scrubber to give precise control
-            if (isRadarLooping) {
-                toggleRadarLoop();
-            }
+            if (isRadarLooping) toggleRadarLoop();
             currentRadarIndex = parseInt(val, 10);
             renderCurrentRadarFrame();
         }
 
         function stepRadarFrame(delta) {
-            if (isRadarLooping) {
-                toggleRadarLoop();
-            }
-            if (activeRadarFrames.length === 0) return;
-            currentRadarIndex = (currentRadarIndex + delta + activeRadarFrames.length) % activeRadarFrames.length;
+            if (isRadarLooping) toggleRadarLoop();
+            if (!radarTileLayers.length) return;
+            currentRadarIndex = (currentRadarIndex + delta + radarTileLayers.length) % radarTileLayers.length;
             renderCurrentRadarFrame();
         }
 
-        function jumpToLatestSweep() {
-            if (activeRadarFrames.length > 0) {
-                currentRadarIndex = activeRadarFrames.length - 1;
-                renderCurrentRadarFrame();
-            }
-        }
+        // Auto-refresh IEM frames every 5 minutes to stay real-time
+        setInterval(() => {
+            if (iemMap) buildIEMLayers();
+        }, 5 * 60 * 1000);
 
-                function updateRadarForVenue(venue) {
-            currentRadarVenue = venue;
-            safeText('radarVenueName', venue.stadium || venue.city);
-
-            const homeKey = (currentGame && currentGame.home) || (currentRadarVenue && currentRadarVenue.stadium) || "South Carolina";
-            const siteCode = WSR88D_SITES[homeKey] || WSR88D_SITES[venue.stadium] || "KCAE";
-            safeText('radarStationBadge', `Site: ${siteCode}`);
-
-            const nwsLink = document.getElementById('nwsOfficialRadarLink');
-            if (nwsLink && venue.lat) {
-                try {
-                    const settingsObj = { agenda: { id: "local", center: [venue.lon, venue.lat], zoom: 9 } };
-                    const encodedSettings = btoa(JSON.stringify(settingsObj));
-                    nwsLink.href = `https://radar.weather.gov/?settings=v1_${encodeURIComponent(encodedSettings)}`;
-                } catch (e) {
-                    nwsLink.href = `https://radar.weather.gov/station/${siteCode}/standard`;
-                }
-            }
-
-            // Load multi-frame sequence for the newly selected venue
-            const safeKey = homeKey.toLowerCase().replace(/\s+/g, '_').replace(/&/g, 'and');
-            loadRadarFramesForVenue(safeKey);
-        }
-
-        // Fallback handler if specific venue image is not yet rendered by server
-        function handleRadarImgFallback(img) {
-            // Fallback to South Carolina or Georgia custom .pal radar image
-            if (!img.src.includes('radar_south_carolina.png')) {
-                img.src = 'radar_south_carolina.png';
-            }
-        }
-
-        // Interactive Full-Screen Radar Viewer Modal
-        function openRadarModal() {
-            const modal = document.getElementById('radarExpandModal');
-            const expandImg = document.getElementById('expandedRadarImg');
-            const mainImg = document.getElementById('customRadarImg');
-            if (modal && expandImg && mainImg) {
-                expandImg.src = mainImg.src;
-                modal.style.display = 'flex';
-            }
-        }
-
-        function closeRadarModal() {
-            const modal = document.getElementById('radarExpandModal');
-            if (modal) modal.style.display = 'none';
-        }
-
-        function refreshRadarIframe() {
-            const iframe = document.getElementById('liveRadarIframe');
-            if (iframe && currentRadarVenue && currentRadarVenue.lat) {
-                iframe.src = `https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=in&metricTemp=%C2%B0F&metricWind=mph&zoom=9&overlay=radar&product=radar&level=surface&lat=${currentRadarVenue.lat}&lon=${currentRadarVenue.lon}&t=${Date.now()}`;
-            }
-        }
-
-        async function selectGame(gameIdx) {
-            currentGame = getActiveSchedule()[currentWeekIndex].games[gameIdx];
-            currentGameIndex = gameIdx;
-
-            // Explicitly sync the HTML dropdown so it matches the selected matchup
-            const selDropdown = document.getElementById('gameSelect');
-            if (selDropdown) {
-                selDropdown.value = String(gameIdx);
-            }
-
-            const curW = getActiveSchedule()[currentWeekIndex];
-            const game = curW.games[currentGameIndex];
-            const venue = VENUES[game.venue_key] || {
-                stadium: "Campus Stadium",
-                city: "SEC Host",
-                capacity: 75000,
-                orientation: "N-S",
-                wfo: "NWS",
-                lat: 33.0,
-                lon: -85.0
-            };
 
             // =========================================================
             // 🏟️ DYNAMIC TEAM COLOR & STADIUM FLOODLIGHT INJECTION

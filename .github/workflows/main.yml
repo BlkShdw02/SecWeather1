@@ -1,10 +1,10 @@
-name: Hourly SEC Weather Ingestion
+name: Hourly SEC & ACC Weather and Live Radar Update
 
 on:
   schedule:
     # Runs at the top of every hour (UTC)
     - cron: '0 * * * *'
-  # Allows you to manually trigger it anytime with one click
+  # Allows 1-click manual updates anytime
   workflow_dispatch:
 
 permissions:
@@ -13,11 +13,11 @@ permissions:
   id-token: write
 
 jobs:
-  update-models:
+  update-models-and-radar:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out repository code
+      - name: Check out repository
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -25,13 +25,18 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Execute Model Ingestion Script
+      - name: Install Radar Plotting Dependencies
+        run: |
+          pip install numpy matplotlib
+
+      - name: Execute Model Ingestion & Custom Radar Generation
         run: |
           python run_hourly_ingest.py
+          python generate_custom_radar.py
 
-      - name: Commit and Push Updated Weather Data
+      - name: Commit and Push New Weather Data & Radar Loops
         run: |
-          git config --global user.name "SEC-Weather-Bot"
+          git config --global user.name "CFB-Weather-Bot"
           git config --global user.email "bot@users.noreply.github.com"
-          git add sec_live_weather.json
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update model feeds [skip ci]" && git push)
+          git add sec_live_weather.json radar_*.png radar_manifest.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update live weather and radar sweeps [skip ci]" && git push)

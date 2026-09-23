@@ -1568,10 +1568,20 @@
         }
 
         function parseLiveModelData(data, game, venue, targetDateStr) {
-            const isCentral = (venue.tz === 'America/Chicago');
-            const localKickoffHour = isCentral ? (game.hour - 1.0) : game.hour;
+            // Precise local venue timezone resolution (EDT, CDT, PDT)
+            let tzOffsetFromEdt = 0;
+            let tzShort = 'EDT';
+            if (venue.tz === 'America/Chicago') {
+                tzOffsetFromEdt = -1.0;
+                tzShort = 'CDT';
+            } else if (venue.tz === 'America/Los_Angeles') {
+                tzOffsetFromEdt = -3.0;
+                tzShort = 'PDT';
+            }
+
+            // game.hour is defined in EDT; convert to stadium's true local wall-clock hour
+            const localKickoffHour = game.hour + tzOffsetFromEdt;
             const kickoffInt = Math.floor(localKickoffHour);
-            const tzShort = isCentral ? 'CDT' : 'EDT';
 
             const steps = [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6];
             const labels = steps.map(s => (s === 0 ? 'T-0h (KO)' : (s < 0 ? `T${s}h` : `T+${s}h`)));
@@ -1788,6 +1798,77 @@
             safeText('cardNwsTemp', `${series.nws.temp[koIdx]}°F`);
             safeText('cardNwsPop', `${Math.max(...series.nws.pop)}%`);
             safeText('cardNwsWind', `${series.nws.wind[koIdx]}G${series.nws.gust[koIdx]} mph`);
+
+            // =========================================================
+            // ⏱️ OPERATIONAL MODEL DISSEMINATION TIMELINE CALCULATION
+            // =========================================================
+            const now = new Date();
+            const curH = now.getHours();
+
+            function formatClockAmPm(d) {
+                let h = d.getHours();
+                const m = d.getMinutes();
+                const ampm = h >= 12 ? 'PM' : 'AM';
+                h = h % 12;
+                h = h ? h : 12;
+                const minStr = m < 10 ? '0' + m : m;
+                return `${h}:${minStr} ${ampm}`;
+            }
+
+            // GFS: 4 runs/day (00z, 06z, 12z, 18z), arrives ~3.5h after run init (approx 4:00, 10:00, 16:00, 22:00 EDT)
+            const gfsTimes = [4, 10, 16, 22];
+            let nextGfsH = gfsTimes.find(t => t > curH);
+            let prevGfsH = [...gfsTimes].reverse().find(t => t <= curH);
+            const gfsPrev = new Date(now);
+            const gfsNext = new Date(now);
+            if (nextGfsH === undefined) {
+                nextGfsH = 4;
+                gfsNext.setDate(gfsNext.getDate() + 1);
+            }
+            if (prevGfsH === undefined) {
+                prevGfsH = 22;
+                gfsPrev.setDate(gfsPrev.getDate() - 1);
+            }
+            gfsPrev.setHours(prevGfsH, 15, 0, 0);
+            gfsNext.setHours(nextGfsH, 15, 0, 0);
+
+            safeText('gfsLastUpdated', `${formatClockAmPm(gfsPrev)} EDT`);
+            safeText('gfsNextUpdate', `${formatClockAmPm(gfsNext)} EDT`);
+
+            // ECMWF: 2 primary dissemination cycles (~3:30 AM & 3:30 PM EDT)
+            const ecmwfTimes = [3, 15];
+            let nextEcmwfH = ecmwfTimes.find(t => t > curH);
+            let prevEcmwfH = [...ecmwfTimes].reverse().find(t => t <= curH);
+            const ecmwfPrev = new Date(now);
+            const ecmwfNext = new Date(now);
+            if (nextEcmwfH === undefined) {
+                nextEcmwfH = 3;
+                ecmwfNext.setDate(ecmwfNext.getDate() + 1);
+            }
+            if (prevEcmwfH === undefined) {
+                prevEcmwfH = 15;
+                ecmwfPrev.setDate(ecmwfPrev.getDate() - 1);
+            }
+            ecmwfPrev.setHours(prevEcmwfH, 45, 0, 0);
+            ecmwfNext.setHours(nextEcmwfH, 45, 0, 0);
+
+            safeText('ecmwfLastUpdated', `${formatClockAmPm(ecmwfPrev)} EDT`);
+            safeText('ecmwfNextUpdate', `${formatClockAmPm(ecmwfNext)} EDT`);
+
+            // NOAA NBM & NWS NDFD: Continuous Hourly Rapid Refresh Cycle (at :45 past the hour)
+            const nbmPrev = new Date(now);
+            const nbmNext = new Date(now);
+            nbmPrev.setMinutes(45, 0, 0);
+            if (now.getMinutes() < 45) {
+                nbmPrev.setHours(nbmPrev.getHours() - 1);
+            }
+            nbmNext.setTime(nbmPrev.getTime() + 3600000);
+
+            safeText('nbmLastUpdated', `${formatClockAmPm(nbmPrev)} EDT`);
+            safeText('nbmNextUpdate', `${formatClockAmPm(nbmNext)} EDT`);
+            safeText('nwsLastUpdated', `${formatClockAmPm(nbmPrev)} EDT`);
+            safeText('nwsNextUpdate', `${formatClockAmPm(nbmNext)} EDT`);
+
 
 
             // =========================================================
@@ -2145,7 +2226,7 @@
             return activeConference === 'SEC' ? SEC_WEEKS : ACC_WEEKS;
         }
 
-        function setConference(conf) {
+        function setConference(conf, targetGameIndex = 0) {
             activeConference = conf;
             const secBtn = document.getElementById('confSecBtn');
             const accBtn = document.getElementById('confAccBtn');
@@ -2165,7 +2246,11 @@
             }
 
             initWeekTabs();
-            selectWeek(currentWeekIndex);
+            const curW = getActiveSchedule()[currentWeekIndex];
+            const wName = curW.week === 14 ? "SEC Championship" : `Week ${curW.week}`;
+            document.getElementById('activeDateBanner').textContent = `${wName} (${curW.date_str.split('(')[0].trim()})`;
+            populateGameSelect();
+            selectGame(targetGameIndex);
         }
 
 
@@ -2222,7 +2307,7 @@
             const latStr = lats.join(',');
             const lonStr = lons.join(',');
             const modelParams = "ecmwf_ifs025,gfs_global,gem_global,icon_global";
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${latStr}&longitude=${lonStr}&hourly=temperature_2m,precipitation_probability,wind_speed_10m,wind_gusts_10m&models=${modelParams}&temperature_unit=fahrenheit&wind_speed_unit=mph&start_date=${targetDateStr}&end_date=${nextDayStr}`;
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${latStr}&longitude=${lonStr}&hourly=temperature_2m,precipitation_probability,wind_speed_10m,wind_gusts_10m&models=${modelParams}&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto&start_date=${targetDateStr}&end_date=${nextDayStr}`;
 
             try {
                 const resp = await fetch(url);
@@ -2480,14 +2565,15 @@
                 const card = document.createElement('div');
                 card.className = "bg-slate-900/95 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 rounded-xl p-3.5 flex flex-col justify-between transition-all cursor-pointer shadow hover:shadow-xl relative overflow-hidden group";
                 card.onclick = () => {
+                    const targetIdx = item.gameIndex;
                     if (activeConference !== item.conf) {
-                        setConference(item.conf);
+                        setConference(item.conf, targetIdx);
+                    } else {
+                        selectGame(targetIdx);
                     }
                     toggleImpactBoard();
-                    // Select game and ensure dropdown reflects selection
-                    const gameSelectEl = document.getElementById('gameSelect');
-                    if (gameSelectEl) gameSelectEl.value = item.gameIndex;
-                    selectGame(item.gameIndex);
+                    const singleEl = document.getElementById('singleGameWorkspace');
+                    if (singleEl) singleEl.scrollIntoView({ behavior: 'smooth' });
                 };
 
                 card.innerHTML = `

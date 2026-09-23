@@ -24,32 +24,20 @@
             --team-secondary: #000000;
         }
 
-        /* Football Field Stadium Atmosphere Background */
+                /* Fullscreen Football Field Background */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #030712;
-            color: #f1f5f9;
-            position: relative;
-            min-height: 100vh;
-        }
-
-        /* Fullscreen High-Impact Turf Backdrop (Fills Entire Screen) */
-        body::before {
-            content: "";
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            width: 100vw;
-            height: 100vh;
+            background-color: #030712 !important;
             background-image: 
-                radial-gradient(ellipse at 50% 0%, var(--team-glow, rgba(56, 189, 248, 0.35)) 0%, rgba(3, 7, 18, 0.75) 55%, #030712 100%),
-                linear-gradient(rgba(3, 7, 18, 0.65), rgba(3, 7, 18, 0.85)),
-                url('field_bg.webp');
-            background-position: center center;
-            background-repeat: no-repeat;
-            background-size: cover;
-            transform: rotate(90deg) scale(1.4);
-            z-index: -1;
-            pointer-events: none;
+                radial-gradient(ellipse at 50% 0%, var(--team-glow, rgba(56, 189, 248, 0.35)) 0%, rgba(3, 7, 18, 0.75) 50%, #030712 95%),
+                linear-gradient(rgba(3, 7, 18, 0.55), rgba(3, 7, 18, 0.75)),
+                url('field_bg.webp') !important;
+            background-attachment: fixed !important;
+            background-position: center center !important;
+            background-repeat: no-repeat !important;
+            background-size: cover !important;
+            color: #f1f5f9;
+            min-height: 100vh;
         }
 
         .glass-card {

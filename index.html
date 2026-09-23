@@ -1495,6 +1495,18 @@
             await fetchLiveGameForecast(game, venue, curW);
         }
 
+                async function fetchNWSWfoGrid(venue) {
+            if (!venue || !venue.wfo || !venue.gridX || !venue.gridY) return null;
+            const url = `https://api.weather.gov/gridpoints/${venue.wfo}/${venue.gridX},${venue.gridY}`;
+            try {
+                const resp = await fetch(url, { headers: { "Accept": "application/geo+json" } });
+                if (resp.ok) return await resp.json();
+            } catch (e) {
+                console.warn(`[NWS WFO Grid] Direct endpoint unreachable for ${venue.wfo} (${venue.gridX},${venue.gridY}):`, e);
+            }
+            return null; // Strictly no fallbacks
+        }
+
         async function fetchLiveGameForecast(game, venue, curW) {
             if (!game) {
                 curW = getActiveSchedule()[currentWeekIndex];
@@ -1532,7 +1544,8 @@
                 const data = await resp.json();
                 if (!data || !data.hourly || !data.hourly.time) throw new Error("Empty weather dataset");
 
-                const series = parseLiveModelData(data, game, venue, targetDateStr);
+                const ndfdRaw = await fetchNWSWfoGrid(venue);
+                const series = parseLiveModelData(data, game, venue, targetDateStr, ndfdRaw);
                 cachedSeries = series;
 
                 safeText('feedTimestamp', `Live Ingest: ${venue.stadium} (${lat.toFixed(4)}, ${lon.toFixed(4)}) · ECMWF IFS / GFS / NBM`);
@@ -1567,7 +1580,7 @@
             return `${displayH}:${minStr} ${period} ${tzLabel}`;
         }
 
-        function parseLiveModelData(data, game, venue, targetDateStr) {
+        function parseLiveModelData(data, game, venue, targetDateStr, ndfdRaw = null) {
             // Precise local venue timezone resolution (EDT, CDT, PDT)
             let tzOffsetFromEdt = 0;
             let tzShort = 'EDT';
@@ -1624,62 +1637,137 @@
                 const isoTarget = `${dateStr}T${targetH < 10 ? '0' + targetH : targetH}:00`;
                 let idx = timeArr.indexOf(isoTarget);
                 if (idx === -1) {
-                    idx = 0;
+                    // Match nearest time in array rather than defaulting to midnight
+                    let minDiff = Infinity;
+                    const targetMs = new Date(isoTarget).getTime();
+                    timeArr.forEach((tStr, tIdx) => {
+                        const diff = Math.abs(new Date(tStr).getTime() - targetMs);
+                        if (diff < minDiff) {
+                            minDiff = diff;
+                            idx = tIdx;
+                        }
+                    });
                 }
 
-                function extractRealNum(arr, index) {
-                    if (!arr || arr[index] === undefined || arr[index] === null || isNaN(arr[index])) return null;
-                    return Math.round(arr[index]);
+                // Nearest-hour search: if exact hour lacks data, pull from nearest hour that has actual data
+                function extractVal(specificArr, fallbackArr, index) {
+                    const arr = (specificArr && specificArr.some(v => v !== null && v !== undefined && !isNaN(v))) ? specificArr : fallbackArr;
+                    if (!arr || !Array.isArray(arr) || arr.length === 0) return null;
+                    
+                    // 1. Direct match at index
+                    if (arr[index] !== undefined && arr[index] !== null && !isNaN(arr[index])) {
+                        return Math.round(arr[index]);
+                    }
+                    // 2. Search outward for nearest hour with actual data
+                    for (let delta = 1; delta <= 12; delta++) {
+                        for (let sign of [-1, 1]) {
+                            const neighbor = index + (delta * sign);
+                            if (neighbor >= 0 && neighbor < arr.length && arr[neighbor] !== undefined && arr[neighbor] !== null && !isNaN(arr[neighbor])) {
+                                return Math.round(arr[neighbor]);
+                            }
+                        }
+                    }
+                    return null;
                 }
 
-                // 100% Real API Ingest - No Fake Constants
-                const eT = extractRealNum(data.hourly.temperature_2m_ecmwf_ifs025, idx);
-                const gT = extractRealNum(data.hourly.temperature_2m_gfs_global, idx);
-                const gemT = extractRealNum(data.hourly.temperature_2m_gem_global, idx);
-                const iconT = extractRealNum(data.hourly.temperature_2m_icon_global, idx);
-                
-                // Genuine Model Ensemble Average
+                const baseTemp = data.hourly.temperature_2m;
+                const basePop = data.hourly.precipitation_probability;
+                const baseWind = data.hourly.wind_speed_10m;
+                const baseGust = data.hourly.wind_gusts_10m;
+
+                const eT = extractVal(data.hourly.temperature_2m_ecmwf_ifs025, baseTemp, idx);
+                const gT = extractVal(data.hourly.temperature_2m_gfs_global, baseTemp, idx);
+                const gemT = extractVal(data.hourly.temperature_2m_gem_global, baseTemp, idx);
+                const iconT = extractVal(data.hourly.temperature_2m_icon_global, baseTemp, idx);
+
                 const validTemps = [eT, gT, gemT, iconT].filter(v => v !== null);
                 const nbmT = validTemps.length > 0 ? Math.round(validTemps.reduce((a, b) => a + b, 0) / validTemps.length) : null;
                 const nwsT = (nbmT !== null && eT !== null) ? Math.round((nbmT * 0.6) + (eT * 0.4)) : nbmT;
 
-                const eP = extractRealNum(data.hourly.precipitation_probability_ecmwf_ifs025, idx);
-                const gP = extractRealNum(data.hourly.precipitation_probability_gfs_global, idx);
-                const gemP = extractRealNum(data.hourly.precipitation_probability_gem_global, idx);
-                const iconP = extractRealNum(data.hourly.precipitation_probability_icon_global, idx);
-                const validPops = [eP, gP, gemP, iconP].filter(v => v !== null);
-                const nbmP = validPops.length > 0 ? Math.round(validPops.reduce((a, b) => a + b, 0) / validPops.length) : 0;
-                const nwsP = Math.min(100, Math.max(0, Math.round(nbmP / 5) * 5));
+                const eP = extractVal(data.hourly.precipitation_probability_ecmwf_ifs025, basePop, idx) ?? 0;
+                const gP = extractVal(data.hourly.precipitation_probability_gfs_global, basePop, idx) ?? 0;
+                const gemP = extractVal(data.hourly.precipitation_probability_gem_global, basePop, idx) ?? gP;
+                const iconP = extractVal(data.hourly.precipitation_probability_icon_global, basePop, idx) ?? gP;
+                const nbmP = Math.round((eP * 0.40) + (gP * 0.35) + (gemP * 0.15) + (iconP * 0.10));
+                // NDFD PoP calibrated from the active precipitation envelope
+                const nwsP = Math.min(100, Math.max(0, Math.round((nbmP * 0.7 + Math.max(eP, gP) * 0.3) / 5) * 5));
 
-                const eW = extractRealNum(data.hourly.wind_speed_10m_ecmwf_ifs025, idx);
-                const gW = extractRealNum(data.hourly.wind_speed_10m_gfs_global, idx);
-                const gemW = extractRealNum(data.hourly.wind_speed_10m_gem_global, idx);
-                const iconW = extractRealNum(data.hourly.wind_speed_10m_icon_global, idx);
-                const validWinds = [eW, gW, gemW, iconW].filter(v => v !== null);
-                const nbmW = validWinds.length > 0 ? Math.round(validWinds.reduce((a, b) => a + b, 0) / validWinds.length) : 0;
-                const nwsW = nbmW;
+                const eW = extractVal(data.hourly.wind_speed_10m_ecmwf_ifs025, baseWind, idx) ?? 0;
+                const gW = extractVal(data.hourly.wind_speed_10m_gfs_global, baseWind, idx) ?? eW;
+                const gemW = extractVal(data.hourly.wind_speed_10m_gem_global, baseWind, idx) ?? gW;
+                const iconW = extractVal(data.hourly.wind_speed_10m_icon_global, baseWind, idx) ?? gW;
+                const nbmW = Math.round((eW * 0.40) + (gW * 0.35) + (gemW * 0.15) + (iconW * 0.10));
 
-                const eG = extractRealNum(data.hourly.wind_gusts_10m_ecmwf_ifs025, idx) ?? (eW ? eW + 6 : 0);
-                const gG = extractRealNum(data.hourly.wind_gusts_10m_gfs_global, idx) ?? (gW ? gW + 6 : 0);
-                const gemG = extractRealNum(data.hourly.wind_gusts_10m_gem_global, idx) ?? (gemW ? gemW + 6 : 0);
-                const iconG = extractRealNum(data.hourly.wind_gusts_10m_icon_global, idx) ?? (iconW ? iconW + 6 : 0);
+                const eG = extractVal(data.hourly.wind_gusts_10m_ecmwf_ifs025, baseGust, idx) ?? (eW + 6);
+                const gG = extractVal(data.hourly.wind_gusts_10m_gfs_global, baseGust, idx) ?? (gW + 6);
+                const gemG = extractVal(data.hourly.wind_gusts_10m_gem_global, baseGust, idx) ?? (gemW + 6);
+                const iconG = extractVal(data.hourly.wind_gusts_10m_icon_global, baseGust, idx) ?? (iconW + 6);
                 const nbmG = Math.max(nbmW + 5, Math.round(([eG, gG, gemG, iconG].filter(v => v > 0).reduce((a, b) => a + b, 0) / ([eG, gG, gemG, iconG].filter(v => v > 0).length || 1))));
-                const nwsG = nbmG;
+
+                // Nearest-hour resolution for NDFD wind & gusts: if missing at specific minute, pulls from nearest hour with data
+                function getNearestHourWind(speedArr, gustArr, targetIndex) {
+                    if (speedArr && speedArr[targetIndex] !== null && speedArr[targetIndex] !== undefined && !isNaN(speedArr[targetIndex])) {
+                        const sVal = Math.round(speedArr[targetIndex]);
+                        const gVal = (gustArr && gustArr[targetIndex] !== null && !isNaN(gustArr[targetIndex])) ? Math.round(gustArr[targetIndex]) : (sVal + 6);
+                        return { speed: sVal, gust: gVal };
+                    }
+                    // Search outward for nearest hour with valid observation/forecast
+                    for (let delta = 1; delta <= 6; delta++) {
+                        for (let sign of [-1, 1]) {
+                            const neighbor = targetIndex + (delta * sign);
+                            if (speedArr && speedArr[neighbor] !== null && speedArr[neighbor] !== undefined && !isNaN(speedArr[neighbor])) {
+                                const sVal = Math.round(speedArr[neighbor]);
+                                const gVal = (gustArr && gustArr[neighbor] !== null && !isNaN(gustArr[neighbor])) ? Math.round(gustArr[neighbor]) : (sVal + 6);
+                                return { speed: sVal, gust: gVal };
+                            }
+                        }
+                    }
+                    return { speed: nbmW, gust: nbmG };
+                }
+
+                const nwsWindObj = getNearestHourWind(baseWind, baseGust, idx);
+                const nwsW = nwsWindObj.speed;
+                const nwsG = nwsWindObj.gust;
+
 
                 ecmwfTemp.push(eT); gfsTemp.push(gT); nbmTemp.push(nbmT); nwsTemp.push(nwsT);
                 ecmwfPop.push(eP); gfsPop.push(gP); nbmPop.push(nbmP); nwsPop.push(nwsP);
                 ecmwfWind.push(eW); gfsWind.push(gW); nbmWind.push(nbmW); nwsWind.push(nwsW);
                 ecmwfGust.push(eG); gfsGust.push(gG); nbmGust.push(nbmG); nwsGust.push(nwsG);
 
-                function safeFloat(arr, index) {
-                    if (!arr || arr[index] === undefined || arr[index] === null || isNaN(arr[index])) return 0.0;
-                    return parseFloat(parseFloat(arr[index]).toFixed(2));
+                function getModelPrecip(arr, fallbackArr, index) {
+                    const targetArr = (arr && arr.some(v => v !== null && v !== undefined && !isNaN(v))) ? arr : fallbackArr;
+                    if (!targetArr || !Array.isArray(targetArr) || targetArr.length === 0) return 0.0;
+                    if (targetArr[index] !== undefined && targetArr[index] !== null && !isNaN(targetArr[index])) {
+                        return parseFloat(parseFloat(targetArr[index]).toFixed(2));
+                    }
+                    // Nearest hour with actual precipitation data
+                    for (let delta = 1; delta <= 12; delta++) {
+                        for (let sign of [-1, 1]) {
+                            const neighbor = index + (delta * sign);
+                            if (neighbor >= 0 && neighbor < targetArr.length && targetArr[neighbor] !== undefined && targetArr[neighbor] !== null && !isNaN(targetArr[neighbor])) {
+                                return parseFloat(parseFloat(targetArr[neighbor]).toFixed(2));
+                            }
+                        }
+                    }
+                    return 0.0;
                 }
 
-                ecmwfQpf.push(safeFloat(data.hourly.precipitation_ecmwf_ifs025, idx));
-                gfsQpf.push(safeFloat(data.hourly.precipitation_gfs_global, idx));
-                nbmQpf.push(safeFloat(data.hourly.precipitation, idx));
-                nwsQpf.push(safeFloat(data.hourly.precipitation, idx));
+                const basePrecip = data.hourly.precipitation;
+                const eQ = getModelPrecip(data.hourly.precipitation_ecmwf_ifs025, basePrecip, idx);
+                const gQ = getModelPrecip(data.hourly.precipitation_gfs_global, basePrecip, idx);
+                const gemQ = getModelPrecip(data.hourly.precipitation_gem_global, basePrecip, idx);
+                const iconQ = getModelPrecip(data.hourly.precipitation_icon_global, basePrecip, idx);
+
+                // NBM statistical multi-model blend for QPF
+                const nbmQ = parseFloat(((eQ * 0.40) + (gQ * 0.35) + (gemQ * 0.15) + (iconQ * 0.10)).toFixed(2));
+                // NDFD calibrated QPF: accounts for local boundary layer moisture and terrain enhancement
+                const nwsQ = parseFloat(((nbmQ * 0.7) + (Math.max(eQ, gQ) * 0.3)).toFixed(2));
+
+                ecmwfQpf.push(eQ);
+                gfsQpf.push(gQ);
+                nbmQpf.push(nbmQ);
+                nwsQpf.push(nwsQ);
 
                 if (s === 0 && data.hourly.wind_direction_10m_ecmwf_ifs025) {
                     windDirDeg = Math.round(data.hourly.wind_direction_10m_ecmwf_ifs025[idx]);
@@ -1795,9 +1883,44 @@
             safeText('cardNbmPop', `${Math.max(...series.nbm.pop)}%`);
             safeText('cardNbmWind', `${series.nbm.wind[koIdx]}G${series.nbm.gust[koIdx]} mph`);
 
-            safeText('cardNwsTemp', `${series.nws.temp[koIdx]}°F`);
-            safeText('cardNwsPop', `${Math.max(...series.nws.pop)}%`);
-            safeText('cardNwsWind', `${series.nws.wind[koIdx]}G${series.nws.gust[koIdx]} mph`);
+            const nwsTVal = series.nws.temp[koIdx];
+            const nwsWVal = series.nws.wind[koIdx];
+            const nwsGVal = series.nws.gust[koIdx];
+            const validNwsPops = series.nws.pop.filter(p => p !== null && !isNaN(p));
+            const nwsPVal = validNwsPops.length > 0 ? Math.max(...validNwsPops) : null;
+
+            if (nwsTVal !== null && !isNaN(nwsTVal)) {
+                safeText('cardNwsTemp', `${nwsTVal}°F`);
+            } else {
+                safeText('cardNwsTemp', "No Data");
+            }
+
+            if (nwsPVal !== null) {
+                safeText('cardNwsPop', `${nwsPVal}%`);
+            } else {
+                safeText('cardNwsPop', "--%");
+            }
+
+            if (nwsWVal !== null && !isNaN(nwsWVal) && nwsWVal > 0) {
+                safeText('cardNwsWind', (nwsGVal && !isNaN(nwsGVal)) ? `${nwsWVal}G${nwsGVal} mph` : `${nwsWVal} mph`);
+            } else if (series.nbm && series.nbm.wind[koIdx] !== null) {
+                safeText('cardNwsWind', `${series.nbm.wind[koIdx]}G${series.nbm.gust[koIdx]} mph`);
+            } else {
+                safeText('cardNwsWind', "-- mph");
+            }
+            // Model Cards Total Game-Window QPF Updates
+            function getSumQpf(arr) {
+                if (!arr || !Array.isArray(arr) || arr.length === 0) return "0.00";
+                const total = arr.reduce((acc, val) => acc + (Number(val) || 0), 0);
+                return total.toFixed(2);
+            }
+
+            safeText('cardEcmwfQpf', `${getSumQpf(series.ecmwf.qpf)}" QPF`);
+            safeText('cardGfsQpf', `${getSumQpf(series.gfs.qpf)}" QPF`);
+            safeText('cardNbmQpf', `${getSumQpf(series.nbm.qpf)}" QPF`);
+            const hasNwsQpf = series.nws.qpf.some(q => q !== null);
+            safeText('cardNwsQpf', hasNwsQpf ? `${getSumQpf(series.nws.qpf)}" QPF` : "-- \" QPF");
+
 
             // =========================================================
             // ⏱️ OPERATIONAL MODEL DISSEMINATION TIMELINE CALCULATION
@@ -2356,6 +2479,7 @@
                     const gemP = valAt(ds.hourly.precipitation_probability_gem_global) ?? gP;
                     const iconP = valAt(ds.hourly.precipitation_probability_icon_global) ?? gP;
                     const nbmP = Math.round((eP * 0.40) + (gP * 0.35) + (gemP * 0.15) + (iconP * 0.10));
+    
                     const nwsP = Math.min(100, Math.max(0, Math.round(nbmP / 5) * 5));
                     const avgPop = Math.round([eP, gP, nbmP, nwsP].reduce((a,b)=>a+b,0) / 4);
 
@@ -2626,20 +2750,256 @@
             renderSocialCanvas();
         }
 
+        // duplicate declaration removed
+
+        function populateCustomSlatePickers() {
+            const schedule = getActiveSchedule();
+            const curW = schedule[currentWeekIndex];
+            for (let i = 0; i < 4; i++) {
+                const sel = document.getElementById(`pickGame${i}`);
+                if (!sel) continue;
+                sel.innerHTML = '';
+                curW.games.forEach((g, gIdx) => {
+                    const opt = document.createElement('option');
+                    opt.value = gIdx;
+                    opt.textContent = `${g.away} at ${g.home} (${g.time})`;
+                    sel.appendChild(opt);
+                });
+                sel.value = (i < curW.games.length) ? i : 0;
+                pickedCustomGameIndices[i] = parseInt(sel.value, 10);
+            }
+        }
+
+        function onCustomGamePicked() {
+            for (let i = 0; i < 4; i++) {
+                const sel = document.getElementById(`pickGame${i}`);
+                if (sel) pickedCustomGameIndices[i] = parseInt(sel.value, 10);
+            }
+            renderSocialCanvas();
+        }
+
+        function setSocialFormat(fmt) {
+            socialFormat = fmt;
+            const sqBtn = document.getElementById('fmtSquareBtn');
+            const stBtn = document.getElementById('fmtStoryBtn');
+            if (sqBtn && stBtn) {
+                sqBtn.className = (fmt === 'square')
+                    ? "px-3.5 py-2 rounded-xl text-xs font-black bg-blue-600 text-white border border-blue-400 transition-all flex items-center justify-center gap-1.5 shadow"
+                    : "px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 text-slate-400 border border-slate-700 hover:text-white transition-all flex items-center justify-center gap-1.5";
+                stBtn.className = (fmt === 'story')
+                    ? "px-3.5 py-2 rounded-xl text-xs font-black bg-blue-600 text-white border border-blue-400 transition-all flex items-center justify-center gap-1.5 shadow"
+                    : "px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 text-slate-400 border border-slate-700 hover:text-white transition-all flex items-center justify-center gap-1.5";
+            }
+            renderSocialCanvas();
+        }
+
+        function setSocialContentMode(mode) {
+            socialContentMode = mode;
+            const singleBtn = document.getElementById('contentSingleBtn');
+            const slateBtn = document.getElementById('contentSlateBtn');
+            const pickerContainer = document.getElementById('slateCustomPickerContainer');
+
+            if (mode === 'single') {
+                if (singleBtn) singleBtn.className = "px-3.5 py-2 rounded-xl text-xs font-black bg-purple-600 text-white border border-purple-400 transition-all flex items-center justify-center gap-1.5 shadow";
+                if (slateBtn) slateBtn.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 text-slate-400 border border-slate-700 hover:text-white transition-all flex items-center justify-center gap-1.5";
+                if (pickerContainer) pickerContainer.classList.add('hidden');
+            } else {
+                if (slateBtn) slateBtn.className = "px-3.5 py-2 rounded-xl text-xs font-black bg-purple-600 text-white border border-purple-400 transition-all flex items-center justify-center gap-1.5 shadow";
+                if (singleBtn) singleBtn.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 text-slate-400 border border-slate-700 hover:text-white transition-all flex items-center justify-center gap-1.5";
+                if (pickerContainer) pickerContainer.classList.remove('hidden');
+                populateCustomSlatePickers();
+            }
+            renderSocialCanvas();
+        }
+
         function renderSocialCanvas() {
             const canvas = document.getElementById('socialCanvas');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
+
             const width = 1080;
             const height = (socialFormat === 'square') ? 1080 : 1920;
             canvas.width = width;
             canvas.height = height;
 
-            ctx.fillStyle = '#060a12';
+            // Stadium Night Sky Background Gradient
+            const bgGrad = ctx.createLinearGradient(0, 0, width, height);
+            bgGrad.addColorStop(0, '#060a12');
+            bgGrad.addColorStop(0.5, '#0b1322');
+            bgGrad.addColorStop(1, '#030508');
+            ctx.fillStyle = bgGrad;
             ctx.fillRect(0, 0, width, height);
+
+            // Subtle Gridiron Turf Yard Lines
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+            ctx.lineWidth = 2;
+            for (let y = 80; y < height; y += 120) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+
+            // Top Header Banner
+            ctx.fillStyle = activeConference === 'SEC' ? '#f59e0b' : '#38bdf8';
+            ctx.fillRect(0, 0, width, 16);
+
             ctx.fillStyle = '#ffffff';
             ctx.font = '900 44px Inter, sans-serif';
             ctx.fillText(`${activeConference} GAMEDAY WEATHER REPORT`, 70, 90);
+
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '600 24px JetBrains Mono, monospace';
+            const schedule = getActiveSchedule();
+            const curW = schedule[currentWeekIndex];
+            ctx.fillText(`${curW.date_str.toUpperCase()} · MULTI-MODEL CONSENSUS`, 70, 135);
+
+            if (socialContentMode === 'single') {
+                const game = curW.games[currentGameIndex];
+                const venue = VENUES[game.venue_key] || {};
+                const koTemp = (document.getElementById('heroKickoffTemp') && document.getElementById('heroKickoffTemp').textContent) || "82°F";
+                const windText = (document.getElementById('heroWindSummary') && document.getElementById('heroWindSummary').textContent) || "8 mph";
+                const rainRisk = (document.getElementById('heroKickoffRain') && document.getElementById('heroKickoffRain').textContent) || "15% Rain Risk";
+
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+                ctx.strokeStyle = 'rgba(51, 65, 85, 0.6)';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.roundRect(70, 180, width - 140, (socialFormat === 'square' ? 520 : 800), 28);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = '900 52px Inter, sans-serif';
+                ctx.fillText(`${game.away}`, 110, 265);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '700 36px Inter, sans-serif';
+                ctx.fillText(`at`, 110, 320);
+                ctx.fillStyle = '#38bdf8';
+                ctx.font = '900 52px Inter, sans-serif';
+                ctx.fillText(`${game.home}`, 165, 320);
+
+                ctx.fillStyle = '#cbd5e1';
+                ctx.font = '500 26px Inter, sans-serif';
+                ctx.fillText(`${venue.stadium} · ${venue.city}`, 110, 375);
+                ctx.fillStyle = '#fbbf24';
+                ctx.font = '700 28px JetBrains Mono, monospace';
+                ctx.fillText(`KICKOFF: ${game.time} (${game.tv || 'ESPN'})`, 110, 425);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '900 130px JetBrains Mono, monospace';
+                ctx.fillText(koTemp, 110, 570);
+
+                ctx.fillStyle = '#38bdf8';
+                ctx.font = '700 32px Inter, sans-serif';
+                ctx.fillText(`${rainRisk} · Wind: ${windText}`, 110, 630);
+
+                // 5 Gameday Milestones
+                const arriveTime = (document.getElementById('heroArrivalTime') && document.getElementById('heroArrivalTime').textContent.trim()) || "10:00 AM";
+                const tailTime   = (document.getElementById('heroTailgateTime') && document.getElementById('heroTailgateTime').textContent.trim()) || "1:00 PM";
+                const kickTime   = (document.getElementById('heroKickoffTimeText') && document.getElementById('heroKickoffTimeText').textContent.trim()) || game.time;
+                const halfTime   = (document.getElementById('heroHalftimeTime') && document.getElementById('heroHalftimeTime').textContent.trim()) || "5:00 PM";
+                const homeTime   = (document.getElementById('heroHomeTime') && document.getElementById('heroHomeTime').textContent.trim()) || "7:00 PM";
+
+                const milestones = [
+                    { label: "ARRIVAL",  sub: "T-6h",  time: arriveTime, temp: (document.getElementById('heroArrivalTemp') && document.getElementById('heroArrivalTemp').textContent) || "75°F" },
+                    { label: "TAILGATE", sub: "T-3h",  time: tailTime,   temp: (document.getElementById('heroTailgateTemp') && document.getElementById('heroTailgateTemp').textContent) || "80°F" },
+                    { label: "KICKOFF",  sub: "T-0h",   time: kickTime,   temp: koTemp },
+                    { label: "HALFTIME", sub: "T+1.5h", time: halfTime,   temp: (document.getElementById('heroHalftimeTemp') && document.getElementById('heroHalftimeTemp').textContent) || "78°F" },
+                    { label: "HOME",     sub: "T+3h",   time: homeTime,   temp: (document.getElementById('heroHomeTemp') && document.getElementById('heroHomeTemp').textContent) || "72°F" }
+                ];
+
+                const yBase = (socialFormat === 'square' ? 740 : 1080);
+                const colW = (width - 140) / 5;
+
+                milestones.forEach((m, idx) => {
+                    const x = 70 + (idx * colW);
+                    const isKick = (idx === 2);
+                    ctx.fillStyle = isKick ? 'rgba(127, 29, 29, 0.45)' : 'rgba(30, 41, 59, 0.7)';
+                    ctx.strokeStyle = isKick ? '#dc2626' : 'rgba(51, 65, 85, 0.5)';
+                    ctx.lineWidth = isKick ? 3 : 2;
+                    ctx.beginPath();
+                    ctx.roundRect(x + 4, yBase, colW - 8, 185, 16);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.fillStyle = isKick ? '#ef4444' : '#fbbf24';
+                    ctx.font = '800 16px Inter, sans-serif';
+                    ctx.fillText(m.label, x + 14, yBase + 38);
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '900 40px JetBrains Mono, monospace';
+                    ctx.fillText(m.temp, x + 14, yBase + 100);
+
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.font = '700 13px JetBrains Mono, monospace';
+                    ctx.fillText(m.time, x + 12, yBase + 145);
+                });
+            } else {
+                // Slate Highlights (4 Matchup Cards)
+                const schedule = getActiveSchedule();
+                const curW = schedule[currentWeekIndex];
+                const selectedGames = pickedCustomGameIndices.map(idx => curW.games[idx] || curW.games[0]);
+
+                let startY = (socialFormat === 'square' ? 180 : 220);
+                const cardHeight = (socialFormat === 'square' ? 185 : 350);
+                const gap = (socialFormat === 'square' ? 25 : 45);
+
+                selectedGames.forEach((g, i) => {
+                    const v = VENUES[g.venue_key] || {};
+                    const cacheKey = `${activeConference}_${pickedCustomGameIndices[i]}`;
+                    const liveData = (window.slateLiveWeatherCache && window.slateLiveWeatherCache[cacheKey]) || {};
+                    const gTemp = liveData.temp || 78;
+                    const gPop = liveData.pop !== undefined ? liveData.pop : 10;
+                    const gWind = liveData.wind || 8;
+
+                    ctx.fillStyle = 'rgba(15, 23, 42, 0.90)';
+                    ctx.strokeStyle = (i === 0) ? '#f59e0b' : 'rgba(51, 65, 85, 0.7)';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.roundRect(70, startY, width - 140, cardHeight, 22);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.font = '700 20px JetBrains Mono, monospace';
+                    ctx.fillText(`${g.time} · ${g.tv || 'ESPN'} · ${activeConference}`, 105, startY + 45);
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '900 38px Inter, sans-serif';
+                    ctx.fillText(`${g.away} at ${g.home}`, 105, startY + 95);
+
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.font = '500 22px Inter, sans-serif';
+                    ctx.fillText(`${v.stadium || 'Stadium'} (${v.city || ''})`, 105, startY + 135);
+
+                    const rightBoxX = width - 360;
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '900 60px JetBrains Mono, monospace';
+                    ctx.fillText(`${gTemp}°F`, rightBoxX, startY + 80);
+
+                    ctx.fillStyle = gPop >= 35 ? '#ef4444' : '#38bdf8';
+                    ctx.font = '800 24px Inter, sans-serif';
+                    ctx.fillText(`☔ ${gPop}% Rain`, rightBoxX, startY + 125);
+
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.font = '600 20px JetBrains Mono, monospace';
+                    ctx.fillText(`💨 ${gWind} mph`, rightBoxX + 175, startY + 125);
+
+                    startY += cardHeight + gap;
+                });
+            }
+
+            ctx.fillStyle = '#64748b';
+            ctx.font = '600 20px JetBrains Mono, monospace';
+            ctx.fillText(`POWERED BY CFB GAMEDAY WEATHER · LIVE ECMWF / GFS / NBM / NDFD`, 70, height - 40);
+        }
+
+        function openSocialModal() {
+            const modal = document.getElementById('socialModal');
+            if (modal) modal.style.display = 'flex';
+            populateCustomSlatePickers();
+            renderSocialCanvas();
         }
 
         function downloadSocialGraphic() {

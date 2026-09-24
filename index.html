@@ -1735,10 +1735,16 @@
                 const nwsG = nwsWindObj.gust;
                 // NOAA NAM (3km Nest) High-Res Convective Ingestion
                 const namT = extractVal(data.hourly.temperature_2m_ncep_nam_conus, null, idx);
-                const namP = extractVal(data.hourly.precipitation_probability_ncep_nam_conus, null, idx) ?? (data.hourly.precipitation_probability ? Math.round(data.hourly.precipitation_probability[idx]) : 0);
+                const namQ = getModelPrecip(data.hourly.precipitation_ncep_nam_conus, null, idx);
+                let namP = extractVal(data.hourly.precipitation_probability_ncep_nam_conus, null, idx);
+                if (namP === null || namP === 0) {
+                    if (namQ >= 0.15) namP = 85;
+                    else if (namQ >= 0.05) namP = 70;
+                    else if (namQ > 0.00) namP = 45;
+                    else namP = (data.hourly.precipitation_probability ? Math.round(data.hourly.precipitation_probability[idx]) : 0);
+                }
                 const namW = extractVal(data.hourly.wind_speed_10m_ncep_nam_conus, null, idx);
                 const namG = extractVal(data.hourly.wind_gusts_10m_ncep_nam_conus, null, idx) ?? (namW ? namW + 6 : null);
-                const namQ = getModelPrecip(data.hourly.precipitation_ncep_nam_conus, null, idx);
 
                 if (namT !== null) namTemp.push(namT);
                 if (namP !== null) namPop.push(namP);
@@ -1955,8 +1961,10 @@
             // High-Resolution Convective Models (NAM 60h & HRRR 48h)
             if (series.nam && series.nam.temp && series.nam.temp[koIdx] !== undefined) {
                 safeText('cardNamTemp', `${series.nam.temp[koIdx]}°F`);
-                safeText('cardNamPop', `${Math.max(...series.nam.pop)}%`);
+                const namMaxPop = (series.nam.pop && series.nam.pop.length > 0) ? Math.max(...series.nam.pop) : 0;
+                safeText('cardNamPop', `${namMaxPop}%`);
                 safeText('cardNamWind', `${series.nam.wind[koIdx]}G${series.nam.gust[koIdx]} mph`);
+                safeText('cardNamQpf', `${getSumQpf(series.nam.qpf)}" QPF`);
                 safeText('cardNamStatus', "Active (3km Nest)");
                 const stEl = document.getElementById('cardNamStatus');
                 if (stEl) stEl.className = "text-[10px] font-mono text-cyan-400 font-bold animate-pulse";
@@ -1964,13 +1972,16 @@
                 safeText('cardNamTemp', "Standby");
                 safeText('cardNamPop', "--%");
                 safeText('cardNamWind', "-- mph");
+                safeText('cardNamQpf', "-- \" QPF");
                 safeText('cardNamStatus', "Standby (>60h)");
             }
 
             if (series.hrrr && series.hrrr.temp && series.hrrr.temp[koIdx] !== undefined) {
                 safeText('cardHrrrTemp', `${series.hrrr.temp[koIdx]}°F`);
-                safeText('cardHrrrPop', `${Math.max(...series.hrrr.pop)}%`);
+                const hrrrMaxPop = (series.hrrr.pop && series.hrrr.pop.length > 0) ? Math.max(...series.hrrr.pop) : 0;
+                safeText('cardHrrrPop', `${hrrrMaxPop}%`);
                 safeText('cardHrrrWind', `${series.hrrr.wind[koIdx]}G${series.hrrr.gust[koIdx]} mph`);
+                safeText('cardHrrrQpf', `${getSumQpf(series.hrrr.qpf)}" QPF`);
                 safeText('cardHrrrStatus', "Active (3km Radar)");
                 const stHrrr = document.getElementById('cardHrrrStatus');
                 if (stHrrr) stHrrr.className = "text-[10px] font-mono text-purple-400 font-bold animate-pulse";
@@ -1978,6 +1989,7 @@
                 safeText('cardHrrrTemp', "Standby");
                 safeText('cardHrrrPop', "--%");
                 safeText('cardHrrrWind', "-- mph");
+                safeText('cardHrrrQpf', "-- \" QPF");
                 safeText('cardHrrrStatus', "Standby (>48h)");
             }
 

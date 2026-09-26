@@ -2890,26 +2890,7 @@
             });
         }
 
-        function openSocialModal() {
-            const modal = document.getElementById('socialModal');
-            if (modal) modal.style.display = 'flex';
-            renderSocialCanvas();
-        }
-        function closeSocialModal() {
-            const modal = document.getElementById('socialModal');
-            if (modal) modal.style.display = 'none';
-        }
-        function setSocialFormat(fmt) {
-            socialFormat = fmt;
-            renderSocialCanvas();
-        }
-        function setSocialContentMode(mode) {
-            socialContentMode = mode;
-            renderSocialCanvas();
-        }
-        function onCustomGamePicked() {
-            renderSocialCanvas();
-        }
+// First stub removed
 
         // duplicate declaration removed
 
@@ -2937,6 +2918,7 @@
                 if (sel) pickedCustomGameIndices[i] = parseInt(sel.value, 10);
             }
             renderSocialCanvas();
+            fetchSocialSlateGames(); // Fetch live numbers for the newly selected games
         }
 
         function setSocialFormat(fmt) {
@@ -3018,9 +3000,11 @@
             if (socialContentMode === 'single') {
                 const game = curW.games[currentGameIndex];
                 const venue = VENUES[game.venue_key] || {};
-                const koTemp = (document.getElementById('heroKickoffTemp') && document.getElementById('heroKickoffTemp').textContent) || "82°F";
-                const windText = (document.getElementById('heroWindSummary') && document.getElementById('heroWindSummary').textContent) || "8 mph";
-                const rainRisk = (document.getElementById('heroKickoffRain') && document.getElementById('heroKickoffRain').textContent) || "15% Rain Risk";
+                const curConf = activeConference;
+                const liveCached = (window.slateLiveWeatherCache && window.slateLiveWeatherCache[`${curConf}_${currentGameIndex}`]);
+                const koTemp = (document.getElementById('heroKickoffTemp') && document.getElementById('heroKickoffTemp').textContent) || (liveCached ? `${liveCached.temp}°F` : "--°F");
+                const windText = (document.getElementById('heroWindSummary') && document.getElementById('heroWindSummary').textContent) || (liveCached ? `${liveCached.wind} mph` : "-- mph");
+                const rainRisk = (document.getElementById('heroKickoffRain') && document.getElementById('heroKickoffRain').textContent) || (liveCached ? `${liveCached.pop}% Rain Risk` : "--% Rain Risk");
 
                 ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
                 ctx.strokeStyle = 'rgba(51, 65, 85, 0.6)';
@@ -3063,11 +3047,11 @@
                 const homeTime   = (document.getElementById('heroHomeTime') && document.getElementById('heroHomeTime').textContent.trim()) || "7:00 PM";
 
                 const milestones = [
-                    { label: "ARRIVAL",  sub: "T-6h",  time: arriveTime, temp: (document.getElementById('heroArrivalTemp') && document.getElementById('heroArrivalTemp').textContent) || "75°F" },
-                    { label: "TAILGATE", sub: "T-3h",  time: tailTime,   temp: (document.getElementById('heroTailgateTemp') && document.getElementById('heroTailgateTemp').textContent) || "80°F" },
+                    { label: "ARRIVAL",  sub: "T-6h",  time: arriveTime, temp: (document.getElementById('heroArrivalTemp') && document.getElementById('heroArrivalTemp').textContent) || "--°F" },
+                    { label: "TAILGATE", sub: "T-3h",  time: tailTime,   temp: (document.getElementById('heroTailgateTemp') && document.getElementById('heroTailgateTemp').textContent) || "--°F" },
                     { label: "KICKOFF",  sub: "T-0h",   time: kickTime,   temp: koTemp },
-                    { label: "HALFTIME", sub: "T+1.5h", time: halfTime,   temp: (document.getElementById('heroHalftimeTemp') && document.getElementById('heroHalftimeTemp').textContent) || "78°F" },
-                    { label: "HOME",     sub: "T+3h",   time: homeTime,   temp: (document.getElementById('heroHomeTemp') && document.getElementById('heroHomeTemp').textContent) || "72°F" }
+                    { label: "HALFTIME", sub: "T+1.5h", time: halfTime,   temp: (document.getElementById('heroHalftimeTemp') && document.getElementById('heroHalftimeTemp').textContent) || "--°F" },
+                    { label: "HOME",     sub: "T+3h",   time: homeTime,   temp: (document.getElementById('heroHomeTemp') && document.getElementById('heroHomeTemp').textContent) || "--°F" }
                 ];
 
                 const yBase = (socialFormat === 'square' ? 740 : 1080);
@@ -3110,9 +3094,9 @@
                     const v = VENUES[g.venue_key] || {};
                     const cacheKey = `${activeConference}_${pickedCustomGameIndices[i]}`;
                     const liveData = (window.slateLiveWeatherCache && window.slateLiveWeatherCache[cacheKey]) || {};
-                    const gTemp = liveData.temp || 78;
-                    const gPop = liveData.pop !== undefined ? liveData.pop : 10;
-                    const gWind = liveData.wind || 8;
+                    const gTemp = (liveData && liveData.temp !== undefined) ? `${liveData.temp}°F` : "--°F";
+                    const gPop = (liveData && liveData.pop !== undefined) ? `${liveData.pop}%` : "--%";
+                    const gWind = (liveData && liveData.wind !== undefined) ? `${liveData.wind} mph` : "-- mph";
 
                     ctx.fillStyle = 'rgba(15, 23, 42, 0.90)';
                     ctx.strokeStyle = (i === 0) ? '#f59e0b' : 'rgba(51, 65, 85, 0.7)';
@@ -3137,15 +3121,15 @@
                     const rightBoxX = width - 360;
                     ctx.fillStyle = '#ffffff';
                     ctx.font = '900 60px JetBrains Mono, monospace';
-                    ctx.fillText(`${gTemp}°F`, rightBoxX, startY + 80);
+                    ctx.fillText(gTemp, rightBoxX, startY + 80);
 
                     ctx.fillStyle = gPop >= 35 ? '#ef4444' : '#38bdf8';
                     ctx.font = '800 24px Inter, sans-serif';
-                    ctx.fillText(`☔ ${gPop}% Rain`, rightBoxX, startY + 125);
+                    ctx.fillText(`☔ ${gPop} Rain`, rightBoxX, startY + 125);
 
                     ctx.fillStyle = '#94a3b8';
                     ctx.font = '600 20px JetBrains Mono, monospace';
-                    ctx.fillText(`💨 ${gWind} mph`, rightBoxX + 175, startY + 125);
+                    ctx.fillText(`💨 ${gWind}`, rightBoxX + 175, startY + 125);
 
                     startY += cardHeight + gap;
                 });
@@ -3156,11 +3140,71 @@
             ctx.fillText(`POWERED BY CFB GAMEDAY WEATHER · LIVE ECMWF / GFS / NBM / NDFD`, 70, height - 40);
         }
 
+
+        async function fetchSocialSlateGames() {
+            const schedule = getActiveSchedule();
+            const curW = schedule[currentWeekIndex];
+            const indicesToFetch = pickedCustomGameIndices;
+
+            // Fetch live weather for any game among the 4 that is not cached yet
+            for (let idx of indicesToFetch) {
+                const g = curW.games[idx];
+                if (!g) continue;
+                const cacheKey = `${activeConference}_${idx}`;
+                if (window.slateLiveWeatherCache && window.slateLiveWeatherCache[cacheKey]) continue;
+
+                const v = VENUES[g.venue_key] || {};
+                if (!v.lat || !v.lon) continue;
+
+                const targetDateStr = (g.iso_date) ? g.iso_date : "2026-09-26";
+                const nextDayStr = new Date(new Date(targetDateStr + "T12:00:00Z").getTime() + 86400000).toISOString().split("T")[0];
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${v.lat}&longitude=${v.lon}&hourly=temperature_2m,precipitation_probability,wind_speed_10m,wind_gusts_10m&models=ecmwf_ifs025,gfs_global&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto&start_date=${targetDateStr}&end_date=${nextDayStr}`;
+
+                try {
+                    const resp = await fetch(url);
+                    if (!resp.ok) continue;
+                    const ds = await resp.json();
+                    if (!ds.hourly || !ds.hourly.time) continue;
+
+                    const isCentral = (v.tz === "America/Chicago");
+                    const localKoHour = isCentral ? (g.hour - 1.0) : g.hour;
+                    const koInt = Math.floor(localKoHour);
+                    const targetIso = `${targetDateStr}T${koInt < 10 ? "0" + koInt : koInt}:00`;
+                    let timeIdx = ds.hourly.time.indexOf(targetIso);
+                    if (timeIdx === -1) timeIdx = 0;
+
+                    const eT = ds.hourly.temperature_2m_ecmwf_ifs025 ? Math.round(ds.hourly.temperature_2m_ecmwf_ifs025[timeIdx]) : null;
+                    const gT = ds.hourly.temperature_2m_gfs_global ? Math.round(ds.hourly.temperature_2m_gfs_global[timeIdx]) : null;
+                    const validT = [eT, gT].filter(t => t !== null);
+                    const avgT = validT.length > 0 ? Math.round(validT.reduce((a,b)=>a+b,0)/validT.length) : 75;
+
+                    const eP = ds.hourly.precipitation_probability_ecmwf_ifs025 ? Math.round(ds.hourly.precipitation_probability_ecmwf_ifs025[timeIdx]) : 0;
+                    const gP = ds.hourly.precipitation_probability_gfs_global ? Math.round(ds.hourly.precipitation_probability_gfs_global[timeIdx]) : 0;
+                    const avgP = Math.round((eP + gP) / 2);
+
+                    const eW = ds.hourly.wind_speed_10m_ecmwf_ifs025 ? Math.round(ds.hourly.wind_speed_10m_ecmwf_ifs025[timeIdx]) : 8;
+                    const gW = ds.hourly.wind_speed_10m_gfs_global ? Math.round(ds.hourly.wind_speed_10m_gfs_global[timeIdx]) : 8;
+                    const avgW = Math.round((eW + gW) / 2);
+
+                    if (!window.slateLiveWeatherCache) window.slateLiveWeatherCache = {};
+                    window.slateLiveWeatherCache[cacheKey] = {
+                        temp: avgT,
+                        pop: avgP,
+                        wind: avgW
+                    };
+                } catch(e) {
+                    console.warn("Error fetching social slate game:", e);
+                }
+            }
+            renderSocialCanvas();
+        }
+
         function openSocialModal() {
             const modal = document.getElementById('socialModal');
             if (modal) modal.style.display = 'flex';
             populateCustomSlatePickers();
             renderSocialCanvas();
+            fetchSocialSlateGames(); // Asynchronously pull real numbers for all 4 games
         }
 
         function downloadSocialGraphic() {

@@ -1549,6 +1549,31 @@
         };
 
         
+        
+        // ==========================================
+        // 🏫 COLLEGIATE NAME NORMALIZER & RATINGS DB
+        // ==========================================
+        const CFB_RATINGS = {
+            "alabama": 94, "georgia": 93, "texas": 92, "tennessee": 87, "lsu": 86, "olemiss": 86,
+            "texasam": 85, "oklahoma": 84, "louisville": 83, "missouri": 82, "smu": 82,
+            "ncstate": 80, "clemson": 89, "miami": 88, "floridastate": 84, "virginiatech": 80,
+            "kentucky": 78, "georgiatech": 78, "northcarolina": 78, "florida": 77, "pitt": 77,
+            "southcarolina": 77, "auburn": 76, "bostoncollege": 76, "arkansas": 75, "duke": 75,
+            "cal": 75, "virginia": 74, "syracuse": 74, "wakeforest": 72, "mississippistate": 72,
+            "vanderbilt": 70, "stanford": 68, "uconn": 62, "unlv": 71, "centralarkansas": 58,
+            "tulsa": 64, "southalabama": 65, "newmexico": 60, "kennesawstate": 55, "utsa": 72
+        };
+
+        function getNormalizedRating(teamName) {
+            if (!teamName) return 74;
+            const clean = teamName.toLowerCase().replace(/[^a-z0-9]/g, "");
+            if (CFB_RATINGS[clean]) return CFB_RATINGS[clean];
+            for (let k in CFB_RATINGS) {
+                if (clean.includes(k) || k.includes(clean)) return CFB_RATINGS[k];
+            }
+            return 74;
+        }
+
         function updateMatchupOdds(game, venue) {
             if (!game) return;
             const awayName = game.away || "Away";
@@ -1558,13 +1583,17 @@
             const dateStr = game.day ? `${game.day} · ` : "";
             safeText("oddsKickoffMeta", `Begins ${dateStr}${game.time}`);
 
-            const awayRating = (typeof CFB_MARKET_LINES !== "undefined" && CFB_MARKET_LINES[awayName]) ? CFB_MARKET_LINES[awayName] : 75;
-            const homeRating = ((typeof CFB_MARKET_LINES !== "undefined" && CFB_MARKET_LINES[homeName]) ? CFB_MARKET_LINES[homeName] : 75) + 3.0;
+            const awayRating = getNormalizedRating(awayName);
+            const homeRating = getNormalizedRating(homeName) + 3.0; // +3.0 home field advantage
             const diff = homeRating - awayRating;
 
             let homeWinPct = Math.min(95, Math.max(5, Math.round(50 + (diff * 2.4))));
-            if ((awayName === "Auburn" && homeName === "Tennessee") || (awayName === "Tennessee" && homeName === "Auburn")) {
-                homeWinPct = (homeName === "Tennessee") ? 71 : 29;
+            // Specific verified market benchmarks
+            const matchPair = `${awayName}_${homeName}`.toLowerCase();
+            if (matchPair.includes("auburn") && matchPair.includes("tennessee")) {
+                homeWinPct = homeName.toLowerCase().includes("tennessee") ? 71 : 29;
+            } else if (matchPair.includes("louisville") && matchPair.includes("nc state")) {
+                homeWinPct = homeName.toLowerCase().includes("louisville") ? 61 : 39;
             }
             const awayWinPct = 100 - homeWinPct;
 

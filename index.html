@@ -2473,6 +2473,12 @@
                     { label: 'NBM Blend PoP', data: series.nbm.pop, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.12)', tension: 0.25, borderWidth: 2.5, pointRadius: 3 },
                     { label: 'NWS Official PoP', data: series.nws.pop, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.15)', tension: 0.25, borderWidth: 3.5, pointRadius: 4 }
                 ];
+                if (series.nam && series.nam.pop && series.nam.pop.length > 0) {
+                    datasets.push({ label: 'NAM (3km Nest)', data: series.nam.pop, borderColor: '#22d3ee', backgroundColor: 'rgba(34, 211, 238, 0.12)', tension: 0.25, borderWidth: 3, pointRadius: 3.5 });
+                }
+                if (series.hrrr && series.hrrr.pop && series.hrrr.pop.length > 0) {
+                    datasets.push({ label: 'HRRR (3km Radar)', data: series.hrrr.pop, borderColor: '#c084fc', backgroundColor: 'rgba(192, 132, 252, 0.12)', tension: 0.25, borderWidth: 3.5, pointRadius: 4 });
+                }
             } else if (currentParam === 'wind') {
                 yTitle = "Sustained Wind & Peak Wind Gusts (mph)";
                 unit = " mph";
@@ -2489,6 +2495,18 @@
                     { label: 'NWS Official Sustained', data: series.nws.wind, borderColor: '#f59e0b', tension: 0.3, borderWidth: 3.5, pointRadius: 4 },
                     { label: 'NWS Peak Gusts', data: series.nws.gust, borderColor: '#fbbf24', borderDash: [4, 3], tension: 0.3, borderWidth: 2.5, pointRadius: 3.5 }
                 ];
+                if (series.nam && series.nam.wind && series.nam.wind.length > 0) {
+                    datasets.push({ label: 'NAM Sustained', data: series.nam.wind, borderColor: '#22d3ee', tension: 0.3, borderWidth: 2.5, pointRadius: 3 });
+                    if (series.nam.gust && series.nam.gust.length > 0) {
+                        datasets.push({ label: 'NAM Peak Gusts', data: series.nam.gust, borderColor: '#67e8f9', borderDash: [4, 3], tension: 0.3, borderWidth: 2, pointRadius: 3 });
+                    }
+                }
+                if (series.hrrr && series.hrrr.wind && series.hrrr.wind.length > 0) {
+                    datasets.push({ label: 'HRRR Sustained', data: series.hrrr.wind, borderColor: '#c084fc', tension: 0.3, borderWidth: 3, pointRadius: 3.5 });
+                    if (series.hrrr.gust && series.hrrr.gust.length > 0) {
+                        datasets.push({ label: 'HRRR Peak Gusts', data: series.hrrr.gust, borderColor: '#e9d5ff', borderDash: [4, 3], tension: 0.3, borderWidth: 2.5, pointRadius: 3.5 });
+                    }
+                }
             } else if (currentParam === 'qpf') {
                 yTitle = "Cumulative Accumulated Rainfall (inches)";
                 unit = " in";
@@ -2501,6 +2519,12 @@
                     { label: 'NBM Cumulative QPF', data: getCumulativeQpf(series.nbm.qpf), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.15)', fill: true, tension: 0.2, borderWidth: 2.5, pointRadius: 3 },
                     { label: 'NWS Official Cumulative QPF', data: getCumulativeQpf(series.nws.qpf), borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.25)', fill: true, tension: 0.2, borderWidth: 3.5, pointRadius: 4 }
                 ];
+                if (series.nam && series.nam.qpf && series.nam.qpf.length > 0) {
+                    datasets.push({ label: 'NAM Cumulative QPF', data: getCumulativeQpf(series.nam.qpf), borderColor: '#22d3ee', backgroundColor: 'rgba(34, 211, 238, 0.15)', fill: false, tension: 0.2, borderWidth: 3, pointRadius: 3.5 });
+                }
+                if (series.hrrr && series.hrrr.qpf && series.hrrr.qpf.length > 0) {
+                    datasets.push({ label: 'HRRR Cumulative QPF', data: getCumulativeQpf(series.hrrr.qpf), borderColor: '#c084fc', backgroundColor: 'rgba(192, 132, 252, 0.20)', fill: false, tension: 0.2, borderWidth: 3.5, pointRadius: 4 });
+                }
             }
 
             chartInstance = new Chart(ctx, {
